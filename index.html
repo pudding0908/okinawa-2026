@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自由行</title>
+    <title>日本沖繩行 2026 (富士藍度假版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght=700&family=Noto+Sans+TC:wght=300;400;500;700&display=swap" rel="stylesheet">
@@ -97,31 +97,17 @@
                     <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單
                 </h2>
                 
-                <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-5 space-y-2.5">
-                    <div class="flex justify-between items-center">
-                        <div class="text-[11px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>快遞輸入品項</div>
-                        
-                        <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[10px] font-bold relative shadow-2xs">
-                            <button id="toggle-type-local" onclick="setPostType('local')" class="px-2.5 py-1 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-user-lock"></i>個人私人
-                            </button>
-                            <button id="toggle-type-cloud" onclick="setPostType('cloud')" class="px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>團隊共同
-                            </button>
-                        </div>
-                    </div>
-
+                <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-5 space-y-2">
+                    <div class="text-[11px] font-bold text-fuji-secondary mb-1"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>新增個人私房備忘</div>
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-name" placeholder="商品名稱" class="col-span-2 px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
                         <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none text-center font-bold">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="shop-item-store" placeholder="店家 (如: 唐吉訶德)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
-                        <input type="text" id="shop-item-note" placeholder="備註或商品圖片網址" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-store" placeholder="店家" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-note" placeholder="備註內容" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
                     </div>
-                    <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-amber-600 transition-all">
-                        <i class="fa-solid fa-plus mr-1"></i>存入手機私房清單
-                    </button>
+                    <button onclick="addLocalShoppingItem()" class="w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all"><i class="fa-solid fa-plus mr-1"></i>加入個人購買清單</button>
                 </div>
 
                 <div id="shopping-list-container" class="space-y-6">
@@ -162,7 +148,7 @@
                 <div class="bg-fuji-paper p-6 rounded-2xl border border-fuji-light shadow-sm text-center">
                     <div class="text-4xl text-fuji-primary/30 mb-2"><i class="fa-solid fa-file-signature"></i></div>
                     <p class="text-xs text-fuji-secondary font-medium mb-3">點擊下方直接開啟 Google 試算表App<br>大家可以一齊即時修改行程喔！</p>
-                    <a id="edit-sheet-btn" href="https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=398563289#gid=398563289" target="_blank" class="inline-block w-full bg-fuji-accent text-white text-xs font-bold py-3 rounded-xl shadow-md hover:bg-opacity-90 transition-all"><i class="fa-solid fa-pen-to-square mr-1"></i>呼叫 Google 試算表線上編輯</a>
+                    <a id="edit-sheet-btn" href="#" target="_blank" class="inline-block w-full bg-fuji-accent text-white text-xs font-bold py-3 rounded-xl shadow-md hover:bg-opacity-90 transition-all"><i class="fa-solid fa-pen-to-square mr-1"></i>呼叫 Google 試算表線上編輯</a>
                 </div>
             </section>
         </main>
@@ -183,11 +169,7 @@
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
 
-        // ⚠️【請將此處替換為你複製的 Google Apps Script 網頁應用程式網址】
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
-
         let cloudShoppingItems = [];
-        let currentPostType = 'local'; // 'local' 或 'cloud'
 
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
@@ -199,7 +181,7 @@
             initCalc();
         });
 
-        // 讀取行程
+        // 行程抓取機制
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -256,7 +238,7 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 店家智慧識別器
+        // 🌟【店家 LOGO 智慧識別器與連結適配】
         function getStoreMeta(storeName) {
             const name = (storeName || '').trim();
             let icon = '<i class="fa-solid fa-shop text-fuji-primary"></i>';
@@ -269,7 +251,7 @@
                 icon = '<span class="bg-yellow-400 text-black font-extrabold text-[10px] px-1 py-0.5 rounded shadow-sm">🐧 DONKI</span>';
                 defaultLink = 'https://www.donki.com/taiwan/';
             } else if (name.includes('AEON') || name.includes('永旺')) {
-                icon = '<span class="bg-purple-600 text-white font-extrabold text-[10px] px-1 py-0.5 rounded shadow-sm">AEON</span>';
+                icon = '<span class="bg-magenta-700 bg-purple-600 text-white font-extrabold text-[10px] px-1 py-0.5 rounded shadow-sm">AEON</span>';
                 defaultLink = 'https://www.aeon-okinawa.com/zh-tw/';
             } else if (name.includes('Orion')) {
                 icon = '<span class="bg-blue-600 text-white font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">Orion</span>';
@@ -277,25 +259,7 @@
             return { icon, defaultLink };
         }
 
-        // Google Drive 圖片自動智慧解析
-        function parseImageUrl(url) {
-            if (!url) return '';
-            let cleanUrl = url.trim();
-            if (cleanUrl.includes('drive.google.com')) {
-                let fileId = '';
-                if (cleanUrl.includes('/file/d/')) {
-                    const parts = cleanUrl.split('/file/d/');
-                    if (parts[1]) fileId = parts[1].split('/')[0].split('?')[0];
-                } else if (cleanUrl.includes('id=')) {
-                    const urlParams = new URLSearchParams(cleanUrl.split('?')[1]);
-                    fileId = urlParams.get('id') || '';
-                }
-                if (fileId) return `https://drive.google.com/uc?export=view&id=${fileId}`;
-            }
-            return cleanUrl;
-        }
-
-        // 讀取雲端購物資料
+        // 🌟【雲端購物清單讀取】
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
@@ -317,123 +281,22 @@
                                 id: 'cloud-' + i,
                                 name: row['商品名稱'],
                                 qty: parseInt(row['數量']) || 1,
-                                store: row['店家'] || '其他待辦購買',
-                                note: (row['備註'] || '').substring(0, 40), // 避免網址太長截斷
+                                store: row['店家'] || '未分類店家',
+                                note: row['備註'] || '',
                                 link: row['連結'] || '',
-                                image: parseImageUrl(row['商品圖片']),
+                                image: row['商品圖片'] || '',
                                 isCloud: true
                             });
                         }
                     }
                 }
             } catch (error) {
-                console.error("讀取雲端購物分頁異常");
+                console.error("尚未讀取到雲端購物分頁，改以本機個人模式運作。");
             }
             renderCombinedShoppingList();
         }
 
-        // 處理切換按鈕視覺
-        function setPostType(type) {
-            currentPostType = type;
-            const localBtn = document.getElementById('toggle-type-local');
-            const cloudBtn = document.getElementById('toggle-type-cloud');
-            const submitBtn = document.getElementById('add-shop-btn');
-
-            if (type === 'local') {
-                localBtn.className = "px-2.5 py-1 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-1";
-                cloudBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
-                submitBtn.className = "w-full bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入手機私房清單`;
-            } else {
-                localBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
-                cloudBtn.className = "px-2.5 py-1 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-1";
-                submitBtn.className = "w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步發射至團隊 Google 試算表`;
-            }
-        }
-
-        // 表單提交分流控制器
-        function handleShoppingSubmit() {
-            const name = document.getElementById('shop-item-name').value.trim();
-            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
-            const store = document.getElementById('shop-item-store').value.trim() || (currentPostType === 'local' ? '個人私房購買' : '未分類商店');
-            const noteOrImg = document.getElementById('shop-item-note').value.trim();
-
-            if (!name) { alert('請填寫商品名稱唷！'); return; }
-
-            if (currentPostType === 'local') {
-                // A. 存入本機私人 LocalStorage
-                const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
-                localItems.push({
-                    id: 'local-' + Date.now(),
-                    name, qty, store, 
-                    note: noteOrImg,
-                    image: '', // 私人項目暫採預設圖示
-                    isCloud: false
-                });
-                localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
-                clearShoppingForm();
-                renderCombinedShoppingList();
-            } else {
-                // B. 發射至雲端試算表 (透過 Apps Script)
-                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) {
-                    alert('噢不！您尚未設定第一步的 GAS 網頁應用程式網址，請先至 index.html 第 155 行配置唷！');
-                    return;
-                }
-
-                const submitBtn = document.getElementById('add-shop-btn');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>正在穿越大氣層同步中...`;
-
-                // 智慧識別：如果是網址就歸類到連結，否則當作備註
-                let finalLink = '';
-                let finalImage = '';
-                if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) {
-                    if (noteOrImg.includes('drive.google') || noteOrImg.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
-                        finalImage = noteOrImg;
-                    } else {
-                        finalLink = noteOrImg;
-                    }
-                }
-                
-                // 嚴格對齊 GAS 接收端物件名稱，不要用中文做 Key 避免跨網域編碼問題
-                const payload = {
-                    store: store,
-                    name: name,
-                    qty: qty,
-                    note: finalNote,
-                    link: finalLink,
-                    image: finalImage
-                };
-
-                fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // 避免跨域阻擋，採取背景發射
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    alert(`🎉 【${name}】已成功排程寫入雲端試算表！(由於 Google 雲端快取，資料約在 1~2 分鐘內自動出現在列表中)`);
-                    clearShoppingForm();
-                    // 重新加載雲端資料
-                    setTimeout(fetchCloudShopping, 2000);
-                }).catch(err => {
-                    alert('發送失敗，請確認網路連線或 GAS 設定。');
-                    console.error(err);
-                }).finally(() => {
-                    submitBtn.disabled = false;
-                    setPostType('cloud');
-                });
-            }
-        }
-
-        function clearShoppingForm() {
-            document.getElementById('shop-item-name').value = '';
-            document.getElementById('shop-item-qty').value = '1';
-            document.getElementById('shop-item-store').value = '';
-            document.getElementById('shop-item-note').value = '';
-        }
-
-        // 渲染總購物卡片群組
+        // 🌟【核心：同一店家群組化渲染機制】
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container');
             if (!container) return;
@@ -441,30 +304,38 @@
 
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
+            
+            // 讀取各項目的即時手動修改數量
             const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
 
+            // 合併雲端與個人項目
             const allItems = [...cloudShoppingItems, ...localItems];
 
             if (allItems.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-xs text-fuji-secondary font-medium">🛒 清單空空如也。<br>使用上方切換開關，隨手記私人或同步上雲！</div>`;
+                container.innerHTML = `<div class="text-center py-12 text-xs text-fuji-secondary font-medium">🛒 清單空空如也。<br>可在下方直接記錄，或在試算表同步輸入！</div>`;
                 return;
             }
 
+            // 按店家進行分類群組 (Group by Store)
             const storeGroups = {};
             allItems.forEach(item => {
                 const storeName = item.store || '其他待辦購買';
                 if (!storeGroups[storeName]) {
                     storeGroups[storeName] = { items: [], customLink: '' };
                 }
+                // 如果有在試算表設定連結，就拿來用
                 if (item.link && !storeGroups[storeName].customLink) {
                     storeGroups[storeName].customLink = item.link;
                 }
+                
+                // 套用使用者在手機介面微調後的數量
                 if (modifiedQtys[item.id] !== undefined) {
                     item.qty = modifiedQtys[item.id];
                 }
                 storeGroups[storeName].items.push(item);
             });
 
+            // 渲染群組大框框
             for (const [storeName, group] of Object.entries(storeGroups)) {
                 const meta = getStoreMeta(storeName);
                 const finalLink = group.customLink || meta.defaultLink;
@@ -478,7 +349,7 @@
                             </div>
                             ${finalLink ? `
                                 <a href="${finalLink}" target="_blank" class="text-[11px] font-bold text-fuji-primary hover:text-fuji-accent flex items-center gap-0.5 bg-white px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> 店家連結
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> 連結
                                 </a>` : ''
                             }
                         </div>
@@ -486,6 +357,7 @@
 
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
+                    // 沒填商品圖片就給一個精緻的粉藍色預設購物包圖示
                     const imgUrl = item.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238FAEC3"><path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-9-1a2 2 0 0 1 4 0v1h-4zm9 14H5V9h3v2h2V9h4v2h2V9h3z"/></svg>';
 
                     groupHtml += `
@@ -524,20 +396,52 @@
             }
         }
 
+        // 🌟【數量局部增減控制】
         function adjustQty(id, change) {
             const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
+            
+            // 尋找目前的初始數量
             let currentQty = 1;
             const item = [...cloudShoppingItems, ...(JSON.parse(localStorage.getItem('ok_shopping_local')) || [])].find(i => i.id === id);
             if (item) {
                 currentQty = modifiedQtys[id] !== undefined ? modifiedQtys[id] : item.qty;
             }
+
             let newQty = currentQty + change;
-            if (newQty < 1) newQty = 1;
+            if (newQty < 1) newQty = 1; // 最少為1
+
             modifiedQtys[id] = newQty;
             localStorage.setItem('ok_shopping_qtys', JSON.stringify(modifiedQtys));
             renderCombinedShoppingList();
         }
 
+        // 新增個人小項目
+        function addLocalShoppingItem() {
+            const name = document.getElementById('shop-item-name').value.trim();
+            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
+            const store = document.getElementById('shop-item-store').value.trim() || '個人私房購買';
+            const note = document.getElementById('shop-item-note').value.trim();
+
+            if (!name) { alert('請填寫商品名稱唷！'); return; }
+
+            const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
+            localItems.push({
+                id: 'local-' + Date.now(),
+                name, qty, store, note,
+                image: '', // 個人隨手記採預設精緻圖示
+                isCloud: false
+            });
+            localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
+
+            document.getElementById('shop-item-name').value = '';
+            document.getElementById('shop-item-qty').value = '1';
+            document.getElementById('shop-item-store').value = '';
+            document.getElementById('shop-item-note').value = '';
+
+            renderCombinedShoppingList();
+        }
+
+        // 點擊文字切換勾選狀態
         function toggleShoppingCheck(id) {
             let checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
             if (checkedIds.includes(id)) {
@@ -553,12 +457,16 @@
             let localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             localItems = localItems.filter(item => item.id !== id);
             localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
+            
+            // 同步移除改動數量紀錄
             const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
             delete modifiedQtys[id];
             localStorage.setItem('ok_shopping_qtys', JSON.stringify(modifiedQtys));
+
             renderCombinedShoppingList();
         }
 
+        // 通用分頁切換控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -601,6 +509,7 @@
             });
         }
 
+        // 小記帳系統與匯率
         function toggleCheck(id) {
             let stored = JSON.parse(localStorage.getItem('ok_checklist'));
             stored = stored.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
