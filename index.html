@@ -319,7 +319,7 @@
                                 qty: parseInt(row['數量']) || 1,
                                 store: row['店家'] || '其他待辦購買',
                                 note: (row['備註'] || '').substring(0, 40), // 避免網址太長截斷
-                                link: row['店家連結'] || '',
+                                link: row['連結'] || '',
                                 image: parseImageUrl(row['商品圖片']),
                                 isCloud: true
                             });
@@ -385,15 +385,26 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>正在穿越大氣層同步中...`;
 
-                // 智慧識別：如果第四個欄位填的是網址，自動歸類進圖片欄位
-                let finalNote = noteOrImg;
+                // 智慧識別：如果是網址就歸類到連結，否則當作備註
+                let finalLink = '';
                 let finalImage = '';
                 if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) {
-                    finalImage = noteOrImg;
-                    finalNote = '網頁附圖上傳';
+                    if (noteOrImg.includes('drive.google') || noteOrImg.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
+                        finalImage = noteOrImg;
+                    } else {
+                        finalLink = noteOrImg;
+                    }
                 }
-
-                const payload = { store, name, qty, note: finalNote, link: '', image: finalImage };
+                
+                // 嚴格對齊 GAS 接收端物件名稱，不要用中文做 Key 避免跨網域編碼問題
+                const payload = {
+                    store: store,
+                    name: name,
+                    qty: qty,
+                    note: finalNote,
+                    link: finalLink,
+                    image: finalImage
+                };
 
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
