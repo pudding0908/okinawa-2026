@@ -96,21 +96,29 @@
             </section>
 
             <section id="page-shopping" class="tab-content hidden">
-                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單</h2>
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1">
+                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單
+                </h2>
                 
                 <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-4 space-y-2">
+                    <div class="text-[11px] font-bold text-fuji-secondary mb-1"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>新增個人私房備忘 (僅存於此手機)</div>
                     <div class="grid grid-cols-3 gap-2">
                         <input type="text" id="shop-item-name" placeholder="想買的商品" class="col-span-2 px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
                         <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary text-center font-bold">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="shop-item-store" placeholder="店家 (如: 國際通大國、唐吉訶德)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
-                        <input type="text" id="shop-item-note" placeholder="備註 (如: 幫媽媽買、幫代購)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
+                        <input type="text" id="shop-item-store" placeholder="店家 (如: 驚安殿堂)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
+                        <input type="text" id="shop-item-note" placeholder="備註 (如: 代購)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
                     </div>
-                    <button onclick="addShoppingItem()" class="w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all"><i class="fa-solid fa-plus mr-1"></i>加入購物清單</button>
+                    <button onclick="addLocalShoppingItem()" class="w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all"><i class="fa-solid fa-plus mr-1"></i>加入個人購買清單</button>
                 </div>
 
-                <div id="shopping-list-container" class="space-y-2"></div>
+                <div class="text-xs font-bold text-fuji-primary px-1 mb-2 flex items-center gap-1">
+                    <i class="fa-solid fa-cloud-arrow-down text-fuji-secondary"></i> 雲端＆個人整合購物清單
+                </div>
+                <div id="shopping-list-container" class="space-y-2">
+                    <div class="text-center py-4 text-xs text-fuji-secondary"><i class="fa-solid fa-spinner fa-spin mr-1"></i>正在讀取購物清單...</div>
+                </div>
             </section>
 
             <section id="page-wallet" class="tab-content hidden">
@@ -162,20 +170,27 @@
     </div>
 
     <script>
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/gviz/tq?tqx=out:csv';
-        const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=0#gid=0';
+        // 你原本的 Google Sheet 穩定連結
+        const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
+        const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+        // 多開讀取「購物」工作表的專用網址
+        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
+        const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
+
+        // 全域變數，用來混和儲存雲端跟本機的資料
+        let cloudShoppingItems = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
             fetchTravelPlan();
+            fetchCloudShopping(); // 抓取雲端購物
             initChecklist();
             loadExpenses();
-            loadShoppingItems();
             initCalc();
         });
 
-        // 抓取 Google Sheet 資料
+        // 1. 抓取行程資料
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -184,19 +199,14 @@
                 document.getElementById('loading-status').classList.add('hidden');
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading-status').innerHTML = "❌ 讀取失敗，請確認表單是否已發佈到網路。";
+                document.getElementById('loading-status').innerHTML = "❌ 行程讀取失敗，請確認表單。";
             }
         }
 
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-            if(lines.length <= 1) {
-                document.getElementById('loading-status').innerHTML = "💡 雲端手帳目前是空的，快去試算表新增行程吧！";
-                return;
-            }
-
+            if(lines.length <= 1) return;
             const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
-            
             document.getElementById('day-d1').innerHTML = '';
             document.getElementById('day-d2').innerHTML = '';
             document.getElementById('day-d3').innerHTML = '';
@@ -205,79 +215,170 @@
             for (let i = 1; i < lines.length; i++) {
                 const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                 if(currentLine.length < headers.length) continue;
-
                 let row = {};
-                headers.forEach((header, index) => {
-                    row[header] = currentLine[index];
-                });
-
+                headers.forEach((header, index) => { row[header] = currentLine[index]; });
                 if(!row['標題'] && !row['時間起']) continue;
                 renderTimelineCard(row);
             }
         }
 
         function renderTimelineCard(row) {
-            let dayValue = row['Day'] || '';
-            dayValue = dayValue.trim().toLowerCase(); 
-            if (dayValue.startsWith('d')) {
-                dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); 
-            }
-            
+            let dayValue = (row['Day'] || '').trim().toLowerCase(); 
+            if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
             if (!targetContainer) return;
 
             let timeString = row['時間起'] || '';
-            if (row['時間迄']) {
-                timeString += ` - ${row['時間迄']}`;
-            }
+            if (row['時間迄']) { timeString += ` - ${row['時間迄']}`; }
 
             let buttonHtml = '';
-            if (row['Google Map']) {
-                buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
-            }
-            if (row['網頁']) {
-                buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
-            }
+            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
+            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
             let metaHtml = '';
-            if (row['區間費用']) {
-                metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[10px] font-bold px-2 py-0.5 rounded-md mr-1.5">💰 ${row['區間費用']}</span>`;
-            }
-            if (row['備註']) {
-                metaHtml += `<span class="text-[11px] text-fuji-accent font-bold">💬 ${row['備註']}</span>`;
-            }
+            if (row['區間費用']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[10px] font-bold px-2 py-0.5 rounded-md mr-1.5">💰 ${row['區間費用']}</span>`;
+            if (row['備註']) metaHtml += `<span class="text-[11px] text-fuji-accent font-bold">💬 ${row['備註']}</span>`;
 
             let cardHtml = '';
             if (row['分類'] === '重要') {
-                cardHtml = `
-                    <div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-4 rounded-2xl shadow-sm bg-white">
-                        <div class="flex justify-between text-xs text-fuji-accent font-bold mb-1">
-                            <span class="bg-fuji-accent text-white px-2 py-0.5 rounded-full">${timeString}</span>
-                            <span><i class="fa-solid fa-star fa-spin mr-1"></i>重要提醒</span>
-                        </div>
-                        <p class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</p>
-                        ${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1.5 leading-relaxed bg-fuji-bg/50 p-2 rounded-xl text-justify">${row['說明']}</p>` : ''}
-                        ${metaHtml ? `<div class="mt-2.5">${metaHtml}</div>` : ''}
-                        ${buttonHtml ? `<div class="mt-2.5">${buttonHtml}</div>` : ''}
-                    </div>`;
+                cardHtml = `<div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-4 rounded-2xl shadow-sm bg-white"><div class="flex justify-between text-xs text-fuji-accent font-bold mb-1"><span class="bg-fuji-accent text-white px-2 py-0.5 rounded-full">${timeString}</span><span><i class="fa-solid fa-star fa-spin mr-1"></i>重要提醒</span></div><p class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</p>${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1.5 leading-relaxed bg-fuji-bg/50 p-2 rounded-xl text-justify">${row['說明']}</p>` : ''}<div class="mt-2.5">${metaHtml}</div><div class="mt-2.5">${buttonHtml}</div></div>`;
             } else {
-                cardHtml = `
-                    <div class="bg-fuji-paper p-4 rounded-2xl shadow-sm border border-fuji-light hover:border-fuji-secondary transition-all">
-                        <div class="flex justify-between items-center text-xs text-fuji-secondary font-bold mb-1">
-                            <span class="text-fuji-primary bg-fuji-light px-2 py-0.5 rounded-full">${timeString}</span>
-                            ${row['分類'] ? `<span class="text-[10px] bg-fuji-bg px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}
-                        </div>
-                        <h4 class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</h4>
-                        ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1.5 text-justify leading-relaxed">${row['說明']}</p>` : ''}
-                        ${metaHtml ? `<div class="mt-2.5">${metaHtml}</div>` : ''}
-                        ${buttonHtml ? `<div class="mt-2.5">${buttonHtml}</div>` : ''}
-                    </div>`;
+                cardHtml = `<div class="bg-fuji-paper p-4 rounded-2xl shadow-sm border border-fuji-light hover:border-fuji-secondary transition-all"><div class="flex justify-between items-center text-xs text-fuji-secondary font-bold mb-1"><span class="text-fuji-primary bg-fuji-light px-2 py-0.5 rounded-full">${timeString}</span>${row['分類'] ? `<span class="text-[10px] bg-fuji-bg px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}</div><h4 class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1.5 text-justify leading-relaxed">${row['說明']}</p>` : ''}<div class="mt-2.5">${metaHtml}</div><div class="mt-2.5">${buttonHtml}</div></div>`;
             }
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 分頁導航控制
+        // 2. 【核心機制：抓取雲端試算表購物清單 ✨】
+        async function fetchCloudShopping() {
+            try {
+                const response = await fetch(SHOPPING_CSV_URL);
+                if (!response.ok) throw new Error();
+                const csvText = await response.text();
+                
+                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                cloudShoppingItems = [];
+                
+                if (lines.length > 1) {
+                    const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
+                    // 檢查欄位對應
+                    for(let i=1; i<lines.length; i++) {
+                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                        if (currentLine.length < headers.length) continue;
+                        let row = {};
+                        headers.forEach((header, index) => { row[header] = currentLine[index]; });
+                        
+                        if (row['商品名稱']) {
+                            cloudShoppingItems.push({
+                                id: 'cloud-' + i, // 給予專屬雲端 ID 避免跟本機衝突
+                                name: row['商品名稱'],
+                                qty: row['數量'] || '1',
+                                store: row['店家'] || '',
+                                note: row['備註'] || '',
+                                isCloud: true
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("目前 Google Sheet 還沒有『購物』工作表，或欄位尚未建立。");
+            }
+            renderCombinedShoppingList();
+        }
+
+        // 3. 【混合渲染：將雲端與本機個人清單融合成一個列表】
+        function renderCombinedShoppingList() {
+            const container = document.getElementById('shopping-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // 取得本機個人小清單
+            const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
+            
+            // 取得已被勾選狀態的記號清單 (不分雲端或本機，勾選狀態都記在本機手機裡)
+            const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
+
+            // 合併兩者
+            const allItems = [...cloudShoppingItems, ...localItems];
+
+            if (allItems.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🛒 雲端與本機目前都是空的。<br>快去試算表填寫，或在下方直接新增吧！</div>`;
+                return;
+            }
+
+            allItems.forEach(item => {
+                const isChecked = checkedIds.includes(item.id);
+                
+                container.innerHTML += `
+                    <div class="bg-fuji-paper p-3.5 rounded-2xl border ${isChecked ? 'border-fuji-light bg-fuji-bg/40' : 'border-fuji-light'} flex items-start gap-3 shadow-sm transition-all relative overflow-hidden">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingCheck('${item.id}')" class="mt-1 accent-fuji-primary h-4 w-4 rounded">
+                        <div class="flex-1 min-w-0 pr-6">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm ${isChecked ? 'line-through text-fuji-secondary' : 'text-fuji-dark'}">${item.name}</span>
+                                <span class="text-xs font-extrabold text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-md">x${item.qty}</span>
+                                ${item.isCloud ? 
+                                    `<span class="text-[9px] bg-sky-100 text-sky-700 font-bold px-1 py-0.2 rounded"><i class="fa-solid fa-users mr-0.5"></i>團隊同步</span>` : 
+                                    `<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1 py-0.2 rounded"><i class="fa-solid fa-lock mr-0.5"></i>個人私房</span>`
+                                }
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1 text-[11px] font-medium">
+                                ${item.store ? `<span class="bg-fuji-bg text-fuji-primary px-1.5 py-0.5 rounded-md"><i class="fa-solid fa-shop mr-0.5 text-fuji-accent"></i>${item.store}</span>` : ''}
+                                ${item.note ? `<span class="text-fuji-secondary"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</span>` : ''}
+                            </div>
+                        </div>
+                        ${!item.isCloud ? 
+                            `<button onclick="deleteLocalShoppingItem('${item.id}')" class="absolute right-3 top-3 text-fuji-secondary hover:text-fuji-accent text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>` : ''
+                        }
+                    </div>`;
+            });
+        }
+
+        // 4. 新增本機個人私房項目
+        function addLocalShoppingItem() {
+            const name = document.getElementById('shop-item-name').value.trim();
+            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
+            const store = document.getElementById('shop-item-store').value.trim();
+            const note = document.getElementById('shop-item-note').value.trim();
+
+            if (!name) { alert('請輸入商品名稱！'); return; }
+
+            const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
+            localItems.push({
+                id: 'local-' + Date.now(),
+                name, qty, store, note,
+                isCloud: false
+            });
+            localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
+
+            document.getElementById('shop-item-name').value = '';
+            document.getElementById('shop-item-qty').value = '1';
+            document.getElementById('shop-item-store').value = '';
+            document.getElementById('shop-item-note').value = '';
+
+            renderCombinedShoppingList();
+        }
+
+        // 5. 控制勾選狀態 (無論雲端或個人項目，勾選狀態都紀錄在個人手機中不吵人)
+        function toggleShoppingCheck(id) {
+            let checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
+            if (checkedIds.includes(id)) {
+                checkedIds = checkedIds.filter(i => i !== id);
+            } else {
+                checkedIds.push(id);
+            }
+            localStorage.setItem('ok_shopping_checked_ids', JSON.stringify(checkedIds));
+            renderCombinedShoppingList();
+        }
+
+        // 6. 刪除本機個人項目 (雲端項目需要去試算表刪除)
+        function deleteLocalShoppingItem(id) {
+            let localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
+            localItems = localItems.filter(item => item.id !== id);
+            localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
+            renderCombinedShoppingList();
+        }
+
+        // 其他基礎分頁導航控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -286,10 +387,10 @@
             });
             document.getElementById(`nav-${tabName}`).classList.remove('text-fuji-secondary');
             document.getElementById(`nav-${tabName}`).classList.add('text-fuji-primary');
+            if(tabName === 'shopping') { fetchCloudShopping(); } // 切換到購物頁時自動重新抓取雲端
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 天數切換
         function switchDay(dayId) {
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
             document.getElementById(`day-${dayId}`).classList.remove('hidden');
@@ -299,73 +400,6 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-3 py-1.5 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 【新增功能：購物清單邏輯 ✨】
-        function addShoppingItem() {
-            const name = document.getElementById('shop-item-name').value.trim();
-            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
-            const store = document.getElementById('shop-item-store').value.trim();
-            const note = document.getElementById('shop-item-note').value.trim();
-
-            if (!name) { alert('請輸入商品名稱！'); return; }
-
-            const items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
-            items.push({ id: Date.now(), name, qty, store, note, checked: false });
-            localStorage.setItem('ok_shopping', JSON.stringify(items));
-
-            // 清空輸入欄位
-            document.getElementById('shop-item-name').value = '';
-            document.getElementById('shop-item-qty').value = '1';
-            document.getElementById('shop-item-store').value = '';
-            document.getElementById('shop-item-note').value = '';
-
-            loadShoppingItems();
-        }
-
-        function loadShoppingItems() {
-            const items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
-            const container = document.getElementById('shopping-list-container');
-            if (!container) return;
-            container.innerHTML = '';
-
-            if (items.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🛒 清單空空如也，快把沖繩必買加進來吧！</div>`;
-                return;
-            }
-
-            items.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-fuji-paper p-3.5 rounded-2xl border ${item.checked ? 'border-fuji-light bg-fuji-bg/40' : 'border-fuji-light'} flex items-start gap-3 shadow-sm transition-all relative overflow-hidden">
-                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingCheck(${item.id})" class="mt-1 accent-fuji-primary h-4 w-4 rounded">
-                        <div class="flex-1 min-w-0 pr-6">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-sm ${item.checked ? 'line-through text-fuji-secondary' : 'text-fuji-dark'}">${item.name}</span>
-                                <span class="text-xs font-extrabold text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-md">x${item.qty}</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5 mt-1 text-[11px] font-medium">
-                                ${item.store ? `<span class="bg-fuji-bg text-fuji-primary px-1.5 py-0.5 rounded-md"><i class="fa-solid fa-shop mr-0.5 text-fuji-accent"></i>${item.store}</span>` : ''}
-                                ${item.note ? `<span class="text-fuji-secondary"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</span>` : ''}
-                            </div>
-                        </div>
-                        <button onclick="deleteShoppingItem(${item.id})" class="absolute right-3 top-3 text-fuji-secondary hover:text-fuji-accent text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>`;
-            });
-        }
-
-        function toggleShoppingCheck(id) {
-            let items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
-            items = items.map(item => item.id === id ? { ...item, checked: !item.checked } : item);
-            localStorage.setItem('ok_shopping', JSON.stringify(items));
-            loadShoppingItems();
-        }
-
-        function deleteShoppingItem(id) {
-            let items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
-            items = items.filter(item => item.id !== id);
-            localStorage.setItem('ok_shopping', JSON.stringify(items));
-            loadShoppingItems();
-        }
-
-        // 行前準備小工具
         function initChecklist() {
             const defaultChecklist = [
                 { id: 1, text: "中華民國護照 (效期6個月以上)", checked: true },
@@ -394,19 +428,13 @@
             renderChecklist(stored);
         }
 
-        // 小計算機與匯率
         function initCalc() {
-            const input = document.getElementById('calc-input');
-            if(!input) return;
+            const input = document.getElementById('calc-input'); if(!input) return;
             input.addEventListener('input', function() {
                 const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
                 try {
                     let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
-                    if(!sanitized) {
-                        document.getElementById('calc-jpy').innerText = '0';
-                        document.getElementById('calc-twd').innerText = 'NT$ 0';
-                        return;
-                    }
+                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
                     let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
                     jpy = Math.round(jpy);
                     document.getElementById('calc-jpy').innerText = jpy;
@@ -415,7 +443,6 @@
             });
         }
 
-        // 記帳系統
         function addExpense() {
             const title = document.getElementById('expense-title').value.trim() || '未命名開銷';
             const jpy = parseFloat(document.getElementById('expense-amount').value) || 0;
@@ -424,8 +451,7 @@
             const expenses = JSON.parse(localStorage.getItem('ok_expenses')) || [];
             expenses.push({ id: Date.now(), title, jpy, twd: Math.round(jpy * rate) });
             localStorage.setItem('ok_expenses', JSON.stringify(expenses));
-            document.getElementById('expense-title').value = '';
-            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-title').value = ''; document.getElementById('expense-amount').value = '';
             loadExpenses();
         }
 
