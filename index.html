@@ -94,7 +94,7 @@
 
             <section id="page-shopping" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1">
-                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
+                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單
                 </h2>
                 
                 <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-5 space-y-2.5">
@@ -120,12 +120,12 @@
                         <input type="text" id="shop-item-note" placeholder="備註或商品圖片網址" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none">
                     </div>
                     <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-amber-600 transition-all">
-                        <i class="fa-solid fa-plus mr-1"></i>存入個人清單
+                        <i class="fa-solid fa-plus mr-1"></i>存入手機私房清單
                     </button>
                 </div>
 
                 <div id="shopping-list-container" class="space-y-6">
-                    <div class="text-center py-4 text-xs text-fuji-secondary"><i class="fa-solid fa-spinner fa-spin mr-1"></i>正在為您整理購物清單...</div>
+                    <div class="text-center py-4 text-xs text-fuji-secondary"><i class="fa-solid fa-spinner fa-spin mr-1"></i>正在為您整理店舖清單...</div>
                 </div>
             </section>
 
@@ -161,7 +161,7 @@
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊</h2>
                 <div class="bg-fuji-paper p-6 rounded-2xl border border-fuji-light shadow-sm text-center">
                     <div class="text-4xl text-fuji-primary/30 mb-2"><i class="fa-solid fa-file-signature"></i></div>
-                    <p class="text-xs text-fuji-secondary font-medium mb-3">點擊下方直接開啟雲端試算表App</p>
+                    <p class="text-xs text-fuji-secondary font-medium mb-3">點擊下方直接開啟 Google 試算表App<br>大家可以一齊即時修改行程喔！</p>
                     <a id="edit-sheet-btn" href="https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=398563289#gid=398563289" target="_blank" class="inline-block w-full bg-fuji-accent text-white text-xs font-bold py-3 rounded-xl shadow-md hover:bg-opacity-90 transition-all"><i class="fa-solid fa-pen-to-square mr-1"></i>呼叫 Google 試算表線上編輯</a>
                 </div>
             </section>
@@ -221,9 +221,7 @@
             document.getElementById('day-d4').innerHTML = '';
 
             for (let i = 1; i < lines.length; i++) {
-                // 將原本複雜的 split 正則表達式，替換為較安全的標準 CSV 切割或簡單切割
-                //const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                const currentLine = lines[i].split(',').map(v => v.replace(/["']/g, '').trim());
+                const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                 if(currentLine.length < headers.length) continue;
                 let row = {};
                 headers.forEach((header, index) => { row[header] = currentLine[index]; });
@@ -321,7 +319,7 @@
                                 qty: parseInt(row['數量']) || 1,
                                 store: row['店家'] || '其他待辦購買',
                                 note: (row['備註'] || '').substring(0, 40), // 避免網址太長截斷
-                                link: row['連結'] || '',
+                                link: row['店家連結'] || '',
                                 image: parseImageUrl(row['商品圖片']),
                                 isCloud: true
                             });
@@ -345,12 +343,12 @@
                 localBtn.className = "px-2.5 py-1 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-1";
                 cloudBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
                 submitBtn.className = "w-full bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入手機私房清單`;
             } else {
                 localBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
                 cloudBtn.className = "px-2.5 py-1 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-1";
                 submitBtn.className = "w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步發射至團隊 Google 試算表`;
             }
         }
 
@@ -395,15 +393,7 @@
                     finalNote = '網頁附圖上傳';
                 }
 
-                const payload = {
-                    "店家 LOGO": "", // 若有預設 LOGO 網址可填入，目前留空
-                    "店家": store,
-                    "商品名稱": name,
-                    "數量": qty,
-                    "備註": finalNote,
-                    "連結": noteOrImg.startsWith('http') ? noteOrImg : '', // 如果填的是網址就自動放入連結欄位
-                    "商品圖片": finalImage
-                };
+                const payload = { store, name, qty, note: finalNote, link: '', image: finalImage };
 
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
@@ -608,29 +598,18 @@
         }
 
         function initCalc() {
-            const input = document.getElementById('calc-input');
-            const rateInput = document.getElementById('exchange-rate');
-            if(!input || !rateInput) return;
-
-            function doCalculate() {
-                const rate = parseFloat(rateInput.value) || 0.215;
+            const input = document.getElementById('calc-input'); if(!input) return;
+            input.addEventListener('input', function() {
+                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
                 try {
-                    let sanitized = input.value.replace(/[^0-9+\-*/().]/g, '');
-                    if(!sanitized) { 
-                        document.getElementById('calc-jpy').innerText = '0'; 
-                        document.getElementById('calc-twd').innerText = 'NT$ 0'; 
-                        return; 
-                    }
+                    let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
+                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
                     let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
                     jpy = Math.round(jpy);
                     document.getElementById('calc-jpy').innerText = jpy;
                     document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
                 } catch(e) {}
-            }
-
-            // 當輸入計算式、或是手動調整匯率時，兩邊都會即時連動更新台幣！
-            input.addEventListener('input', doCalculate);
-            rateInput.addEventListener('input', doCalculate);
+            });
         }
 
         function addExpense() {
