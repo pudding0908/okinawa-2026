@@ -221,7 +221,9 @@
             document.getElementById('day-d4').innerHTML = '';
 
             for (let i = 1; i < lines.length; i++) {
-                const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                // 將原本複雜的 split 正則表達式，替換為較安全的標準 CSV 切割或簡單切割
+                //const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                const currentLine = lines[i].split(',').map(v => v.replace(/["']/g, '').trim());
                 if(currentLine.length < headers.length) continue;
                 let row = {};
                 headers.forEach((header, index) => { row[header] = currentLine[index]; });
@@ -393,7 +395,15 @@
                     finalNote = '網頁附圖上傳';
                 }
 
-                const payload = { store, name, qty, note: finalNote, link: '', image: finalImage };
+                const payload = {
+                    "店家 LOGO": "", // 若有預設 LOGO 網址可填入，目前留空
+                    "店家": store,
+                    "商品名稱": name,
+                    "數量": qty,
+                    "備註": finalNote,
+                    "連結": noteOrImg.startsWith('http') ? noteOrImg : '', // 如果填的是網址就自動放入連結欄位
+                    "商品圖片": finalImage
+                };
 
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
@@ -598,18 +608,29 @@
         }
 
         function initCalc() {
-            const input = document.getElementById('calc-input'); if(!input) return;
-            input.addEventListener('input', function() {
-                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+            const input = document.getElementById('calc-input');
+            const rateInput = document.getElementById('exchange-rate');
+            if(!input || !rateInput) return;
+
+            function doCalculate() {
+                const rate = parseFloat(rateInput.value) || 0.215;
                 try {
-                    let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
-                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
+                    let sanitized = input.value.replace(/[^0-9+\-*/().]/g, '');
+                    if(!sanitized) { 
+                        document.getElementById('calc-jpy').innerText = '0'; 
+                        document.getElementById('calc-twd').innerText = 'NT$ 0'; 
+                        return; 
+                    }
                     let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
                     jpy = Math.round(jpy);
                     document.getElementById('calc-jpy').innerText = jpy;
                     document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
                 } catch(e) {}
-            });
+            }
+
+            // 當輸入計算式、或是手動調整匯率時，兩邊都會即時連動更新台幣！
+            input.addEventListener('input', doCalculate);
+            rateInput.addEventListener('input', doCalculate);
         }
 
         function addExpense() {
