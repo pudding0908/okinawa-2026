@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本沖繩行 2026 (富士藍度假版)</title>
+    <title>自由行</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght=700&family=Noto+Sans+TC:wght=300;400;500;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 
             <section id="page-shopping" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1">
-                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單
+                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
                 </h2>
                 
                 <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-5 space-y-2.5">
@@ -319,7 +319,7 @@
                                 qty: parseInt(row['數量']) || 1,
                                 store: row['店家'] || '其他待辦購買',
                                 note: (row['備註'] || '').substring(0, 40), // 避免網址太長截斷
-                                link: row['店家連結'] || '',
+                                link: row['連結'] || '',
                                 image: parseImageUrl(row['商品圖片']),
                                 isCloud: true
                             });
@@ -343,12 +343,12 @@
                 localBtn.className = "px-2.5 py-1 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-1";
                 cloudBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
                 submitBtn.className = "w-full bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入手機私房清單`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
             } else {
                 localBtn.className = "px-2.5 py-1 rounded-md text-fuji-secondary transition-all flex items-center gap-1";
                 cloudBtn.className = "px-2.5 py-1 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-1";
                 submitBtn.className = "w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步發射至團隊 Google 試算表`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
             }
         }
 
