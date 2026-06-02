@@ -120,19 +120,19 @@
     </div>
 
     <script>
+       // ==============================================================
+        // 1. 幫你設定好完全對應你試算表 ID 的穩定 CSV 連結
         // ==============================================================
-        // 1. 請在此處替換為您發佈到網路的「CSV 連結」
-        // ==============================================================
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwjXyRLhoBUB7_p2pnAniVMwe1QAyD2ITA4r7SSdwDxapJ0fHmOOttzVs5gJPXnSf00bbS-fb6qqoV/pub?output=csv';
-        // const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/gviz/tq?tqx=out:csv';
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/gviz/tq?tqx=out:csv';
 
         // ==============================================================
-        // 2. 請在此處填入供親友共同編輯的「一般網址」（INFO 頁面按鈕專用）
+        // 2. 你的 Google Sheet 一般編輯網址（INFO 頁面按鈕專用）
         // ==============================================================
         const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=0#gid=0';
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('edit-sheet-btn').href = SHEET_EDIT_URL;
+            const editBtn = document.getElementById('edit-sheet-btn');
+            if (editBtn) editBtn.href = SHEET_EDIT_URL;
             fetchTravelPlan();
             initChecklist();
             loadExpenses();
@@ -140,26 +140,27 @@
 
         // 抓取 Google Sheet 資料
         async function fetchTravelPlan() {
-            if(!SHEET_CSV_URL || SHEET_CSV_URL.includes('請在此處填入')) {
-                document.getElementById('loading-status').innerHTML = "⚠️ 請先在代碼中設定您的 Google Sheet CSV 連結。";
-                return;
-            }
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
                 parseAndRenderCSV(csvText);
                 document.getElementById('loading-status').classList.add('hidden');
             } catch (error) {
+                console.error(error);
                 document.getElementById('loading-status').innerHTML = "❌ 讀取失敗，請確認表單是否已發佈到網路。";
             }
         }
 
         // 解析全中文欄位 CSV
         function parseAndRenderCSV(csvText) {
-            const lines = csvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-            if(lines.length <= 1) return;
+            // 處理 Windows 與 Mac 的換行符號差異
+            const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+            if(lines.length <= 1) {
+                document.getElementById('loading-status').innerHTML = "💡 雲端手帳目前是空的，快去試算表新增行程吧！";
+                return;
+            }
 
-            // 讀取第一列的中文標頭並去除引號
+            // 讀取第一列的中文標頭並去除引號與前後空格
             const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
             
             // 清空舊行程
@@ -177,13 +178,22 @@
                     row[header] = currentLine[index];
                 });
 
+                // 防呆：如果這一行根本沒寫標題也沒寫時間，就跳過
+                if(!row['標題'] && !row['時間起']) continue;
+
                 renderTimelineCard(row);
             }
         }
 
         // 根據對應的中文欄位進行網頁渲染
         function renderTimelineCard(row) {
-            const dayValue = row['Day'] ? row['Day'].toLowerCase() : '';
+            // 強大的防呆 Day 辨識
+            let dayValue = row['Day'] || '';
+            dayValue = dayValue.trim().toLowerCase(); 
+            if (dayValue.startsWith('d')) {
+                dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); 
+            }
+            
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
             if (!targetContainer) return;
@@ -203,7 +213,7 @@
                 buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[11px] bg-muji-bg px-2 py-1 rounded text-muji-primary border border-muji-light mr-1"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>網站</a>`;
             }
 
-            // 費用與備註附加資訊
+            // 費用與備註
             let metaHtml = '';
             if (row['區間費用']) {
                 metaHtml += `<span class="inline-block bg-muji-light text-muji-primary text-[10px] px-1.5 py-0.5 rounded mr-1">💰 ${row['區間費用']}</span>`;
@@ -213,7 +223,7 @@
             }
 
             let cardHtml = '';
-            // 分類為「重要」時，套用紅色警告卡片樣式
+            // 分類為「重要」時，套用紅色卡片
             if (row['分類'] === '重要') {
                 cardHtml = `
                     <div class="bg-muji-accent/10 border-l-4 border-muji-accent p-3 rounded shadow-sm">
@@ -254,6 +264,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // 天數切換
         function switchDay(dayId) {
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
             document.getElementById(`day-${dayId}`).classList.remove('hidden');
@@ -275,7 +286,7 @@
         }
 
         function renderChecklist(items) {
-            const container = document.getElementById('checklist-container'); container.innerHTML = '';
+            const container = document.getElementById('checklist-container'); if(!container) return; container.innerHTML = '';
             items.forEach(item => {
                 container.innerHTML += `
                     <label class="flex items-start gap-3 text-xs text-muji-dark">
@@ -292,7 +303,7 @@
             renderChecklist(stored);
         }
 
-        // 記帳與計算法
+        // 記帳系統
         function addExpense() {
             const title = document.getElementById('expense-title').value.trim() || '未命名項目';
             const jpy = parseFloat(document.getElementById('expense-amount').value) || 0;
@@ -307,7 +318,7 @@
 
         function loadExpenses() {
             const expenses = JSON.parse(localStorage.getItem('ok_expenses')) || [];
-            const container = document.getElementById('expense-list'); container.innerHTML = '';
+            const container = document.getElementById('expense-list'); if(!container) return; container.innerHTML = '';
             expenses.forEach(item => {
                 container.innerHTML += `
                     <div class="bg-muji-paper p-3 rounded-xl border border-muji-light flex justify-between items-center text-xs">
