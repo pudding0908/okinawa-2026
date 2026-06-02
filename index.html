@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本沖繩行</title>
+    <title>日本沖繩行 2026 (富士藍度假版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght=700&family=Noto+Sans+TC:wght=300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -37,14 +37,15 @@
         body { background-color: #F3F7FA; color: #2B4251; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .fuji-wave { border-style: dashed; border-color: #8FAEC3; }
     </style>
 </head>
 <body class="font-sans min-h-screen pb-24 flex justify-center">
 
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         
+        <!-- HEADER: 富士藍度假風頂欄 -->
         <header class="bg-fuji-primary p-6 pt-8 pb-8 text-center relative rounded-b-[2rem] shadow-md overflow-hidden">
+            <!-- 裝飾用可愛小雲朵與太陽（微度假意象） -->
             <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
             <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
             
@@ -52,18 +53,21 @@
             <h1 class="font-cute text-3xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
                 <i class="fa-solid fa-umbrella-beach text-fuji-accent"></i> 日本沖繩行
             </h1>
-            <p class="text-xs text-fuji-light/90 mt-2 bg-white/10 inline-block px-3 py-1 rounded-full backdrop-blur-sm">
-                <i class="fa-regular fa-paper-plane mr-1"></i> 沖繩　2026/10/01-10/04
+            <p class="text-xs text-fuji-light/90 mt-2 bg-white/10 inline-block px-3 py-1 rounded-full backdrop-blur-sm tracking-wide">
+                <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
             </p>
         </header>
 
+        <!-- MAIN CONTENT: 網頁主要內容容器 -->
         <main class="flex-1 p-4 overflow-y-auto">
             
+            <!-- PLAN PAGE -->
             <section id="page-plan" class="tab-content block">
                 <div class="flex justify-between items-center mb-4 pb-2">
                     <h2 class="font-cute text-lg font-bold text-fuji-primary flex items-center gap-1">
                         <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
                     </h2>
+                    <!-- 可愛圓潤的天數按鈕 -->
                     <div class="flex gap-1.5 text-xs font-bold">
                         <button onclick="switchDay('d1')" id="btn-d1" class="day-btn px-3 py-1.5 bg-fuji-primary text-white rounded-full shadow-sm transition-all">D1</button>
                         <button onclick="switchDay('d2')" id="btn-d2" class="day-btn px-3 py-1.5 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D2</button>
@@ -72,16 +76,19 @@
                     </div>
                 </div>
 
+                <!-- 載入中提示 -->
                 <div id="loading-status" class="text-center py-12 text-sm text-fuji-secondary font-medium">
                     <i class="fa-solid fa-water fa-bounce mr-2 text-fuji-primary"></i>輕輕划向雲端手帳中...
                 </div>
 
+                <!-- 行程容器 -->
                 <div id="day-d1" class="day-timeline space-y-4"></div>
                 <div id="day-d2" class="day-timeline space-y-4 hidden"></div>
                 <div id="day-d3" class="day-timeline space-y-4 hidden"></div>
                 <div id="day-d4" class="day-timeline space-y-4 hidden"></div>
             </section>
 
+            <!-- GUIDE PAGE -->
             <section id="page-guide" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳人文導覽</h2>
                 <div class="space-y-6">
@@ -96,6 +103,7 @@
                 </div>
             </section>
 
+            <!-- WALLET PAGE -->
             <section id="page-wallet" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-coins text-fuji-accent"></i> 隨身小帳本</h2>
                 <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-4">
@@ -119,11 +127,13 @@
                 <div id="expense-list" class="space-y-2"></div>
             </section>
 
+            <!-- LISTS PAGE -->
             <section id="page-lists" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點</h2>
                 <div id="checklist-container" class="bg-fuji-paper p-5 rounded-2xl border border-fuji-light shadow-sm space-y-3"></div>
             </section>
 
+            <!-- INFO PAGE -->
             <section id="page-info" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊</h2>
                 <div class="bg-fuji-paper p-6 rounded-2xl border border-fuji-light shadow-sm text-center">
@@ -134,25 +144,19 @@
             </section>
         </main>
 
-       <!-- FOOTER NAV: 圓潤清爽底欄 (已修正為完美固定在螢幕底部) -->
+        <!-- FOOTER NAV: 圓潤清爽底欄 (完美固定底部版) -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-2 z-50 shadow-lg rounded-t-2xl">
             <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-primary transition-all"><i class="fa-solid fa-compass text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">PLAN</span></button>
             <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">GUIDE</span></button>
-            <button onclick="fixed-wallet" onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">WALLET</span></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">WALLET</span></button>
             <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">LISTS</span></button>
             <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">INFO</span></button>
         </nav>
     </div>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // ==============================================================
-        // 1. Google 試算表穩定 CSV 連結 (已完全幫你對應好)
-        // ==============================================================
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/gviz/tq?tqx=out:csv';
-
-        // ==============================================================
-        // 2. Google Sheet 一般共同編輯網址 (INFO 頁面按鈕專用)
-        // ==============================================================
         const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=0#gid=0';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -161,7 +165,215 @@
             fetchTravelPlan();
             initChecklist();
             loadExpenses();
+            initCalc();
         });
 
-        // 抓取 Google Sheet 資料
         async function fetchTravelPlan() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvText = await response.text();
+                parseAndRenderCSV(csvText);
+                document.getElementById('loading-status').classList.add('hidden');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading-status').innerHTML = "❌ 讀取失敗，請確認表單是否已發佈到網路。";
+            }
+        }
+
+        function parseAndRenderCSV(csvText) {
+            const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+            if(lines.length <= 1) {
+                document.getElementById('loading-status').innerHTML = "💡 雲端手帳目前是空的，快去試算表新增行程吧！";
+                return;
+            }
+
+            const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
+            
+            document.getElementById('day-d1').innerHTML = '';
+            document.getElementById('day-d2').innerHTML = '';
+            document.getElementById('day-d3').innerHTML = '';
+            document.getElementById('day-d4').innerHTML = '';
+
+            for (let i = 1; i < lines.length; i++) {
+                const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                if(currentLine.length < headers.length) continue;
+
+                let row = {};
+                headers.forEach((header, index) => {
+                    row[header] = currentLine[index];
+                });
+
+                if(!row['標題'] && !row['時間起']) continue;
+                renderTimelineCard(row);
+            }
+        }
+
+        function renderTimelineCard(row) {
+            let dayValue = row['Day'] || '';
+            dayValue = dayValue.trim().toLowerCase(); 
+            if (dayValue.startsWith('d')) {
+                dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); 
+            }
+            
+            const containerId = `day-${dayValue}`;
+            const targetContainer = document.getElementById(containerId);
+            if (!targetContainer) return;
+
+            let timeString = row['時間起'] || '';
+            if (row['時間迄']) {
+                timeString += ` - ${row['時間迄']}`;
+            }
+
+            let buttonHtml = '';
+            if (row['Google Map']) {
+                buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
+            }
+            if (row['網頁']) {
+                buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[11px] bg-fuji-bg font-bold px-2.5 py-1 rounded-full text-fuji-primary border border-fuji-light mr-1.5 inline-flex items-center gap-0.5"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
+            }
+
+            let metaHtml = '';
+            if (row['區間費用']) {
+                metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[10px] font-bold px-2 py-0.5 rounded-md mr-1.5">💰 ${row['區間費用']}</span>`;
+            }
+            if (row['備註']) {
+                metaHtml += `<span class="text-[11px] text-fuji-accent font-bold">💬 ${row['備註']}</span>`;
+            }
+
+            let cardHtml = '';
+            if (row['分類'] === '重要') {
+                cardHtml = `
+                    <div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-4 rounded-2xl shadow-sm bg-white">
+                        <div class="flex justify-between text-xs text-fuji-accent font-bold mb-1">
+                            <span class="bg-fuji-accent text-white px-2 py-0.5 rounded-full">${timeString}</span>
+                            <span><i class="fa-solid fa-star fa-spin mr-1"></i>重要提醒</span>
+                        </div>
+                        <p class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</p>
+                        ${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1.5 leading-relaxed bg-fuji-bg/50 p-2 rounded-xl text-justify">${row['說明']}</p>` : ''}
+                        ${metaHtml ? `<div class="mt-2.5">${metaHtml}</div>` : ''}
+                        ${buttonHtml ? `<div class="mt-2.5">${buttonHtml}</div>` : ''}
+                    </div>`;
+            } else {
+                cardHtml = `
+                    <div class="bg-fuji-paper p-4 rounded-2xl shadow-sm border border-fuji-light hover:border-fuji-secondary transition-all">
+                        <div class="flex justify-between items-center text-xs text-fuji-secondary font-bold mb-1">
+                            <span class="text-fuji-primary bg-fuji-light px-2 py-0.5 rounded-full">${timeString}</span>
+                            ${row['分類'] ? `<span class="text-[10px] bg-fuji-bg px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}
+                        </div>
+                        <h4 class="font-bold text-fuji-dark text-base mt-1.5">${row['標題'] || '未命名行程'}</h4>
+                        ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1.5 text-justify leading-relaxed">${row['說明']}</p>` : ''}
+                        ${metaHtml ? `<div class="mt-2.5">${metaHtml}</div>` : ''}
+                        ${buttonHtml ? `<div class="mt-2.5">${buttonHtml}</div>` : ''}
+                    </div>`;
+            }
+            targetContainer.innerHTML += cardHtml;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`page-${tabName}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-fuji-primary'); btn.classList.add('text-fuji-secondary');
+            });
+            document.getElementById(`nav-${tabName}`).classList.remove('text-fuji-secondary');
+            document.getElementById(`nav-${tabName}`).classList.add('text-fuji-primary');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.nav-btn').forEach(b => {
+                    b.classList.remove('text-fuji-primary');
+                    b.classList.add('text-fuji-secondary');
+                });
+                this.classList.remove('text-fuji-secondary');
+                this.classList.add('text-fuji-primary');
+            });
+        });
+
+        function switchDay(dayId) {
+            document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`day-${dayId}`).classList.remove('hidden');
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.className = "day-btn px-3 py-1.5 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm";
+            });
+            document.getElementById(`btn-${dayId}`).className = "day-btn px-3 py-1.5 bg-fuji-primary text-white rounded-full shadow-sm";
+        }
+
+        function initChecklist() {
+            const defaultChecklist = [
+                { id: 1, text: "中華民國護照 (效期6個月以上)", checked: true },
+                { id: 2, text: "日本上網卡 (eSIM / 實體卡)", checked: false },
+                { id: 3, text: "日文駕照譯本 ＆ 台灣駕照正本", checked: false }
+            ];
+            if (!localStorage.getItem('ok_checklist')) localStorage.setItem('ok_checklist', JSON.stringify(defaultChecklist));
+            renderChecklist(JSON.parse(localStorage.getItem('ok_checklist')));
+        }
+
+        function renderChecklist(items) {
+            const container = document.getElementById('checklist-container'); if(!container) return; container.innerHTML = '';
+            items.forEach(item => {
+                container.innerHTML += `
+                    <label class="flex items-start gap-3 text-xs text-fuji-dark font-medium py-1">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${item.id})" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded-md">
+                        <span class="${item.checked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark'}">${item.text}</span>
+                    </label>`;
+            });
+        }
+
+        function toggleCheck(id) {
+            let stored = JSON.parse(localStorage.getItem('ok_checklist'));
+            stored = stored.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
+            localStorage.setItem('ok_checklist', JSON.stringify(stored));
+            renderChecklist(stored);
+        }
+
+        function initCalc() {
+            const input = document.getElementById('calc-input');
+            if(!input) return;
+            input.addEventListener('input', function() {
+                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+                try {
+                    let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
+                    if(!sanitized) {
+                        document.getElementById('calc-jpy').innerText = '0';
+                        document.getElementById('calc-twd').innerText = 'NT$ 0';
+                        return;
+                    }
+                    let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
+                    jpy = Math.round(jpy);
+                    document.getElementById('calc-jpy').innerText = jpy;
+                    document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
+                } catch(e) {
+                    // 輸入未完，暫不更新
+                }
+            });
+        }
+
+        function addExpense() {
+            const title = document.getElementById('expense-title').value.trim() || '未命名開銷';
+            const jpy = parseFloat(document.getElementById('expense-amount').value) || 0;
+            const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+            if(jpy <= 0) return;
+            const expenses = JSON.parse(localStorage.getItem('ok_expenses')) || [];
+            expenses.push({ id: Date.now(), title, jpy, twd: Math.round(jpy * rate) });
+            localStorage.setItem('ok_expenses', JSON.stringify(expenses));
+            document.getElementById('expense-title').value = '';
+            document.getElementById('expense-amount').value = '';
+            loadExpenses();
+        }
+
+        function loadExpenses() {
+            const expenses = JSON.parse(localStorage.getItem('ok_expenses')) || [];
+            const container = document.getElementById('expense-list'); if(!container) return; container.innerHTML = '';
+            expenses.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-fuji-paper p-3 rounded-xl border border-fuji-light flex justify-between items-center text-xs shadow-sm">
+                        <div><strong class="text-fuji-dark">${item.title}</strong> <span class="text-fuji-secondary font-bold">(${item.jpy} JPY)</span></div>
+                        <div class="text-fuji-accent font-extrabold text-sm">NT$ ${item.twd}</div>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>
