@@ -43,9 +43,7 @@
 
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         
-        <!-- HEADER: 富士藍度假風頂欄 -->
         <header class="bg-fuji-primary p-6 pt-8 pb-8 text-center relative rounded-b-[2rem] shadow-md overflow-hidden">
-            <!-- 裝飾用可愛小雲朵與太陽（微度假意象） -->
             <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
             <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
             
@@ -58,16 +56,13 @@
             </p>
         </header>
 
-        <!-- MAIN CONTENT: 網頁主要內容容器 -->
         <main class="flex-1 p-4 overflow-y-auto">
             
-            <!-- PLAN PAGE -->
             <section id="page-plan" class="tab-content block">
                 <div class="flex justify-between items-center mb-4 pb-2">
                     <h2 class="font-cute text-lg font-bold text-fuji-primary flex items-center gap-1">
                         <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
                     </h2>
-                    <!-- 可愛圓潤的天數按鈕 -->
                     <div class="flex gap-1.5 text-xs font-bold">
                         <button onclick="switchDay('d1')" id="btn-d1" class="day-btn px-3 py-1.5 bg-fuji-primary text-white rounded-full shadow-sm transition-all">D1</button>
                         <button onclick="switchDay('d2')" id="btn-d2" class="day-btn px-3 py-1.5 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D2</button>
@@ -76,21 +71,18 @@
                     </div>
                 </div>
 
-                <!-- 載入中提示 -->
                 <div id="loading-status" class="text-center py-12 text-sm text-fuji-secondary font-medium">
                     <i class="fa-solid fa-water fa-bounce mr-2 text-fuji-primary"></i>輕輕划向雲端手帳中...
                 </div>
 
-                <!-- 行程容器 -->
                 <div id="day-d1" class="day-timeline space-y-4"></div>
                 <div id="day-d2" class="day-timeline space-y-4 hidden"></div>
                 <div id="day-d3" class="day-timeline space-y-4 hidden"></div>
                 <div id="day-d4" class="day-timeline space-y-4 hidden"></div>
             </section>
 
-            <!-- GUIDE PAGE -->
             <section id="page-guide" class="tab-content hidden">
-                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳人文導覽</h2>
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳地圖導覽</h2>
                 <div class="space-y-6">
                     <article class="bg-fuji-paper p-5 rounded-2xl shadow-sm border border-fuji-light">
                         <span class="text-xs bg-fuji-primary text-white px-2.5 py-1 rounded-full font-bold">🐋 深度文化</span>
@@ -103,7 +95,24 @@
                 </div>
             </section>
 
-            <!-- WALLET PAGE -->
+            <section id="page-shopping" class="tab-content hidden">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 藥妝伴手禮清單</h2>
+                
+                <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-4 space-y-2">
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="shop-item-name" placeholder="想買的商品" class="col-span-2 px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
+                        <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary text-center font-bold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="shop-item-store" placeholder="店家 (如: 國際通大國、唐吉訶德)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
+                        <input type="text" id="shop-item-note" placeholder="備註 (如: 幫媽媽買、幫代購)" class="px-3 py-2 border border-fuji-light rounded-xl text-xs bg-fuji-bg focus:outline-none focus:border-fuji-primary">
+                    </div>
+                    <button onclick="addShoppingItem()" class="w-full bg-fuji-primary text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:bg-fuji-dark transition-all"><i class="fa-solid fa-plus mr-1"></i>加入購物清單</button>
+                </div>
+
+                <div id="shopping-list-container" class="space-y-2"></div>
+            </section>
+
             <section id="page-wallet" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-coins text-fuji-accent"></i> 隨身小帳本</h2>
                 <div class="bg-fuji-paper p-4 rounded-2xl border border-fuji-light shadow-sm mb-4">
@@ -127,13 +136,11 @@
                 <div id="expense-list" class="space-y-2"></div>
             </section>
 
-            <!-- LISTS PAGE -->
             <section id="page-lists" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點</h2>
                 <div id="checklist-container" class="bg-fuji-paper p-5 rounded-2xl border border-fuji-light shadow-sm space-y-3"></div>
             </section>
 
-            <!-- INFO PAGE -->
             <section id="page-info" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-4 flex items-center gap-1"><i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊</h2>
                 <div class="bg-fuji-paper p-6 rounded-2xl border border-fuji-light shadow-sm text-center">
@@ -144,17 +151,16 @@
             </section>
         </main>
 
-        <!-- FOOTER NAV: 圓潤清爽底欄 (完美固定底部版) -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-2 z-50 shadow-lg rounded-t-2xl">
-            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-primary transition-all"><i class="fa-solid fa-compass text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">PLAN</span></button>
-            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">GUIDE</span></button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">WALLET</span></button>
-            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">LISTS</span></button>
-            <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-lg"></i><span class="text-[10px] font-bold mt-0.5 font-cute">INFO</span></button>
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-2 z-50 shadow-lg rounded-t-2xl px-1">
+            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-primary transition-all"><i class="fa-solid fa-compass text-base"></i><span class="text-[10px] font-bold mt-0.5">行程</span></button>
+            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-base"></i><span class="text-[10px] font-bold mt-0.5">地圖</span></button>
+            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-base"></i><span class="text-[10px] font-bold mt-0.5">購物</span></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-base"></i><span class="text-[10px] font-bold mt-0.5">錢包</span></button>
+            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-base"></i><span class="text-[10px] font-bold mt-0.5">行前準備</span></button>
+            <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-base"></i><span class="text-[10px] font-bold mt-0.5">資訊</span></button>
         </nav>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/gviz/tq?tqx=out:csv';
         const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=0#gid=0';
@@ -165,9 +171,11 @@
             fetchTravelPlan();
             initChecklist();
             loadExpenses();
+            loadShoppingItems();
             initCalc();
         });
 
+        // 抓取 Google Sheet 資料
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -269,6 +277,7 @@
             targetContainer.innerHTML += cardHtml;
         }
 
+        // 分頁導航控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -280,17 +289,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.nav-btn').forEach(b => {
-                    b.classList.remove('text-fuji-primary');
-                    b.classList.add('text-fuji-secondary');
-                });
-                this.classList.remove('text-fuji-secondary');
-                this.classList.add('text-fuji-primary');
-            });
-        });
-
+        // 天數切換
         function switchDay(dayId) {
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
             document.getElementById(`day-${dayId}`).classList.remove('hidden');
@@ -300,6 +299,73 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-3 py-1.5 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
+        // 【新增功能：購物清單邏輯 ✨】
+        function addShoppingItem() {
+            const name = document.getElementById('shop-item-name').value.trim();
+            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
+            const store = document.getElementById('shop-item-store').value.trim();
+            const note = document.getElementById('shop-item-note').value.trim();
+
+            if (!name) { alert('請輸入商品名稱！'); return; }
+
+            const items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
+            items.push({ id: Date.now(), name, qty, store, note, checked: false });
+            localStorage.setItem('ok_shopping', JSON.stringify(items));
+
+            // 清空輸入欄位
+            document.getElementById('shop-item-name').value = '';
+            document.getElementById('shop-item-qty').value = '1';
+            document.getElementById('shop-item-store').value = '';
+            document.getElementById('shop-item-note').value = '';
+
+            loadShoppingItems();
+        }
+
+        function loadShoppingItems() {
+            const items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
+            const container = document.getElementById('shopping-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🛒 清單空空如也，快把沖繩必買加進來吧！</div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-fuji-paper p-3.5 rounded-2xl border ${item.checked ? 'border-fuji-light bg-fuji-bg/40' : 'border-fuji-light'} flex items-start gap-3 shadow-sm transition-all relative overflow-hidden">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingCheck(${item.id})" class="mt-1 accent-fuji-primary h-4 w-4 rounded">
+                        <div class="flex-1 min-w-0 pr-6">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm ${item.checked ? 'line-through text-fuji-secondary' : 'text-fuji-dark'}">${item.name}</span>
+                                <span class="text-xs font-extrabold text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-md">x${item.qty}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-1 text-[11px] font-medium">
+                                ${item.store ? `<span class="bg-fuji-bg text-fuji-primary px-1.5 py-0.5 rounded-md"><i class="fa-solid fa-shop mr-0.5 text-fuji-accent"></i>${item.store}</span>` : ''}
+                                ${item.note ? `<span class="text-fuji-secondary"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</span>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="deleteShoppingItem(${item.id})" class="absolute right-3 top-3 text-fuji-secondary hover:text-fuji-accent text-xs p-1"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>`;
+            });
+        }
+
+        function toggleShoppingCheck(id) {
+            let items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
+            items = items.map(item => item.id === id ? { ...item, checked: !item.checked } : item);
+            localStorage.setItem('ok_shopping', JSON.stringify(items));
+            loadShoppingItems();
+        }
+
+        function deleteShoppingItem(id) {
+            let items = JSON.parse(localStorage.getItem('ok_shopping')) || [];
+            items = items.filter(item => item.id !== id);
+            localStorage.setItem('ok_shopping', JSON.stringify(items));
+            loadShoppingItems();
+        }
+
+        // 行前準備小工具
         function initChecklist() {
             const defaultChecklist = [
                 { id: 1, text: "中華民國護照 (效期6個月以上)", checked: true },
@@ -328,6 +394,7 @@
             renderChecklist(stored);
         }
 
+        // 小計算機與匯率
         function initCalc() {
             const input = document.getElementById('calc-input');
             if(!input) return;
@@ -344,12 +411,11 @@
                     jpy = Math.round(jpy);
                     document.getElementById('calc-jpy').innerText = jpy;
                     document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
-                } catch(e) {
-                    // 輸入未完，暫不更新
-                }
+                } catch(e) {}
             });
         }
 
+        // 記帳系統
         function addExpense() {
             const title = document.getElementById('expense-title').value.trim() || '未命名開銷';
             const jpy = parseFloat(document.getElementById('expense-amount').value) || 0;
