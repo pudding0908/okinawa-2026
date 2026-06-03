@@ -799,40 +799,43 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 從雲端 Google Sheet 拉取全新行李清單資料 (依據 A,B,C,D,E,F 欄位順序解析)
+        // 從雲端 Google Sheet 拉取全新行李清單資料 (改用安全逗號切割，且依據 A,B,C,D,E,F 欄位順序解析)
         async function fetchCloudChecklist() {
             try {
                 const response = await fetch(CHECKLIST_CSV_URL);
                 if (!response.ok) throw new Error("網路讀取失敗");
                 const csvText = await response.text();
                 
+                // 將每一行切開
                 const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 globalChecklistItems = [];
-
+        
                 if (lines.length > 1) {
                     // 從本機取得目前的使用者勾選狀態紀錄庫
                     const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
-
-                    // i=0 是欄位名稱 Header，從 i=1 開始抓取真實資料
+        
+                    // i=0 是欄位名稱（A,B,C,D...那一列），我們從 i=1 開始抓取第一筆真實資料
                     for (let i = 1; i < lines.length; i++) {
-                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         
-                        // 修正關鍵：改用絕對欄位順序索引抓取資料，不再比對 header 名稱
-                        // [0]=A欄(id), [1]=B欄(category), [2]=C欄(type), [3]=D欄(text), [4]=E欄(qty), [5]=F欄(note)
-                        if (currentLine.length < 4 || !currentLine[3]) continue; // 確保基本欄位有資料且 D 欄項目名稱不為空
+                        // 這裡改用最安全的簡單逗號與移除雙引號來切開 A, B, C, D, E, F 欄
+                        const currentLine = lines[i].split(',').map(v => v.replace(/["']/g, '').trim());
                         
-                        const itemId = currentLine[0] || 'chk-' + i; // A欄 (id)
-                        const catName = currentLine[1] || '其他未分類'; // B欄 (category)
-                        const typeName = currentLine[2] || ''; // C欄 (type)
-                        const itemText = currentLine[3]; // D欄 (text)
-                        const itemQty = parseInt(currentLine[4]) || 1; // E欄 (qty)
-                        const itemNote = currentLine[5] || ''; // F欄 (note)
-
-                        // 預設初始化各分類卡片為展開狀態 (false = 不折疊)
+                        // 檢查：如果切出來的欄位數量太少，或者關鍵的 D 欄（項目名稱，索引值是 3）是空的，就跳過
+                        if (currentLine.length < 4 || !currentLine[3]) continue; 
+                        
+                        // 🚀 完全依照欄位 A, B, C, D, E, F 的絕對順序抓取資料
+                        const itemId = currentLine[0] || 'chk-' + i;       // A欄 (ID)
+                        const catName = currentLine[1] || '其他未分類';     // B欄 (區域/大分類)
+                        const typeName = currentLine[2] || '';             // C欄 (分類/次類型)
+                        const itemText = currentLine[3];                   // D欄 (項目名稱)
+                        const itemQty = parseInt(currentLine[4]) || 1;     // E欄 (數量)
+                        const itemNote = currentLine[5] || '';             // F欄 (備註)
+        
+                        // 初始化折疊狀態預設為展開
                         if (checklistCollapsedCategories[catName] === undefined) {
                             checklistCollapsedCategories[catName] = false;
                         }
-
+        
                         globalChecklistItems.push({
                             id: itemId,
                             category: catName,
@@ -840,7 +843,7 @@
                             text: itemText,
                             qty: itemQty,
                             note: itemNote,
-                            checked: userCheckedStates[itemId] === true // 對照手機本機勾選記憶庫
+                            checked: userCheckedStates[itemId] === true
                         });
                     }
                 }
@@ -849,7 +852,8 @@
                 console.error("行前準備清單拉取異常:", error);
                 document.getElementById('checklist-container').innerHTML = `
                     <div class="text-center py-8 text-sm text-fuji-accent font-medium">
-                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁，請確認雲端分頁名稱是否完全對應為「準備」。
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁。<br>
+                        請確認 Excel 的分頁名稱是否確實叫做「準備」。
                     </div>`;
             }
         }
