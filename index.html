@@ -102,10 +102,10 @@
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
                     <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
                         <div class="text-[15px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
-                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform text-fuji-primary"></i>
+                        <i id="main-shop-arrow" class="fa-solid fa-chevron-down text-[10px] transition-transform text-fuji-primary"></i>
                     </div>
                     
-                    <div id="shopping-input-fields" class="hidden p-3 space-y-2 border-t border-fuji-light/50">
+                    <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50">
                         <div class="flex justify-between items-center">
                             <div class="text-[13px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
                             <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[12px] font-bold relative shadow-2xs">
@@ -270,8 +270,8 @@
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
         
-        // 🚀 需求調整：精準將資料來源綁定為 gid=2017393849 避免抓錯成主頁籤 (gid=0) 的試算表內容
-        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=2017393849`;
+        // 🚀 關鍵：精準鎖定「準備」頁籤的純 CSV 匯出網址，不帶任何 gid 雜訊
+        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=%E6%BA%96%E5%82%96`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
 
@@ -393,6 +393,7 @@
             if (row['備註']) metaHtml += `<span class="text-[10px] text-fuji-accent font-bold">💬 ${row['備註']}</span>`;
 
             let cardHtml = `<div class="bg-fuji-paper p-3 rounded-xl shadow-sm border border-fuji-light"><div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1"><span class="text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-full">${timeString}</span>${row['分類'] ? `<span class="text-[9px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}</div><h4 class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
+            
             if (row['分類'] === '重要') {
                 cardHtml = `<div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-3 rounded-xl shadow-sm bg-white"><div class="flex justify-between text-[11px] text-fuji-accent font-bold mb-1"><span class="bg-fuji-accent text-white px-1.5 py-0.5 rounded-full">${timeString}</span><span><i class="fa-solid fa-star fa-spin mr-1"></i>重要</span></div><p class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</p>${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1 leading-relaxed bg-fuji-bg/50 p-2 rounded-lg text-justify">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
             }
@@ -420,26 +421,23 @@
                     const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
                     for (let i = 1; i < lines.length; i++) {
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        if (currentLine.length < headers.length) continue;
-                        let row = {};
-                        headers.forEach((h, idx) => { row[h] = currentLine[idx]; });
-                        if (!row['商品名稱']) continue;
+                        if (currentLine.length < 3) continue;
                         cloudShoppingItems.push({
                             id: 'cloud-' + i,
-                            logo: row['店家商標'] || '',
-                            store: row['店家名稱'] || '未分類商店',
-                            name: row['商品名稱'],
-                            qty: parseInt(row['預購數量']) || 1,
-                            note: row['備註說明'] || '',
-                            image: parseImageUrl(row['商品圖片網址'] || ''),
-                            link: row['參考網頁'] || '',
+                            logo: '',
+                            store: currentLine[0] || '未分類商店',
+                            name: currentLine[1],
+                            qty: parseInt(currentLine[2]) || 1,
+                            note: currentLine[3] || '',
+                            image: parseImageUrl(currentLine[4]),
+                            link: currentLine[5] || '',
                             isCloud: true
                         });
                     }
                 }
                 renderCombinedShoppingList();
             } catch (e) {
-                console.error("共同購物清單讀取有誤:", e);
+                console.error("無法讀取雲端購物清單", e);
                 renderCombinedShoppingList();
             }
         }
@@ -448,17 +446,18 @@
             currentPostType = type;
             const btnLocal = document.getElementById('toggle-type-local');
             const btnCloud = document.getElementById('toggle-type-cloud');
-            const submitBtn = document.getElementById('add-shop-btn');
+            const addBtn = document.getElementById('add-shop-btn');
+            
             if (type === 'local') {
                 btnLocal.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
                 btnCloud.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
-                submitBtn.className = "w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
+                addBtn.className = "w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
+                addBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
             } else {
-                btnCloud.className = "px-2 py-0.5 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-0.5";
                 btnLocal.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
-                submitBtn.className = "w-full bg-fuji-primary text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>上傳團隊共同清單`;
+                btnCloud.className = "px-2 py-0.5 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-0.5";
+                addBtn.className = "w-full bg-fuji-primary text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
+                addBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至團隊雲端`;
             }
         }
 
@@ -469,13 +468,16 @@
             const note = document.getElementById('shop-item-note').value.trim();
             const imgUrl = document.getElementById('shop-item-image').value.trim();
             const linkUrl = document.getElementById('shop-item-link').value.trim();
+
             if (!name) {
                 alert('請填寫商品名稱唷！');
                 return;
             }
+
             if (shoppingCollapsedStores[store] === undefined) {
-                shoppingCollapsedStores[store] = true;
+                shoppingCollapsedStores[store] = false;
             }
+
             if (currentPostType === 'local') {
                 const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
                 localItems.push({
@@ -501,6 +503,7 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
                 const payload = { store, name, qty, note, link: linkUrl, image: imgUrl };
+                
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -537,35 +540,31 @@
             const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
             const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
             const allItems = [...cloudShoppingItems, ...localItems];
+
             if (allItems.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary"><i class="fa-solid fa-basket-shopping text-fuji-light text-2xl block mb-1"></i>購物車空空如也，快把想買的放進來吧！</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary">✨ 目前清單空空如也，快去新增商品吧！</div>`;
                 return;
             }
-            allItems.forEach(item => { if (modifiedQtys[item.id] !== undefined) { item.qty = modifiedQtys[item.id]; } });
-            const groups = {};
-            allItems.forEach(item => {
-                if (!groups[item.store]) { groups[item.store] = { logo: item.logo || '', items: [] }; }
-                groups[item.store].items.push(item);
-                if (item.logo && !groups[item.store].logo) { groups[item.store].logo = item.logo; }
-            });
-            Object.entries(groups).forEach(([storeName, group]) => {
-                if (shoppingCollapsedStores[storeName] === undefined) { shoppingCollapsedStores[storeName] = false; }
-                const isCollapsed = shoppingCollapsedStores[storeName] === true;
-                
-                // 🚀 需求調整：正確渲染店家 LOGO
-                let logoHtml = '';
-                if (group.logo) {
-                    logoHtml = `<img src="${parseImageUrl(group.logo)}" class="w-5 h-5 rounded-full object-cover border border-white/20 shadow-2xs mr-1.5" onerror="this.style.display='none'">`;
-                }
 
+            const storesMap = {};
+            allItems.forEach(item => {
+                if (modifiedQtys[item.id] !== undefined) {
+                    item.qty = modifiedQtys[item.id];
+                }
+                if (!storesMap[item.store]) storesMap[item.store] = [];
+                storesMap[item.store].push(item);
+            });
+
+            for (const [storeName, items] of Object.entries(storesMap)) {
+                const isCollapsed = shoppingCollapsedStores[storeName] === true;
                 let groupHtml = `
-                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-2xs overflow-hidden">
-                    <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-secondary px-3 py-2.5 flex justify-between items-center cursor-pointer select-none transition-all">
-                        <div class="flex items-center min-w-0 gap-1">
-                            ${logoHtml}
+                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden">
+                    <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-primary p-3 flex justify-between items-center cursor-pointer select-none">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white flex-shrink-0"><i class="fa-solid fa-store text-xs"></i></div>
                             <div class="flex flex-col min-w-0">
                                 <span class="font-extrabold text-md text-white tracking-wide truncate">${storeName}</span>
-                                <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
+                                <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">${items.length} 件商品</span>
                             </div>
                         </div>
                         <div class="text-white pr-1 text-[8px]">
@@ -573,19 +572,9 @@
                         </div>
                     </div>
                     <div class="${isCollapsed ? 'hidden' : ''} divide-y divide-fuji-light">`;
-                
-                group.items.forEach(item => {
-                    const isChecked = checkedIds.includes(item.id);
-                    
-                    // 🚀 需求調整：正確渲染商品圖片
-                    let itemImgHtml = '';
-                    if (item.image) {
-                        itemImgHtml = `
-                        <div class="mt-1.5 w-16 h-16 rounded-lg overflow-hidden border border-fuji-light bg-fuji-bg flex-shrink-0">
-                            <img src="${item.image}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'">
-                        </div>`;
-                    }
 
+                items.forEach(item => {
+                    const isChecked = checkedIds.includes(item.id);
                     groupHtml += `
                         <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
                             <div class="flex justify-between items-start gap-2">
@@ -605,248 +594,62 @@
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 leading-normal break-all select-none ${isChecked ? 'line-through opacity-50' : ''}"><i class="fa-regular fa-comment-dots mr-0.5 text-fuji-secondary"></i>${item.note}</p>` : ''}
-                                ${itemImgHtml}
+                                ${item.note ? `<div class="text-[12px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.link ? `<div class="text-[11px] text-fuji-primary truncate mt-0.5"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="hover:underline"><i class="fa-solid fa-link mr-0.5"></i>${item.link}</a></div>` : ''}
+                                ${item.image ? `<div class="mt-1.5 max-w-[120px] rounded-lg overflow-hidden border border-fuji-light shadow-2xs bg-fuji-bg"><img src="${item.image}" alt="商品貼圖" class="w-full h-auto object-cover" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
-                            ${item.link ? `
-                            <div class="pt-0.5 flex">
-                                <a href="${item.link}" target="_blank" class="text-[11px] text-fuji-primary font-bold hover:underline inline-flex items-center gap-0.5 bg-fuji-light/50 px-2 py-0.5 rounded-md border border-fuji-light/80"><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> 參考連結網頁</a>
-                            </div>` : ''}
                         </div>`;
                 });
+
                 groupHtml += `</div></div>`;
                 container.innerHTML += groupHtml;
-            });
+            }
         }
 
         function toggleShoppingCheck(id) {
-            const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
-            const idx = checkedIds.indexOf(id);
-            if (idx > -1) { checkedIds.splice(idx, 1); } else { checkedIds.push(id); }
+            let checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
+            if (checkedIds.includes(id)) {
+                checkedIds = checkedIds.filter(i => i !== id);
+            } else {
+                checkedIds.push(id);
+            }
             localStorage.setItem('ok_shopping_checked_ids', JSON.stringify(checkedIds));
             renderCombinedShoppingList();
         }
 
         function adjustQty(id, delta) {
-            const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
+            let modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
             let currentQty = modifiedQtys[id];
             if (currentQty === undefined) {
-                const allItems = [...cloudShoppingItems, ...(JSON.parse(localStorage.getItem('ok_shopping_local')) || [])];
-                const match = allItems.find(i => i.id === id);
-                currentQty = match ? match.qty : 1;
+                const all = [...cloudShoppingItems, ...(JSON.parse(localStorage.getItem('ok_shopping_local')) || [])];
+                const found = all.find(item => item.id === id);
+                currentQty = found ? found.qty : 1;
             }
-            let target = currentQty + delta;
-            if (target < 1) target = 1;
-            modifiedQtys[id] = target;
+            let nextQty = currentQty + delta;
+            if (nextQty < 1) nextQty = 1;
+            modifiedQtys[id] = nextQty;
             localStorage.setItem('ok_shopping_qtys', JSON.stringify(modifiedQtys));
             renderCombinedShoppingList();
         }
 
         function deleteLocalShoppingItem(id) {
-            if (confirm('確定移除此項個人商品嗎？')) {
+            if (confirm('確定要自個人清單中移除這項商品嗎？')) {
                 let localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
-                localItems = localItems.filter(i => i.id !== id);
+                localItems = localItems.filter(item => item.id !== id);
                 localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
-                renderCombinedShoppingList();
-            }
-        }
-
-        async function fetchCloudChecklist() {
-            try {
-                const response = await fetch(CHECKLIST_CSV_URL);
-                if (!response.ok) throw new Error();
-                const csvText = await response.text();
-                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-                globalChecklistItems = [];
-                const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
-                if (lines.length > 1) {
-                    for (let i = 1; i < lines.length; i++) {
-                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        if (currentLine.length < 4 || !currentLine[3]) continue;
-                        const itemId = currentLine[0] || 'chk-' + i; 
-                        const catName = currentLine[1] || '其他未分類'; 
-                        const typeName = currentLine[2] || ''; 
-                        const itemText = currentLine[3]; 
-                        const itemQty = parseInt(currentLine[4]) || 1; 
-                        const itemNote = currentLine[5] || ''; 
-                        
-                        // 🚀 需求調整：各清單在初始化時，預設收合狀態為 true (收合)
-                        if (checklistCollapsedCategories[catName] === undefined) {
-                            checklistCollapsedCategories[catName] = true;
-                        }
-                        globalChecklistItems.push({
-                            id: itemId,
-                            category: catName,
-                            type: typeName,
-                            text: itemText,
-                            qty: itemQty,
-                            note: itemNote,
-                            checked: userCheckedStates[itemId] === true
-                        });
-                    }
-                }
-                renderChecklist(globalChecklistItems);
-            } catch (error) {
-                console.error("行前準備清單拉取異常:", error);
-                document.getElementById('checklist-container').innerHTML = `
-                <div class="text-center py-8 text-sm text-fuji-accent font-medium">
-                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從雲端同步「準備」分頁資料，請確認雲端分頁名稱確實為「準備」。
-                </div>`;
-            }
-        }
-
-        // =========================================================================
-        // 🚀 【全新防錯版】行前準備清單渲染器 (徹底與行程表解綁，放大字體雙層排版)
-        // =========================================================================
-        function renderChecklist(items) {
-            const container = document.getElementById('checklist-container');
-            if (!container) return;
-            container.innerHTML = '';
-            if (!items || items.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-sm text-fuji-secondary font-medium">✨ 雲端清單中尚無任何準備項目。</div>`;
-                return;
-            }
-            const categoryGroups = {};
-            items.forEach(item => {
-                const cat = item.category;
-                if (!categoryGroups[cat]) categoryGroups[cat] = [];
-                categoryGroups[cat].push(item);
-            });
-            for (const [catName, catItems] of Object.entries(categoryGroups)) {
-                const isCollapsed = checklistCollapsedCategories[catName] !== false;
-                let catHtml = `
-                <div class="bg-fuji-paper rounded-2xl border border-fuji-light shadow-2xs overflow-hidden bg-white">
-                    <div onclick="toggleChecklistCategoryCollapse('${catName}')" class="bg-fuji-primary px-4 py-3 flex justify-between items-center cursor-pointer select-none transition-all">
-                        <span class="font-cute font-extrabold text-[15px] text-white tracking-wide"><i class="fa-solid fa-suitcase mr-1.5 text-fuji-accent"></i>${catName}</span>
-                        <div class="text-fuji-light pr-0.5 text-[10px]">
-                            <i class="fa-solid fa-chevron-up ${isCollapsed ? 'rotate-180' : ''} text-white text-xs transition-transform"></i>
-                        </div>
-                    </div>
-                    <div class="${isCollapsed ? 'hidden' : ''} p-4 space-y-5 divide-y divide-fuji-light/50">`;
                 
-                const typeGroups = {};
-                catItems.forEach(item => {
-                    const t = item.type ? item.type.trim() : "";
-                    if (!typeGroups[t]) typeGroups[t] = [];
-                    typeGroups[t].push(item);
-                });
+                let modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
+                delete modifiedQtys[id];
+                localStorage.setItem('ok_shopping_qtys', JSON.stringify(modifiedQtys));
 
-                // 🚀 需求調整：將次類型進行自訂排序，未填寫 C 欄 (即空字串) 排在最後面
-                const sortedTypes = Object.entries(typeGroups).sort((a, b) => {
-                    if (a[0] === "") return 1;   // a 是空分類，移到後方
-                    if (b[0] === "") return -1;  // b 是空分類，移到後方
-                    return a[0].localeCompare(b[0], 'zh-Hant'); // 有分類的進行中文字典排序
-                });
-
-                for (const [typeName, subItems] of sortedTypes) {
-                    const isDefaultGroup = (typeName === "");
-                    
-                    // 🚀 需求調整：一般準備項目的標題比照有分類樣式，但換成清爽的富士藍背景色
-                    const titleClass = isDefaultGroup 
-                        ? 'text-fuji-primary bg-fuji-light/50 px-2 py-0.5 rounded w-fit text-[14px]' 
-                        : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]';
-                    
-                    const iconClass = isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open';
-                    const displayTitle = isDefaultGroup ? '一般準備項目' : typeName;
-
-                    catHtml += `
-                    <div class="space-y-2.5 ${isDefaultGroup ? 'pt-4 first:pt-0' : 'pt-4 first:pt-0'}">
-                        <div class="flex items-center gap-1.5 text-sm font-bold ${titleClass}" style="letter-spacing: 0.02em;">
-                            <i class="fa-solid ${iconClass}"></i>
-                            <span>${displayTitle}</span>
-                        </div>
-                        <div class="pl-1 space-y-3">`;
-                    
-                    subItems.forEach(item => {
-                        const isChecked = item.checked === true;
-                        catHtml += `
-                            <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
-                                        <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
-                                    </div>
-                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
-                                </div>
-                            </label>`;
-                    });
-                    catHtml += `</div></div>`;
-                }
-                catHtml += `</div></div>`;
-                container.innerHTML += catHtml;
-            }
-        }
-
-        // 打勾互動切換
-        function toggleCheck(id) {
-            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
-            globalChecklistItems = globalChecklistItems.map(item => {
-                if (item.id === id) {
-                    const nextState = !item.checked;
-                    userCheckedStates[id] = nextState; 
-                    return { ...item, checked: nextState };
-                }
-                return item;
-            });
-            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
-            renderChecklist(globalChecklistItems);
-        }
-
-        function initCalc() {
-            const input = document.getElementById('calc-input'); if(!input) return;
-            input.addEventListener('input', function() {
-                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
-                try {
-                    let sanitized = this.value.replace(/[^0-9+\\-*/().]/g, '');
-                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
-                    let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
-                    jpy = Math.round(jpy); document.getElementById('calc-jpy').innerText = jpy;
-                    document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
-                } catch(e) {}
-            });
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById(`page-${tabId}`);
-            if (target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-fuji-accent');
-                el.classList.add('text-fuji-secondary');
-            });
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) {
-                activeNav.classList.remove('text-fuji-secondary');
-                activeNav.classList.add('text-fuji-accent');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function switchDay(dayId) {
-            document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById(`day-${dayId}`);
-            if (target) target.classList.remove('hidden');
-            document.querySelectorAll('.day-btn').forEach(el => {
-                el.classList.remove('bg-fuji-primary', 'text-white');
-                el.classList.add('bg-fuji-paper', 'text-fuji-primary', 'border', 'border-fuji-light');
-            });
-            const activeBtn = document.getElementById(`btn-${dayId}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('bg-fuji-paper', 'text-fuji-primary', 'border', 'border-fuji-light');
-                activeBtn.classList.add('bg-fuji-primary', 'text-white');
+                renderCombinedShoppingList();
             }
         }
 
         function initWalletDateTime() {
             const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const localDate = `${yyyy}-${mm}-${dd}`;
-            const localTime = `${hh}:${min}`;
+            const localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            const localTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
             document.getElementById('expense-date').value = localDate;
             document.getElementById('expense-time').value = localTime;
         }
@@ -874,6 +677,7 @@
             const method = document.getElementById('expense-method').value;
             const card = document.getElementById('expense-card').value;
             const note = document.getElementById('expense-note').value.trim();
+
             if (!title) {
                 alert('請填寫買了什麼唷！');
                 return;
@@ -886,9 +690,11 @@
                 alert('請確認日期時間。');
                 return;
             }
+
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
             expenses.push({ id: 'exp-' + Date.now(), store, title, date, time, amount, currency, method, card, note });
             localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(expenses));
+
             document.getElementById('expense-store').value = '';
             document.getElementById('expense-title').value = '';
             document.getElementById('expense-amount').value = '';
@@ -914,43 +720,49 @@
             container.innerHTML = '';
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
             const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+
             let totalJpy = 0;
             let totalTwd = 0;
-            expenses.forEach(item => {
-                if (item.currency === 'JPY') {
-                    totalJpy += item.amount;
-                    totalTwd += Math.round(item.amount * rate);
+
+            expenses.forEach(exp => {
+                if (exp.currency === 'JPY') {
+                    totalJpy += exp.amount;
+                    totalTwd += exp.amount * rate;
                 } else {
-                    totalTwd += item.amount;
-                    totalJpy += Math.round(item.amount / rate);
+                    totalTwd += exp.amount;
+                    totalJpy += exp.amount / rate;
                 }
             });
-            const domTotalJpy = document.getElementById('total-jpy');
-            const domTotalTwd = document.getElementById('total-twd');
-            if (domTotalJpy) domTotalJpy.innerText = `¥ ${totalJpy.toLocaleString()}`;
-            if (domTotalTwd) domTotalTwd.innerText = `NT$ ${totalTwd.toLocaleString()}`;
+
+            document.getElementById('total-jpy').innerText = `¥ ${Math.round(totalJpy).toLocaleString()}`;
+            document.getElementById('total-twd').innerText = `NT$ ${Math.round(totalTwd).toLocaleString()}`;
+
             if (expenses.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-fuji-secondary/70"><i class="fa-solid fa-receipt text-2xl text-fuji-light block mb-1"></i>尚未有消費紀錄</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-fuji-secondary text-xs">✨ 目前尚無消費紀錄。</div>`;
                 return;
             }
+
             const dateGroups = {};
-            expenses.forEach(item => {
-                if (!dateGroups[item.date]) dateGroups[item.date] = [];
-                dateGroups[item.date].push(item);
+            expenses.forEach(exp => {
+                if (!dateGroups[exp.date]) dateGroups[exp.date] = [];
+                dateGroups[exp.date].push(exp);
             });
+
             const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
+
             sortedDates.forEach(date => {
-                const items = dateGroups[date];
-                if (walletCollapsedDays[date] === undefined) walletCollapsedDays[date] = false;
-                const isCollapsed = walletCollapsedDays[date] === true;
+                const items = dateGroups[date].sort((a, b) => b.time.localeCompare(a.time));
                 let dayTotalTwd = 0;
                 items.forEach(item => {
-                    if (item.currency === 'JPY') { dayTotalTwd += Math.round(item.amount * rate); } else { dayTotalTwd += item.amount; }
+                    dayTotalTwd += (item.currency === 'JPY') ? (item.amount * rate) : item.amount;
                 });
-                const arrowIcon = isCollapsed ? 'fa-square-caret-right' : 'fa-square-caret-down';
+
+                const isCollapsed = walletCollapsedDays[date] === true;
+                const arrowIcon = isCollapsed ? 'fa-square-plus' : 'fa-square-minus';
+
                 let groupHtml = `
-                <div class="space-y-1.5">
-                    <div onclick="toggleDayCollapse('${date}')" class="bg-fuji-primary text-white font-bold rounded-xl px-3 py-2 flex items-center justify-between cursor-pointer select-none mt-2 shadow-2xs">
+                <div class="space-y-1">
+                    <div onclick="toggleDayCollapse('${date}')" class="bg-fuji-primary text-white font-bold p-2.5 rounded-xl flex items-center justify-between cursor-pointer select-none mt-2 shadow-2xs">
                         <div class="flex items-center gap-1">
                             <i class="fa-solid ${arrowIcon} text-fuji-light text-[15px] transition-transform"></i>
                             <span class="text-[15px]"><i class="fa-regular fa-calendar-days text-[15px]"></i> ${date}</span>
@@ -960,11 +772,12 @@
                         </div>
                     </div>
                     <div class="${isCollapsed ? 'hidden' : ''} bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden divide-y divide-fuji-light bg-white">`;
-                
+
                 items.forEach(item => {
                     const isJpy = item.currency === 'JPY';
                     const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
+
                     groupHtml += `
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
@@ -984,15 +797,209 @@
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
                                     <div class="font-cute font-extrabold text-sm text-fuji-dark">${displayAmt}</div>
-                                    <div class="text-[11px] text-fuji-accent font-bold font-cute">${subAmt}</div>
+                                    <div class="text-[11px] text-fuji-secondary font-medium">${subAmt}</div>
                                 </div>
-                                <button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 transition-all"><i class="fa-regular fa-trash-can text-[13px]"></i></button>
+                                <button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1"><i class="fa-regular fa-trash-can text-[13px]"></i></button>
                             </div>
                         </div>`;
                 });
+
                 groupHtml += `</div></div>`;
                 container.innerHTML += groupHtml;
+            }
+        );
+        }
+
+        async function fetchCloudChecklist() {
+            try {
+                const response = await fetch(CHECKLIST_CSV_URL);
+                if (!response.ok) throw new Error();
+                const csvText = await response.text();
+                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
+                globalChecklistItems = [];
+
+                if (lines.length > 1) {
+                    for (let i = 1; i < lines.length; i++) {
+                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                        if (currentLine.length < 4 || !currentLine[3]) continue;
+
+                        const itemId = currentLine[0] || 'chk-' + i;
+                        const catName = currentLine[1] || '其他未分類';
+                        const typeName = currentLine[2] || '';
+                        const itemText = currentLine[3];
+                        const itemQty = parseInt(currentLine[4]) || 1;
+                        const itemNote = currentLine[5] || '';
+
+                        if (checklistCollapsedCategories[catName] === undefined) {
+                            checklistCollapsedCategories[catName] = false;
+                        }
+
+                        globalChecklistItems.push({
+                            id: itemId,
+                            category: catName,
+                            type: typeName,
+                            text: itemText,
+                            qty: itemQty,
+                            note: itemNote,
+                            checked: userCheckedStates[itemId] === true
+                        });
+                    }
+                }
+                renderChecklist(globalChecklistItems);
+            } catch (error) {
+                console.error("行前準備清單拉取異常:", error);
+                document.getElementById('checklist-container').innerHTML = `
+                <div class="text-center py-8 text-sm text-fuji-accent font-medium">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從雲端同步「準備」分頁資料，請確認雲端分頁名稱確實為「準備」。
+                </div>`;
+            }
+        }
+
+        function renderChecklist(items) {
+            const container = document.getElementById('checklist-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-sm text-fuji-secondary font-medium">✨ 雲端清單中尚無任何準備項目。</div>`;
+                return;
+            }
+
+            const categoryGroups = {};
+            items.forEach(item => {
+                const cat = item.category;
+                if (!categoryGroups[cat]) categoryGroups[cat] = [];
+                categoryGroups[cat].push(item);
             });
+
+            for (const [catName, catItems] of Object.entries(categoryGroups)) {
+                const isCollapsed = checklistCollapsedCategories[catName] === true;
+                const totalCount = catItems.length;
+                const checkedCount = catItems.filter(i => i.checked).length;
+                const isAllDone = totalCount > 0 && totalCount === checkedCount;
+
+                let catHtml = `
+                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden">
+                    <div onclick="toggleChecklistCategoryCollapse('${catName}')" class="${isAllDone ? 'bg-fuji-secondary/60' : 'bg-fuji-primary'} p-3 flex justify-between items-center cursor-pointer select-none transition-colors">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fa-solid ${isAllDone ? 'fa-calendar-check' : 'fa-clipboard-list'} text-xs"></i>
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="font-extrabold text-[15px] text-white tracking-wide truncate ${isAllDone ? 'line-through opacity-90' : ''}">${catName}</span>
+                                <span class="text-[12px] text-fuji-light/90 font-mono -mt-0.5">進度: ${checkedCount} / ${totalCount}</span>
+                            </div>
+                        </div>
+                        <div class="text-white pr-1 text-[8px]">
+                            <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-white transition-transform"></i>
+                        </div>
+                    </div>
+                    <div class="${isCollapsed ? 'hidden' : ''} p-4 space-y-4 bg-white divide-y-0">`;
+
+                const typeGroups = {};
+                catItems.forEach(item => {
+                    const t = item.type ? item.type.trim() : "";
+                    if (!typeGroups[t]) typeGroups[t] = [];
+                    typeGroups[t].push(item);
+                });
+
+                for (const [typeName, subItems] of Object.entries(typeGroups)) {
+                    const isDefaultGroup = (typeName === "");
+                    catHtml += `
+                        <div class="space-y-2.5">
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}" style="letter-spacing: 0.02em;">
+                                <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
+                                <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
+                            </div>
+                            <div class="pl-1 space-y-3">`;
+
+                    subItems.forEach(item => {
+                        const isChecked = item.checked === true;
+                        catHtml += `
+                            <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
+                                        <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
+                                    </div>
+                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
+                                </div>
+                            </label>`;
+                    });
+                    catHtml += `</div></div>`;
+                }
+                catHtml += `</div></div>`;
+                container.innerHTML += catHtml;
+            }
+        }
+
+        function toggleCheck(id) {
+            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
+            globalChecklistItems = globalChecklistItems.map(item => {
+                if (item.id === id) {
+                    const nextState = !item.checked;
+                    userCheckedStates[id] = nextState; 
+                    return { ...item, checked: nextState };
+                }
+                return item;
+            });
+            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
+            renderChecklist(globalChecklistItems);
+        }
+
+        function initCalc() {
+            const input = document.getElementById('calc-input'); 
+            if(!input) return;
+            input.addEventListener('input', function() {
+                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+                try {
+                    let sanitized = this.value.replace(/[^0-9+\\-*/().]/g, '');
+                    if(!sanitized) { 
+                        document.getElementById('calc-jpy').innerText = '0'; 
+                        document.getElementById('calc-twd').innerText = 'NT$ 0'; 
+                        return; 
+                    }
+                    let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
+                    jpy = Math.round(jpy); 
+                    document.getElementById('calc-jpy').innerText = jpy;
+                    document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
+                } catch(e) {}
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const activePage = document.getElementById(`page-${tabId}`);
+            if (activePage) activePage.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-fuji-accent');
+                el.classList.add('text-fuji-secondary');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-fuji-secondary');
+                activeNav.classList.add('text-fuji-accent');
+            }
+        }
+
+        function switchDay(dayId) {
+            document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
+            const activeDay = document.getElementById(`day-${dayId}`);
+            if (activeDay) activeDay.classList.remove('hidden');
+
+            document.querySelectorAll('.day-btn').forEach(el => {
+                el.classList.remove('bg-fuji-primary', 'text-white');
+                el.classList.add('bg-fuji-paper', 'text-fuji-primary', 'border', 'border-fuji-light');
+            });
+            const activeBtn = document.getElementById(`btn-${dayId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-fuji-paper', 'text-fuji-primary', 'border', 'border-fuji-light');
+                activeBtn.classList.add('bg-fuji-primary', 'text-white');
+            }
         }
     </script>
 </body>
