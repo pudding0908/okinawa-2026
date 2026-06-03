@@ -270,7 +270,7 @@
         const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
-        // 行前準備清單分頁的 CSV 線上讀取網址
+        // 行前準備清單分頁的 CSV 線上讀取網址 (指定抓取分頁：「準備」)
         const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%96`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
@@ -335,7 +335,6 @@
             renderExpenses();
         }
 
-        "使用對齊"
         function toggleStoreCollapse(storeName) {
             shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
             renderCombinedShoppingList();
@@ -448,7 +447,6 @@
         }
 
         function setPostType(type) {
-            currentPostType = type;
             const localBtn = document.getElementById('toggle-type-local');
             const cloudBtn = document.getElementById('toggle-type-cloud');
             const submitBtn = document.getElementById('add-shop-btn');
@@ -790,7 +788,7 @@
 
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
-            if(tabName === 'lists') fetchCloudChecklist(); // 切換到準備頁籤時即時重新拉取雲端最準確
+            if(tabName === 'lists') fetchCloudChecklist(); // 切換到準備頁籤時即時重新拉取雲端
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -801,7 +799,7 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 從雲端 Google Sheet 拉取全新行李清單資料
+        // 從雲端 Google Sheet 拉取全新行李清單資料 (依據 A,B,C,D,E,F 欄位順序解析)
         async function fetchCloudChecklist() {
             try {
                 const response = await fetch(CHECKLIST_CSV_URL);
@@ -812,18 +810,23 @@
                 globalChecklistItems = [];
 
                 if (lines.length > 1) {
-                    // 解析第一列 Header (欄位為：id, category, type, text, qty, note)
-                    const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
-                    
                     // 從本機取得目前的使用者勾選狀態紀錄庫
                     const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
 
+                    // i=0 是欄位名稱 Header，從 i=1 開始抓取真實資料
                     for (let i = 1; i < lines.length; i++) {
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        if (currentLine.length < 4 || !currentLine[3]) continue; // 至少要有項目名稱
                         
-                        const itemId = currentLine[0] || 'chk-' + i;
-                        const catName = currentLine[1] || '其他未分類';
+                        // 修正關鍵：改用絕對欄位順序索引抓取資料，不再比對 header 名稱
+                        // [0]=A欄(id), [1]=B欄(category), [2]=C欄(type), [3]=D欄(text), [4]=E欄(qty), [5]=F欄(note)
+                        if (currentLine.length < 4 || !currentLine[3]) continue; // 確保基本欄位有資料且 D 欄項目名稱不為空
+                        
+                        const itemId = currentLine[0] || 'chk-' + i; // A欄 (id)
+                        const catName = currentLine[1] || '其他未分類'; // B欄 (category)
+                        const typeName = currentLine[2] || ''; // C欄 (type)
+                        const itemText = currentLine[3]; // D欄 (text)
+                        const itemQty = parseInt(currentLine[4]) || 1; // E欄 (qty)
+                        const itemNote = currentLine[5] || ''; // F欄 (note)
 
                         // 預設初始化各分類卡片為展開狀態 (false = 不折疊)
                         if (checklistCollapsedCategories[catName] === undefined) {
@@ -833,10 +836,10 @@
                         globalChecklistItems.push({
                             id: itemId,
                             category: catName,
-                            type: currentLine[2] || '',
-                            text: currentLine[3],
-                            qty: parseInt(currentLine[4]) || 1,
-                            note: currentLine[5] || '',
+                            type: typeName,
+                            text: itemText,
+                            qty: itemQty,
+                            note: itemNote,
                             checked: userCheckedStates[itemId] === true // 對照手機本機勾選記憶庫
                         });
                     }
@@ -846,7 +849,7 @@
                 console.error("行前準備清單拉取異常:", error);
                 document.getElementById('checklist-container').innerHTML = `
                     <div class="text-center py-8 text-sm text-fuji-accent font-medium">
-                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁，請確認分頁名稱是否為「準備」。
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁，請確認雲端分頁名稱是否完全對應為「準備」。
                     </div>`;
             }
         }
@@ -934,20 +937,17 @@
 
         // 行李打勾狀態切換處理
         function toggleCheck(id) {
-            // 讀取目前的勾選狀態對照表
             const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
             
-            // 找到該物件並切換它的真假狀態
             globalChecklistItems = globalChecklistItems.map(item => {
                 if (item.id === id) {
                     const nextState = !item.checked;
-                    userCheckedStates[id] = nextState; // 同步回覆給本機記憶體
+                    userCheckedStates[id] = nextState; 
                     return { ...item, checked: nextState };
                 }
                 return item;
             });
             
-            // 儲存最新的勾選進度，這樣未來重新從雲端載入時也不會被蓋掉
             localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
             renderChecklist(globalChecklistItems);
         }
