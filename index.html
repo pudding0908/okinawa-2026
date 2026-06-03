@@ -412,7 +412,7 @@
             let cleanUrl = url.trim();
             if (cleanUrl.includes('drive.google.com')) {
                 const match = cleanUrl.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,35})/);
-                if (match && match[1]) return `https://docs.google.com/uc?export=view&id=${match[1]}`;
+                if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
             }
             return cleanUrl;
         }
