@@ -305,25 +305,21 @@
                 cloudShoppingItems = [];
         
                 if (lines.length > 1) {
-                    // 這裡保留原先的 headers 讀取（若後續需要偵錯可用），但解析時改採固定索引，不依賴標題字串
                     const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
                     
                     for (let i = 1; i < lines.length; i++) {
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         
-                        // 檢查機制：至少要有前三欄的資料長度，且商品名稱（索引2）不能為空，否則跳過
                         if (currentLine.length < 3 || !currentLine[2]) continue;
         
-                        // 依據您的試算表實際欄位結構進行索引塞值：
-                        // A[0]:店家LOGO, B[1]:店家, C[2]:商品名稱, D[3]:數量, E[4]:備註, F[5]:連結, G[6]:商品圖片
                         cloudShoppingItems.push({
                             id: 'cloud-' + i,
-                            name: currentLine[2],                                      // C欄：商品名稱
-                            qty: parseInt(currentLine[3]) || 1,                        // D欄：數量 (防呆預設 1)
-                            store: currentLine[1] || '其他待辦購買',                    // B欄：店家 (為空則帶預設文字)
-                            note: (currentLine[4] || '').substring(0, 40),             // E欄：備註 (防呆截斷避免網址太長)
-                            link: currentLine[5] || '',                                // F欄：連結
-                            image: parseImageUrl(currentLine[6]),                      // G欄：商品圖片 (走原有的解析網址方法)
+                            name: currentLine[2],                                      
+                            qty: parseInt(currentLine[3]) || 1,                        
+                            store: currentLine[1] || '其他待辦購買',                    
+                            note: (currentLine[4] || '').substring(0, 40),             
+                            link: currentLine[5] || '',                                
+                            image: parseImageUrl(currentLine[6]),                      
                             isCloud: true
                         });
                     }
@@ -364,20 +360,18 @@
             if (!name) { alert('請填寫商品名稱唷！'); return; }
 
             if (currentPostType === 'local') {
-                // A. 存入本機私人 LocalStorage
                 const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
                 localItems.push({
                     id: 'local-' + Date.now(),
                     name, qty, store, 
                     note: noteOrImg,
-                    image: '', // 私人項目暫採預設圖示
+                    image: '', 
                     isCloud: false
                 });
                 localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
                 clearShoppingForm();
                 renderCombinedShoppingList();
             } else {
-                // B. 發射至雲端試算表 (透過 Apps Script)
                 if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) {
                     alert('噢不！您尚未設定第一步的 GAS 網頁應用程式網址，請先至 index.html 第 155 行配置唷！');
                     return;
@@ -387,7 +381,6 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>正在穿越大氣層同步中...`;
 
-                // 智慧識別：如果第四個欄位填的是網址，自動歸類進圖片欄位
                 let finalNote = noteOrImg;
                 let finalImage = '';
                 if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) {
@@ -399,13 +392,12 @@
 
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // 避免跨域阻擋，採取背景發射
+                    mode: 'no-cors', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }).then(() => {
                     alert(`🎉 【${name}】已成功排程寫入雲端試算表！(由於 Google 雲端快取，資料約在 1~2 分鐘內自動出現在列表中)`);
                     clearShoppingForm();
-                    // 重新加載雲端資料
                     setTimeout(fetchCloudShopping, 2000);
                 }).catch(err => {
                     alert('發送失敗，請確認網路連線或 GAS 設定。');
@@ -445,10 +437,7 @@
             allItems.forEach(item => {
                 const storeName = item.store || '其他待辦購買';
                 if (!storeGroups[storeName]) {
-                    storeGroups[storeName] = { items: [], customLink: '' };
-                }
-                if (item.link && !storeGroups[storeName].customLink) {
-                    storeGroups[storeName].customLink = item.link;
+                    storeGroups[storeName] = { items: [] };
                 }
                 if (modifiedQtys[item.id] !== undefined) {
                     item.qty = modifiedQtys[item.id];
@@ -458,7 +447,6 @@
 
             for (const [storeName, group] of Object.entries(storeGroups)) {
                 const meta = getStoreMeta(storeName);
-                const finalLink = group.customLink || meta.defaultLink;
                 
                 let groupHtml = `
                     <div class="bg-fuji-paper rounded-2xl border border-fuji-light shadow-sm overflow-hidden bg-white">
@@ -467,11 +455,6 @@
                                 ${meta.icon}
                                 <span>${storeName}</span>
                             </div>
-                            ${finalLink ? `
-                                <a href="${finalLink}" target="_blank" class="text-[11px] font-bold text-fuji-primary hover:text-fuji-accent flex items-center gap-0.5 bg-white px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> 連結
-                                </a>` : ''
-                            }
                         </div>
                         <div class="divide-y divide-fuji-light">`;
 
@@ -493,6 +476,13 @@
                                     ${!item.isCloud ? `<span class="text-[9px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200 flex-shrink-0">私人</span>` : ''}
                                 </div>
                                 ${item.note ? `<div class="text-[11px] text-fuji-secondary mt-0.5 font-medium truncate"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.link ? `
+                                    <div class="mt-1">
+                                        <a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[10px] font-bold text-fuji-primary hover:text-fuji-accent bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> 商品連結
+                                        </a>
+                                    </div>` : ''
+                                }
                             </div>
 
                             <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
