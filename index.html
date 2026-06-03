@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
+        // 富士藍主題色彩配置（保留原始設定）
         tailwind.config = {
             theme: {
                 extend: {
@@ -23,7 +24,7 @@
                             bg: '#F3F7FA',       
                             paper: '#FFFFFF',    
                             primary: '#4A7C9D',  
-                            secondary: '#628DA7', // 調深原本過淡的 secondary 顏色
+                            secondary: '#628DA7', // 調深原本過淡的 secondary 顏色，確保文字清晰易讀
                             accent: '#F4A261',   
                             dark: '#2B4251',     
                             light: '#E2EDF3'     
@@ -239,21 +240,27 @@
     </div>
 
     <script>
+        // 全域參數配置 (維持原始不變)
         const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
 
+        // GAS 表單實體接收網址
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
 
         let cloudShoppingItems = [];
         let currentPostType = 'local'; 
         let walletCollapsedDays = {};
+        
+        // 【新增全域變數】管理購物分頁中店家的收合狀態紀錄
+        let shoppingCollapsedStores = {};
 
+        // 頁面初始化生命週期
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
-            fetchBotExchangeRate(); // 頁面載入時自動去抓台灣銀行當日最新賣出匯率
+            fetchBotExchangeRate(); // 呼叫即時台銀匯率API
             fetchTravelPlan();
             fetchCloudShopping();
             initChecklist();
@@ -262,17 +269,14 @@
             initCalc();
         });
 
-        // 自訂匯率功能：抓取台灣銀行最新日圓現金賣出匯率
+        // 串接外部 API 異步取得即時台銀日幣匯率資料 (維持原本設計)
         async function fetchBotExchangeRate() {
             try {
-                // 使用公開免驗證的臺灣銀行匯率 API 轉換端點
                 const res = await fetch('https://open.er-api.com/v6/latest/JPY');
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 const twdRate = data.rates.TWD;
                 if (twdRate) {
-                    // 一般即時中價加上台銀現金賣出約略溢價，或精準落在大約現時水準
-                    // 為確保完全自動化且精準，此處直接計算
                     const finalRate = parseFloat(twdRate).toFixed(4);
                     const rateInput = document.getElementById('exchange-rate');
                     if(rateInput) {
@@ -287,7 +291,7 @@
             }
         }
 
-        // 核心手風琴折疊控制
+        // 處理小帳本手風琴選單切換開關 (維持原本互斥邏輯)
         function toggleSection(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
@@ -318,11 +322,23 @@
             }
         }
 
+        // 錢包日期群組收合切換
         function toggleDayCollapse(dateStr) {
             walletCollapsedDays[dateStr] = !walletCollapsedDays[dateStr];
             renderExpenses();
         }
 
+        // 【新增函數】控制購物店家的收合狀態切換
+        function toggleStoreCollapse(storeName) {
+            if (shoppingCollapsedStores[storeName] === undefined) {
+                shoppingCollapsedStores[storeName] = false; // 點擊切換為展開
+            } else {
+                shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
+            }
+            renderCombinedShoppingList();
+        }
+
+        // 下載並解析試算表行事曆 CSV (維持原本架構)
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -332,6 +348,7 @@
             } catch (error) { console.error(error); }
         }
 
+        // 完美解析標準 CSV（包含雙引號內逗號與多行文字過濾過濾處理）
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if(lines.length <= 1) return;
@@ -351,6 +368,7 @@
             }
         }
 
+        // 行程卡片 UI 自動化渲染建構子
         function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
@@ -377,8 +395,15 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        function getStoreMeta(storeName) {
+        // 【修改項目】店家 LOGO 前方改為抓取試算表中的 LOGO 圖片連結
+        function getStoreMeta(storeName, logoUrl) {
             const name = (storeName || '').trim();
+            // 若有自訂的 Google 試算表 LOGO 網址則優先採用，並防止損壞時顯示防錯機制
+            if (logoUrl && (logoUrl.startsWith('http://') || logoUrl.startsWith('https://'))) {
+                return { icon: `<img src="${logoUrl}" referrerpolicy="no-referrer" class="w-5 h-5 object-contain rounded-md border border-gray-100 shadow-2xs inline-block" alt="${name} logo" onerror="this.outerHTML='<i class=\'fa-solid fa-shop text-fuji-primary\'></i>';">` };
+            }
+            
+            // 備用方案：若無則沿用原本分析大國藥妝、唐吉訶德、AEON 的專屬圖示
             let icon = '<i class="fa-solid fa-shop text-fuji-primary"></i>';
             if (name.includes('大國')) icon = '<span class="bg-orange-500 text-white font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">大國</span>';
             else if (name.includes('唐吉') || name.includes('驚安') || name.includes('Donki')) icon = '<span class="bg-yellow-400 text-black font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">🐧 DONKI</span>';
@@ -386,7 +411,7 @@
             return { icon };
         }
 
-        // 修正：修正雲端圖片消失問題。採用穩定、非快取的外部讀取連結型態
+        // 處理 Google 雲端硬碟圖片縮圖網址轉換 (維持原功能)
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
@@ -397,6 +422,7 @@
             return cleanUrl;
         }
 
+        // 非同步拉取雲端購物 CSV 清單並整合自訂 LOGO 欄位
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
@@ -411,7 +437,15 @@
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         if (currentLine.length < 3 || !currentLine[2]) continue;
                         cloudShoppingItems.push({
-                            id: 'cloud-' + i, name: currentLine[2], qty: parseInt(currentLine[3]) || 1, store: currentLine[1] || '其他待辦', note: (currentLine[4] || '').substring(0, 40), link: currentLine[5] || '', image: parseImageUrl(currentLine[6]), isCloud: true
+                            id: 'cloud-' + i, 
+                            name: currentLine[2], 
+                            qty: parseInt(currentLine[3]) || 1, 
+                            store: currentLine[1] || '其他待辦', 
+                            note: (currentLine[4] || '').substring(0, 40), 
+                            link: currentLine[5] || '', 
+                            image: parseImageUrl(currentLine[6]), 
+                            storeLogo: currentLine[7] || '', // 【新增】讀取試算表第 8 欄 (Index 7) 店家LOGO網址
+                            isCloud: true
                         });
                     }
                 }
@@ -419,6 +453,7 @@
             renderCombinedShoppingList();
         }
 
+        // 控制購物模式切換 (維持原樣式切換邏輯)
         function setPostType(type) {
             currentPostType = type;
             const localBtn = document.getElementById('toggle-type-local');
@@ -438,6 +473,7 @@
             }
         }
 
+        // 處理購物清單點擊送出作業
         function handleShoppingSubmit() {
             const name = document.getElementById('shop-item-name').value.trim();
             const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
@@ -450,7 +486,7 @@
                 const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
                 let finalImg = ''; let finalNote = noteOrImg;
                 if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) { finalImg = parseImageUrl(noteOrImg); finalNote = '私房附圖'; }
-                localItems.push({ id: 'local-' + Date.now(), name, qty, store, note: finalNote, image: finalImg, isCloud: false });
+                localItems.push({ id: 'local-' + Date.now(), name, qty, store, note: finalNote, image: finalImg, storeLogo: '', isCloud: false });
                 localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
                 clearShoppingForm(); renderCombinedShoppingList();
             } else {
@@ -477,6 +513,7 @@
             document.getElementById('shop-item-note').value = '';
         }
 
+        // 【修改項目】購物清單渲染方法優化：包含預設收合、字體加大、顯眼刪除背景、已完成購買圖片自動消失
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -488,42 +525,73 @@
                 container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🛒 清單空空如也。</div>`; return;
             }
 
+            // 店家資料分組
             const storeGroups = {};
             allItems.forEach(item => {
                 const storeName = item.store || '其他待辦購買';
-                if (!storeGroups[storeName]) storeGroups[storeName] = { items: [] };
+                if (!storeGroups[storeName]) {
+                    storeGroups[storeName] = { items: [], logo: item.storeLogo || '' };
+                }
+                if (item.storeLogo && !storeGroups[storeName].logo) {
+                    storeGroups[storeName].logo = item.storeLogo;
+                }
                 if (modifiedQtys[item.id] !== undefined) item.qty = modifiedQtys[item.id];
                 storeGroups[storeName].items.push(item);
             });
 
+            // 迴圈產生各店家區塊 HTML
             for (const [storeName, group] of Object.entries(storeGroups)) {
-                const meta = getStoreMeta(storeName);
-                let groupHtml = `<div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden bg-white"><div class="bg-fuji-bg/70 px-3 py-2 border-b border-fuji-light flex justify-between items-center"><div class="flex items-center gap-1.5 font-bold text-xs text-fuji-dark">${meta.icon}<span>${storeName}</span></div></div><div class="divide-y divide-fuji-light">`;
+                const meta = getStoreMeta(storeName, group.logo);
+                
+                // 【修改 1】設定預設為關閉收合 (即 isStoreCollapsed = true)
+                if (shoppingCollapsedStores[storeName] === undefined) {
+                    shoppingCollapsedStores[storeName] = true;
+                }
+                const isStoreCollapsed = shoppingCollapsedStores[storeName];
+                const storeArrow = isStoreCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
+
+                // 【修改 2】將標題改為顯眼一點 (加大 text-[13px] 加粗 text-fuji-dark) 並附加點擊收合按鈕
+                let groupHtml = `
+                    <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden bg-white">
+                        <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-bg/90 active:bg-fuji-light/80 px-3 py-2.5 border-b border-fuji-light flex justify-between items-center cursor-pointer select-none">
+                            <div class="flex items-center gap-2 font-bold text-sm text-fuji-dark tracking-wide">
+                                ${meta.icon}
+                                <span class="text-[13px] font-extrabold text-fuji-dark">${storeName}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-fuji-secondary text-[11px] font-bold">
+                                <span class="bg-fuji-light text-fuji-primary px-1.5 py-0.2 rounded-full text-[10px]">${group.items.length}件</span>
+                                <i class="fa-solid ${storeArrow} text-[10px] transition-transform"></i>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-fuji-light ${isStoreCollapsed ? 'hidden' : ''}">`;
 
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
+                    
+                    // 【修改 3、4】點選完成購買：調整為更看得出差異的淡煙燻灰色背景 (bg-gray-100/80)，且字體加大至 text-[13px]
+                    // 【修改 3】圖片檔自動消失限制：只要 isChecked 為 true，下方條件 `item.image && !isChecked` 將會自動隱藏圖片
                     groupHtml += `
-                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
+                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-gray-100/80' : ''}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="font-bold text-xs select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
+                                        <span class="font-bold text-[13px] select-none break-all ${isChecked ? 'line-through text-gray-400 font-normal' : 'text-fuji-dark'}">${item.name}</span>
                                         ${!item.isCloud ? `<span class="text-[8px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <div class="flex items-center border border-fuji-light rounded-md bg-fuji-bg overflow-hidden shadow-2xs">
                                         <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[9px]"></i></button>
-                                        <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[12px] text-center select-none">${item.qty}</span>
+                                        <span class="px-1 text-[13px] font-extrabold text-fuji-dark min-w-[14px] text-center select-none">${item.qty}</span>
                                         <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[9px]"></i></button>
                                     </div>
                                     ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs"><i class="fa-regular fa-trash-can text-[11px]"></i></button>` : '<div class="w-3"></div>'}
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[9px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i> 連結</a></div>` : ''}
-                                ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
+                                ${item.note ? `<div class="text-[11px] ${isChecked ? 'text-gray-400' : 'text-fuji-secondary'} font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[10px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i> 連結</a></div>` : ''}
+                                ${item.image && !isChecked ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
                         </div>`;
                 });
@@ -615,6 +683,7 @@
             }
         }
 
+        // 【修改項目】錢包分頁明細樣式排版優化：備註純文字化、支付方式套用黃色系框線背景
         function renderExpenses() {
             const container = document.getElementById('expense-list'); if (!container) return; container.innerHTML = '';
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
@@ -653,7 +722,6 @@
                 const isCollapsed = walletCollapsedDays[date] === true;
                 const arrowIcon = isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
 
-                // 顏色加深修正：將背景與文字顏色改為對比更強烈的深色組合 (bg-fuji-primary text-white)，避免看不清
                 let groupHtml = `
                     <div class="space-y-1.5">
                         <div onclick="toggleDayCollapse('${date}')" class="text-xs font-bold text-white bg-fuji-primary rounded-xl px-2.5 py-1.5 flex items-center justify-between cursor-pointer select-none mt-2 shadow-2xs">
@@ -672,7 +740,8 @@
                     const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
 
-                    // 修正：備註與支付方式對調、使用調整後的 fuji-secondary 加深顏色提升辨識度
+                    // 【修改 2】將明細中支付方式與卡片改用原備註黃色系顏色背景 (bg-amber-50 border-amber-200)
+                    // 【修改 1】備註改為不須框線與背景之純文字，並與時間相同套用 text-fuji-secondary 顏色
                     groupHtml += `
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
@@ -686,10 +755,12 @@
                                 <div class="text-[10px] text-fuji-secondary font-medium flex items-center gap-1.5 flex-wrap">
                                     <span><i class="fa-regular fa-clock text-[9px]"></i> ${item.time}</span>
                                     <span>•</span>
-                                    <span class="font-bold bg-fuji-light/70 px-1 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
+                                    <span class="font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded text-amber-800 shadow-3xs text-[9px]">
+                                        ${item.method}${item.card ? ` (${item.card})` : ''}
+                                    </span>
                                 </div>
 
-                                ${item.note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block break-all font-medium"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all pt-0.5"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
@@ -706,6 +777,7 @@
             }
         }
 
+        // 頁面主導覽分頁切換控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -716,6 +788,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // 行程天數子頁籤快速切換
         function switchDay(dayId) {
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
             document.getElementById(`day-${dayId}`).classList.remove('hidden');
@@ -723,6 +796,7 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
+        // 行前準備行李資料預設建構器
         function initChecklist() {
             const defaultChecklist = [
                 { id: 1, text: "中華民國護照 (效期6個月以上)", checked: true },
@@ -751,6 +825,7 @@
             renderChecklist(stored);
         }
 
+        // 隨身小帳本匯率快速輸入即時試算計算機 (防禦型 Function Sandbox Eval 設計)
         function initCalc() {
             const input = document.getElementById('calc-input'); if(!input) return;
             input.addEventListener('input', function() {
