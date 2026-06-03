@@ -105,10 +105,10 @@
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
                     <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
                         <div class="text-[15px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
-                        <i id="main-shop-arrow" class="fa-solid fa-chevron-down text-[10px] transition-transform text-fuji-primary"></i>
+                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform text-fuji-primary"></i>
                     </div>
                     
-                    <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50">
+                    <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50 hidden">
                         <div class="flex justify-between items-center">
                             <div class="text-[13px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
                             <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[12px] font-bold relative shadow-2xs">
@@ -286,7 +286,7 @@
         let currentPostType = 'local'; 
         let walletCollapsedDays = {};
         let shoppingCollapsedStores = {};
-        // 儲存行前準備各區域卡片的折疊狀態 (預設展開)
+        // 儲存行前準備各區域卡片的折疊狀態 (預設皆改為 true 收合)
         let checklistCollapsedCategories = {};
         // 全域儲存從雲端下載並轉化後的準備清單陣列
         let globalChecklistItems = [];
@@ -839,8 +839,9 @@
                         const itemQty = parseInt(currentLine[4]) || 1;     // E 欄 (數量)
                         const itemNote = currentLine[5] || '';             // F 欄 (備註)
 
+                        // 需求修正：行前行李各項大清單預設為 true (收合)
                         if (checklistCollapsedCategories[catName] === undefined) {
-                            checklistCollapsedCategories[catName] = false;
+                            checklistCollapsedCategories[catName] = true;
                         }
 
                         globalChecklistItems.push({
@@ -1012,12 +1013,28 @@
                     typeGroups[t].push(item);
                 });
 
-                for (const [typeName, subItems] of Object.entries(typeGroups)) {
+                // 需求修正：將次分類鍵名取出排序，確保空字串 (一般準備項目) 自動排序到最後
+                const sortedTypeKeys = Object.keys(typeGroups).sort((a, b) => {
+                    if (a === "") return 1;  // a 是空的，往後排
+                    if (b === "") return -1; // b 是空的，往前排
+                    return a.localeCompare(b, 'zh-Hans-CN'); // 有填寫的正常比對排序
+                });
+
+                for (const typeName of sortedTypeKeys) {
+                    const subItems = typeGroups[typeName];
                     const isDefaultGroup = (typeName === "");
+
+                    // 需求修正：一般準備項目比照自訂項目改為外框標題，並將顏色更換為富士藍底+深藍字做區別
+                    const titleClass = isDefaultGroup 
+                        ? 'text-fuji-primary bg-fuji-light px-2 py-0.5 rounded w-fit text-[14px]' 
+                        : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]';
+                    
+                    const iconClass = isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open';
+                    
                     catHtml += `
                         <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}" style="letter-spacing: 0.02em;">
-                                <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${titleClass}" style="letter-spacing: 0.02em;">
+                                <i class="fa-solid ${iconClass}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
                             <div class="pl-1 space-y-3">`;
