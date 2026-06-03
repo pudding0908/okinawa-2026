@@ -100,42 +100,49 @@
                     </h2>
                 </div>
                 
-                <div class="bg-fuji-paper p-3 rounded-xl border border-fuji-light shadow-sm mb-4 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <div class="text-[10px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
-                        <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[9px] font-bold relative shadow-2xs">
-                            <button id="toggle-type-local" onclick="setPostType('local')" class="px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5">
-                                <i class="fa-solid fa-user-lock"></i>個人私人
-                            </button>
-                            <button id="toggle-type-cloud" onclick="setPostType('cloud')" class="px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>團隊共同
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-1.5">
-                        <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
-                        <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-center font-bold">
+                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
+                    <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
+                        <div class="text-[11px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
+                        <i id="main-shop-arrow" class="fa-solid fa-chevron-down text-[10px] transition-transform text-fuji-primary"></i>
                     </div>
                     
-                    <div class="grid grid-cols-1">
-                        <input type="text" id="shop-item-store" placeholder="店家名稱 (如: 全家、大國藥妝)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                    <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50">
+                        <div class="flex justify-between items-center">
+                            <div class="text-[10px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
+                            <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[9px] font-bold relative shadow-2xs">
+                                <button id="toggle-type-local" onclick="setPostType('local')" class="px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5">
+                                    <i class="fa-solid fa-user-lock"></i>個人私人
+                                </button>
+                                <button id="toggle-type-cloud" onclick="setPostType('cloud')" class="px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>團隊共同
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                            <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-center font-bold">
+                        </div>
+                        
+                        <div class="grid grid-cols-1">
+                            <input type="text" id="shop-item-store" placeholder="店家名稱 (如: 全家、大國藥妝)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                        </div>
+
+                        <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
+                            <span><i class="fa-solid fa-plus text-fuji-primary mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
+                            <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform"></i>
+                        </button>
+
+                        <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
+                            <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                            <input type="text" id="shop-item-image" placeholder="商品圖片網址 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                            <input type="text" id="shop-item-link" placeholder="參考網頁連結 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                        </div>
+
+                        <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all">
+                            <i class="fa-solid fa-plus mr-1"></i>存入個人清單
+                        </button>
                     </div>
-
-                    <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
-                        <span><i class="fa-solid fa-plus text-fuji-primary mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
-                        <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform"></i>
-                    </button>
-
-                    <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
-                        <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
-                        <input type="text" id="shop-item-image" placeholder="商品圖片網址 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
-                        <input type="text" id="shop-item-link" placeholder="參考網頁連結 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
-                    </div>
-
-                    <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all">
-                        <i class="fa-solid fa-plus mr-1"></i>存入個人清單
-                    </button>
                 </div>
 
                 <div id="shopping-list-container" class="space-y-4">
@@ -244,7 +251,7 @@
         </main>
 
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-1.5 z-50 shadow-lg rounded-t-xl px-1">
-            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-primary transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[9px] font-bold mt-0.5">行程</span></button>
+            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[9px] font-bold mt-0.5">行程</span></button>
             <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[9px] font-bold mt-0.5">地圖</span></button>
             <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[9px] font-bold mt-0.5">購物</span></button>
             <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[9px] font-bold mt-0.5">錢包</span></button>
@@ -385,13 +392,13 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 雲端硬碟圖片連結解析轉換
+        // 雲端硬碟圖片連結解析轉換（修正：修正大括號拼寫錯誤，確保 Logo 與照片能順利讀取）
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
             if (cleanUrl.includes('drive.google.com')) {
                 const match = cleanUrl.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,35})/);
-                if (match && match[1]) return `https://lh3.googleusercontent.com/d/$${match[1]}`;
+                if (match && match[1]) return `https://docs.google.com/uc?export=view&id=${match[1]}`;
             }
             return cleanUrl;
         }
@@ -410,10 +417,16 @@
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         if (currentLine.length < 3 || !currentLine[2]) continue;
                         
+                        const storeName = currentLine[1] || '其他待辦';
+                        // 需求1：預設將未初始化的店家收合狀態設為關閉 (true 為收合)
+                        if (shoppingCollapsedStores[storeName] === undefined) {
+                            shoppingCollapsedStores[storeName] = true;
+                        }
+
                         cloudShoppingItems.push({
                             id: 'cloud-' + i, 
                             logo: parseImageUrl(currentLine[0]), // 抓取第一欄的店家 LOGO 網址
-                            store: currentLine[1] || '其他待辦', 
+                            store: storeName, 
                             name: currentLine[2], 
                             qty: parseInt(currentLine[3]) || 1, 
                             note: (currentLine[4] || '').substring(0, 40), 
@@ -457,6 +470,11 @@
             const linkUrl = document.getElementById('shop-item-link').value.trim();
 
             if (!name) { alert('請填寫商品名稱唷！'); return; }
+
+            // 私人清單新增時也確保店家預設收合
+            if (shoppingCollapsedStores[store] === undefined) {
+                shoppingCollapsedStores[store] = true;
+            }
 
             if (currentPostType === 'local') {
                 const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -525,28 +543,31 @@
             });
 
             for (const [storeName, group] of Object.entries(storeGroups)) {
+                // 需求1：預設改為收合關閉狀態 (true)
+                if (shoppingCollapsedStores[storeName] === undefined) {
+                    shoppingCollapsedStores[storeName] = true;
+                }
                 const isCollapsed = shoppingCollapsedStores[storeName] === true;
-                const arrowIcon = isCollapsed ? 'fa-triangle' : 'fa-triangle rotate-180'; // 仿 FamilyMart 的上下三角形指示
 
                 // 店家 Logo 圖片區塊
-                let logoHtml = `<div class="w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light flex-shrink-0"><i class="fa-solid fa-shop"></i></div>`;
+                let logoHtml = `<div class="w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light/20 flex-shrink-0"><i class="fa-solid fa-shop"></i></div>`;
                 if (group.logo) {
-                    logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-7 h-7 object-contain rounded-md border border-fuji-light bg-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'><i class=\'fa-solid fa-shop\'></i></div>'">`;
+                    logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-7 h-7 object-contain rounded-md border border-fuji-light/20 bg-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'><i class=\'fa-solid fa-shop\'></i></div>區域'">`;
                 }
 
-                // 2. 改良版：強化視覺的店家標題列 (比照FamilyMart卡片外觀，整行支援點擊收合)
+                // 需求1：標題列外觀顏色調整得更明顯明顯，改為 bg-fuji-primary (深藍底白字)
                 let groupHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
-                        <div onclick="toggleStoreCollapse('${storeName}')" class="bg-white px-3 py-2.5 border-b border-fuji-light flex justify-between items-center cursor-pointer hover:bg-fuji-bg/30 select-none transition-all">
+                        <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-primary px-3 py-2.5 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 ${logoHtml}
                                 <div class="flex flex-col text-left">
-                                    <span class="font-extrabold text-sm text-fuji-dark tracking-wide truncate">${storeName}</span>
-                                    <span class="text-[9px] text-fuji-secondary font-medium -mt-0.5">${group.items.length} 件商品</span>
+                                    <span class="font-extrabold text-sm text-white tracking-wide truncate">${storeName}</span>
+                                    <span class="text-[9px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
                                 </div>
                             </div>
-                            <div class="text-fuji-secondary/70 pr-1 text-[8px] transition-transform">
-                                <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-fuji-secondary"></i>
+                            <div class="text-white pr-1 text-[8px]">
+                                <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-white transition-transform"></i>
                             </div>
                         </div>
                         <div class="${isCollapsed ? 'hidden' : ''} divide-y divide-fuji-light">`;
@@ -722,6 +743,7 @@
                     const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
 
+                    // 錢包需求1：記帳備註不使用顯眼黃色背景，移除 bg-amber-50，調整為與時間、刷卡方式同色系的 text-fuji-secondary 柔和文字
                     groupHtml += `
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
@@ -738,7 +760,7 @@
                                     <span class="font-bold bg-fuji-light/70 px-1 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
                                 </div>
 
-                                ${item.note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block break-all font-medium"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all pt-0.5"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
@@ -759,8 +781,18 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-fuji-primary'); btn.classList.add('text-fuji-secondary'); });
-            document.getElementById(`nav-${tabName}`).classList.remove('text-fuji-secondary'); document.getElementById(`nav-${tabName}`).classList.add('text-fuji-primary');
+            
+            // 需求3：下方頁籤高亮顏色配置優化。所有分頁按鈕清空為預設次要藍灰色，當前點擊頁籤切換為顯眼的富士橘色 (text-fuji-accent)
+            document.querySelectorAll('.nav-btn').forEach(btn => { 
+                btn.classList.remove('text-fuji-primary', 'text-fuji-accent'); 
+                btn.classList.add('text-fuji-secondary'); 
+            });
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-fuji-secondary'); 
+                activeNav.classList.add('text-fuji-accent');
+            }
+
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
             window.scrollTo({ top: 0, behavior: 'smooth' });
