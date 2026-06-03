@@ -24,7 +24,7 @@
                             bg: '#F3F7FA',       
                             paper: '#FFFFFF',    
                             primary: '#4A7C9D',  
-                            secondary: '#628DA7', // 調深原本過淡的 secondary 顏色，確保文字清晰易讀
+                            secondary: '#628DA7', 
                             accent: '#F4A261',   
                             dark: '#2B4251',     
                             light: '#E2EDF3'     
@@ -236,10 +236,14 @@
             </section>
 
             <section id="page-lists" class="tab-content hidden">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
                     <i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點
                 </h2>
-                <div id="checklist-container" class="space-y-4"></div>
+                <div id="checklist-container" class="space-y-4">
+                    <div class="text-center py-12 text-sm text-fuji-secondary font-medium">
+                        <i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>正在同步雲端準備清單...
+                    </div>
+                </div>
             </section>
 
             <section id="page-info" class="tab-content hidden">
@@ -263,32 +267,35 @@
     </div>
 
     <script>
-         // 全域參數配置
         const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
+        // 行前準備清單分頁的 CSV 線上讀取網址
+        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%96`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
-
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
 
         let cloudShoppingItems = [];
         let currentPostType = 'local'; 
         let walletCollapsedDays = {};
-        let shoppingCollapsedStores = {}; // 新增：控管店家欄位折疊狀態
+        let shoppingCollapsedStores = {};
+        // 儲存行前準備各區域卡片的折疊狀態 (預設展開)
+        let checklistCollapsedCategories = {};
+        // 全域儲存從雲端下載並轉化後的準備清單陣列
+        let globalChecklistItems = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
-            fetchBotExchangeRate(); // 呼叫即時台銀匯率API
+            fetchBotExchangeRate();
             fetchTravelPlan();
             fetchCloudShopping();
-            initChecklist();
+            fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
             initWalletDateTime();
             renderExpenses();
             initCalc();
         });
 
-        // 串接外部 API 異步取得即時台銀日幣匯率資料
         async function fetchBotExchangeRate() {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -306,16 +313,14 @@
                     }
                 }
             } catch (e) {
-                console.log("無法取得台銀即時匯率，將自動啟用手動預設值 0.215");
+                console.log("無法取得即時匯率，啟用預設值 0.215");
             }
         }
 
-        // 核心手風琴折疊控制
         function toggleSection(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
             if (!content) return;
-            
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 if (arrow) arrow.className = "fa-solid fa-chevron-down text-[10px] transition-transform";
@@ -325,19 +330,23 @@
             }
         }
 
-        // 錢包日期群組收合切換
         function toggleDayCollapse(dateStr) {
             walletCollapsedDays[dateStr] = !walletCollapsedDays[dateStr];
             renderExpenses();
         }
 
-        // 新增：切換店家卡片摺疊狀態
+        "使用對齊"
         function toggleStoreCollapse(storeName) {
             shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
             renderCombinedShoppingList();
         }
 
-        // 下載並解析試算表行事曆 CSV
+        // 切換行李大分類區塊的折疊狀態
+        function toggleChecklistCategoryCollapse(catName) {
+            checklistCollapsedCategories[catName] = !checklistCollapsedCategories[catName];
+            renderChecklist(globalChecklistItems);
+        }
+
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -347,7 +356,6 @@
             } catch (error) { console.error(error); }
         }
 
-         // 完美解析標準 CSV（包含雙引號內逗號與多行文字過濾過濾處理）
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if(lines.length <= 1) return;
@@ -367,7 +375,6 @@
             }
         }
 
-        // 行程卡片 UI 自動化渲染建構子
         function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
@@ -394,7 +401,6 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 雲端硬碟圖片連結解析轉換
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
@@ -441,7 +447,6 @@
             renderCombinedShoppingList();
         }
 
-        // 控制購物模式切換
         function setPostType(type) {
             currentPostType = type;
             const localBtn = document.getElementById('toggle-type-local');
@@ -461,7 +466,6 @@
             }
         }
 
-        // 處理購物清單點擊送出作業
         function handleShoppingSubmit() {
             const name = document.getElementById('shop-item-name').value.trim();
             const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
@@ -517,7 +521,6 @@
             document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
         }
 
-        // 重新繪製整合購物清單
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -591,7 +594,7 @@
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                 ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[9px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i> 連結</a></div>` : ''}
+                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[9px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>  連結</a></div>` : ''}
                                 ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
                         </div>`;
@@ -671,7 +674,6 @@
             initWalletDateTime();
             document.getElementById('expense-method').value = '日幣現金';
             toggleCardSelect();
-
             renderExpenses();
         }
 
@@ -755,7 +757,6 @@
                                     <span>•</span>
                                     <span class="font-bold bg-fuji-light/70 px-1 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
                                 </div>
-
                                 ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all pt-0.5"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
@@ -773,7 +774,6 @@
             }
         }
 
-         // 頁面主導覽分頁切換控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -790,14 +790,10 @@
 
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
-            if(tabName === 'lists') {
-                const stored = JSON.parse(localStorage.getItem('ok_checklist'));
-                renderChecklist(stored);
-            }
+            if(tabName === 'lists') fetchCloudChecklist(); // 切換到準備頁籤時即時重新拉取雲端最準確
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 行程天數子頁籤快速切換
         function switchDay(dayId) {
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
             document.getElementById(`day-${dayId}`).classList.remove('hidden');
@@ -805,60 +801,65 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 依據圖片內容全新配置的行前準備清單
-        function initChecklist() {
-            const defaultChecklist = [
-                // 1. 隨身重要證件
-                { id: 1, category: "隨身重要證件", type: "必備重要", text: "中華民國護照正本", qty: 5, note: "三大二小，確認效期6個月以上", checked: false },
-                { id: 2, category: "隨身重要證件", type: "網路通訊", text: "日本上網卡 (DJB eSIM)", qty: 3, note: "大人手機使用，確認出發前開通", checked: false },
-                { id: 3, category: "隨身重要證件", type: "自駕必備", text: "日文駕照譯本 ＆ 台灣駕照正本", qty: 2, note: "租車必備雙正本，兩位駕駛皆帶", checked: false },
-                { id: 4, category: "隨身重要證件", type: "重要卡片", text: "日幣現金、吉鶴卡、玉山熊本熊卡", qty: 1, note: "多備千圓面額日幣方便投幣機", checked: false },
-                { id: 5, category: "隨身重要證件", type: "重要卡片", text: "Visit Japan Web 截圖", qty: 1, note: "大人小孩皆完成填寫並截圖通關QR", checked: false },
+        // 從雲端 Google Sheet 拉取全新行李清單資料
+        async function fetchCloudChecklist() {
+            try {
+                const response = await fetch(CHECKLIST_CSV_URL);
+                if (!response.ok) throw new Error("網路讀取失敗");
+                const csvText = await response.text();
                 
-                // 2. 日常衣物用品
-                { id: 6, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶包屁衣、外衣與長褲", qty: 15, note: "每人 5 套，沖繩海風大洋蔥式穿法", checked: false },
-                { id: 7, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶防風外套、保暖圍巾", qty: 3, note: "每人 1 套，防早晚溫差", checked: false },
-                { id: 8, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶小襪子與學步鞋", qty: 6, note: "襪子多帶備用", checked: false },
-                { id: 9, category: "日常衣物用品", type: "成人衣物", text: "大人輕便外衣、內著、長褲", qty: 4, note: "4天3夜份量，好穿脫防風為主", checked: false },
-                { id: 10, category: "日常衣物用品", type: "防曬防雨", text: "遮陽帽、抗UV晴雨兩用傘", qty: 2, note: "", checked: false },
+                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                globalChecklistItems = [];
 
-                // 3. 3C電子配件
-                { id: 11, category: "3C電子配件", type: "充電設備", text: "行動電源 ＆ 手機充電線", qty: 3, note: "行動電源需隨身攜帶，不可託運！", checked: false },
-                { id: 12, category: "3C電子配件", type: "充電設備", text: "多孔延長線、豆腐充", qty: 1, note: "飯店插座多時很方便", checked: false },
-                { id: 13, category: "3C電子配件", type: "攝影器材", text: "相機、記憶卡、腳架", qty: 1, note: "紀錄寶貝沖繩出遊回憶", checked: false },
+                if (lines.length > 1) {
+                    // 解析第一列 Header (欄位為：id, category, type, text, qty, note)
+                    const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
+                    
+                    // 從本機取得目前的使用者勾選狀態紀錄庫
+                    const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
 
-                // 4. 藥品與個人衛生
-                { id: 14, category: "藥品與個人衛生", type: "常備藥品", text: "小兒感冒糖漿、退燒藥、備用藥", qty: 1, note: "請小兒科醫生開立常備藥", checked: false },
-                { id: 15, category: "藥品與個人衛生", type: "常備藥品", text: "大人感冒藥、止痛藥、暈車藥", qty: 1, note: "", checked: false },
-                { id: 16, category: "藥品與個人衛生", type: "潔牙用品", text: "大人與寶寶專用牙刷、牙膏", qty: 1, note: "部分日本飯店不主動提供小童牙刷", checked: false },
-                { id: 17, category: "藥品與個人衛生", type: "沐浴保養", text: "寶寶乳液 (慕之恬廊)、屁屁膏", qty: 1, note: "帶常用的避免沖繩乾燥過敏", checked: false },
-                { id: 18, category: "藥品與個人衛生", type: "沐浴保養", text: "防蚊液、防曬乳、指甲剪", qty: 1, note: "", checked: false },
+                    for (let i = 1; i < lines.length; i++) {
+                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                        if (currentLine.length < 4 || !currentLine[3]) continue; // 至少要有項目名稱
+                        
+                        const itemId = currentLine[0] || 'chk-' + i;
+                        const catName = currentLine[1] || '其他未分類';
 
-                // 5. 嬰幼兒專用大件與用品
-                { id: 19, category: "嬰幼兒專用大件與用品", type: "大型設備", text: "雙人/單人輕便推車", qty: 2, note: "確認可登機或進艙託運辦理", checked: false },
-                { id: 20, category: "嬰幼兒專用大件與用品", type: "大型設備", text: "寶寶揹帶", qty: 1, note: "水族館或階梯多時機動使用", checked: false },
-                { id: 21, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "奶粉、奶瓶、拋棄式奶瓶袋", qty: 1, note: "計算 4 天總奶量，拋棄式省空間", checked: false },
-                { id: 22, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "保溫瓶 (泡奶熱水用)", qty: 2, note: "大容量上飛機前可裝熱水", checked: false },
-                { id: 23, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "寶寶剪刀、便攜餐具、圍兜", qty: 2, note: "剪刀記得託運，不可隨身！", checked: false },
-                { id: 24, category: "嬰幼兒專用大件與用品", type: "清潔防護", text: "幫寶適尿布、濕紙巾", qty: 1, note: "預估天數份量，不夠再去西松屋買", checked: false },
-                { id: 25, category: "嬰幼兒專用大件與用品", type: "清潔防護", text: "寶寶安撫玩具、奶嘴、奶嘴鍊", qty: 3, note: "坐飛機與坐車安撫必備", checked: false }
-            ];
-            
-            // 為了讓您看最新的成果，這裡每次重新整理都會重設 LocalStorage，方便體驗
-            localStorage.setItem('ok_checklist', JSON.stringify(defaultChecklist));
-            renderChecklist(defaultChecklist);
+                        // 預設初始化各分類卡片為展開狀態 (false = 不折疊)
+                        if (checklistCollapsedCategories[catName] === undefined) {
+                            checklistCollapsedCategories[catName] = false;
+                        }
+
+                        globalChecklistItems.push({
+                            id: itemId,
+                            category: catName,
+                            type: currentLine[2] || '',
+                            text: currentLine[3],
+                            qty: parseInt(currentLine[4]) || 1,
+                            note: currentLine[5] || '',
+                            checked: userCheckedStates[itemId] === true // 對照手機本機勾選記憶庫
+                        });
+                    }
+                }
+                renderChecklist(globalChecklistItems);
+            } catch (error) {
+                console.error("行前準備清單拉取異常:", error);
+                document.getElementById('checklist-container').innerHTML = `
+                    <div class="text-center py-8 text-sm text-fuji-accent font-medium">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁，請確認分頁名稱是否為「準備」。
+                    </div>`;
+            }
         }
 
-        // 核心修改：將準備頁籤調整為大分類第一層、類型第二層的精緻雙層架構
+        // 渲染依據「區域（大分類）」與「分類（次類型）」雙層排版的大字體行李檢查清單
         function renderChecklist(items) {
             const container = document.getElementById('checklist-container'); if(!container) return; container.innerHTML = '';
-            
             if (!items || items.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-xs text-fuji-secondary font-medium">✨ 尚未建立任何準備項目。</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-sm text-fuji-secondary font-medium">✨ 雲端清單中尚無任何準備項目。</div>`;
                 return;
             }
 
-            // 1. 將資料依照「大分類 (category)」進行第一層分組
+            // 第一層分組：大分類 (區域 category)
             const categoryGroups = {};
             items.forEach(item => {
                 const cat = item.category || "未分類項目";
@@ -866,16 +867,32 @@
                 categoryGroups[cat].push(item);
             });
 
-            // 2. 開始巡覽大分類，繪製第一區塊外殼
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
+                const isCollapsed = checklistCollapsedCategories[categoryName] === true;
+                const arrowIcon = isCollapsed ? 'fa-caret-down rotate-180' : 'fa-caret-up';
+
+                // 計算該大分類下總共打勾的進度數
+                const doneCount = catItems.filter(i => i.checked).length;
+
                 let catHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
-                        <div class="bg-fuji-primary/10 px-3 py-2 border-b border-fuji-light">
-                            <span class="font-extrabold text-xs text-fuji-primary tracking-wide"><i class="fa-solid fa-tags mr-1"></i>${categoryName}</span>
+                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-3 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 bg-white/10 rounded-md flex items-center justify-center text-white overflow-hidden font-bold text-sm flex-shrink-0">
+                                    <i class="fa-solid fa-tags text-fuji-light"></i>
+                                </div>
+                                <div class="flex flex-col text-left">
+                                    <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
+                                    <span class="text-[10px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
+                                </div>
+                            </div>
+                            <div class="text-white pr-1 text-[10px]">
+                                <i class="fa-solid ${arrowIcon} text-sm text-white transition-transform"></i>
+                            </div>
                         </div>
-                        <div class="p-3 space-y-4">`;
+                        <div class="${isCollapsed ? 'hidden' : ''} p-3.5 space-y-4">`;
 
-                // 3. 在大分類內部，再依照「類型 (type)」進行第二層分組
+                // 第二層分組：次類型 (分類 type)
                 const typeGroups = {};
                 catItems.forEach(item => {
                     const t = item.type ? item.type.trim() : "";
@@ -883,52 +900,58 @@
                     typeGroups[t].push(item);
                 });
 
-                // 4. 開始巡覽類型，繪製第二區塊
                 for (const [typeName, subItems] of Object.entries(typeGroups)) {
                     const isDefaultGroup = (typeName === "");
-                    
                     catHtml += `
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-1 text-[10px] font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-1.5 py-0.5 rounded w-fit'}">
+                        <div class="space-y-2.5">
+                            <div class="flex items-center gap-1.5 text-xs font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[11px]'}" style="letter-spacing: 0.02em;">
                                 <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[7px]' : 'fa-folder-open'}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
-                            <div class="pl-1 space-y-2.5">`;
+                            <div class="pl-1 space-y-3">`;
 
-                    // 5. 繪製最終的行李核取清單條目
                     subItems.forEach(item => {
                         const isChecked = item.checked === true;
                         const itemQty = item.qty || 1;
-                        
                         catHtml += `
-                            <label class="flex items-start gap-2.5 text-xs text-fuji-dark font-medium cursor-pointer select-none group">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${item.id})" class="mt-0.5 accent-fuji-primary h-3.5 w-3.5 rounded flex-shrink-0">
+                            <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark'} break-all">${item.text}</span>
-                                        <span class="text-[9px] font-extrabold px-1.5 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
+                                        <span class="text-[10px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[10px] text-fuji-secondary/90 font-medium mt-0.5 leading-normal break-all"><i class="fa-regular fa-comment-dots text-[9px] mr-0.5"></i>${item.note}</p>` : ''}
+                                    ${item.note ? `<p class="text-[11px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all"><i class="fa-regular fa-comment-dots text-[10px] mr-0.5 text-fuji-secondary"></i>${item.note}</p>` : ''}
                                 </div>
                             </label>`;
                     });
-
-                    catHtml += `</div></div>`; // 關閉第二層類型包裹
+                    catHtml += `</div></div>`;
                 }
-
-                catHtml += `</div></div>`; // 關閉第一層大分類包裹
+                catHtml += `</div></div>`;
                 container.innerHTML += catHtml;
             }
         }
 
+        // 行李打勾狀態切換處理
         function toggleCheck(id) {
-            let stored = JSON.parse(localStorage.getItem('ok_checklist'));
-            stored = stored.map(i => i.id === id ? { ...i, checked: !i.checked } : i);
-            localStorage.setItem('ok_checklist', JSON.stringify(stored));
-            renderChecklist(stored);
+            // 讀取目前的勾選狀態對照表
+            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
+            
+            // 找到該物件並切換它的真假狀態
+            globalChecklistItems = globalChecklistItems.map(item => {
+                if (item.id === id) {
+                    const nextState = !item.checked;
+                    userCheckedStates[id] = nextState; // 同步回覆給本機記憶體
+                    return { ...item, checked: nextState };
+                }
+                return item;
+            });
+            
+            // 儲存最新的勾選進度，這樣未來重新從雲端載入時也不會被蓋掉
+            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
+            renderChecklist(globalChecklistItems);
         }
 
-        // 隨身小帳本匯率快速輸入即時試算計算機 (防禦型 Function Sandbox Eval 設計)
         function initCalc() {
             const input = document.getElementById('calc-input'); if(!input) return;
             input.addEventListener('input', function() {
