@@ -236,8 +236,10 @@
             </section>
 
             <section id="page-lists" class="tab-content hidden">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-2 flex items-center gap-1"><i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點</h2>
-                <div id="checklist-container" class="bg-fuji-paper p-4 rounded-xl border border-fuji-light shadow-sm space-y-2.5"></div>
+                <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1">
+                    <i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點
+                </h2>
+                <div id="checklist-container" class="space-y-4"></div>
             </section>
 
             <section id="page-info" class="tab-content hidden">
@@ -392,7 +394,7 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 雲端硬碟圖片連結解析轉換（修正：修正大括號拼寫錯誤，確保 Logo 與照片能順利讀取）
+        // 雲端硬碟圖片連結解析轉換
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
@@ -418,14 +420,13 @@
                         if (currentLine.length < 3 || !currentLine[2]) continue;
                         
                         const storeName = currentLine[1] || '其他待辦';
-                        // 需求1：預設將未初始化的店家收合狀態設為關閉 (true 為收合)
                         if (shoppingCollapsedStores[storeName] === undefined) {
                             shoppingCollapsedStores[storeName] = true;
                         }
 
                         cloudShoppingItems.push({
                             id: 'cloud-' + i, 
-                            logo: parseImageUrl(currentLine[0]), // 抓取第一欄的店家 LOGO 網址
+                            logo: parseImageUrl(currentLine[0]), 
                             store: storeName, 
                             name: currentLine[2], 
                             qty: parseInt(currentLine[3]) || 1, 
@@ -471,7 +472,6 @@
 
             if (!name) { alert('請填寫商品名稱唷！'); return; }
 
-            // 私人清單新增時也確保店家預設收合
             if (shoppingCollapsedStores[store] === undefined) {
                 shoppingCollapsedStores[store] = true;
             }
@@ -517,7 +517,7 @@
             document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
         }
 
-        // 核心修改：重新繪製整合購物清單，整合 Logo、加重店家文字與折疊功能
+        // 重新繪製整合購物清單
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -535,7 +535,7 @@
                 if (!storeGroups[storeName]) {
                     storeGroups[storeName] = { 
                         items: [],
-                        logo: item.logo || '' // 保存該店家的首發 Logo
+                        logo: item.logo || '' 
                     };
                 }
                 if (modifiedQtys[item.id] !== undefined) item.qty = modifiedQtys[item.id];
@@ -543,19 +543,16 @@
             });
 
             for (const [storeName, group] of Object.entries(storeGroups)) {
-                // 需求1：預設改為收合關閉狀態 (true)
                 if (shoppingCollapsedStores[storeName] === undefined) {
                     shoppingCollapsedStores[storeName] = true;
                 }
                 const isCollapsed = shoppingCollapsedStores[storeName] === true;
 
-                // 店家 Logo 圖片區塊
                 let logoHtml = `<div class="w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light/20 flex-shrink-0"><i class="fa-solid fa-shop"></i></div>`;
                 if (group.logo) {
                     logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-7 h-7 object-contain rounded-md border border-fuji-light/20 bg-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'><i class=\'fa-solid fa-shop\'></i></div>區域'">`;
                 }
 
-                // 需求1：標題列外觀顏色調整得更明顯明顯，改為 bg-fuji-primary (深藍底白字)
                 let groupHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
                         <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-primary px-3 py-2.5 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
@@ -743,7 +740,6 @@
                     const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
 
-                    // 錢包需求1：記帳備註不使用顯眼黃色背景，移除 bg-amber-50，調整為與時間、刷卡方式同色系的 text-fuji-secondary 柔和文字
                     groupHtml += `
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
@@ -782,7 +778,6 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
             
-            // 需求3：下方頁籤高亮顏色配置優化。所有分頁按鈕清空為預設次要藍灰色，當前點擊頁籤切換為顯眼的富士橘色 (text-fuji-accent)
             document.querySelectorAll('.nav-btn').forEach(btn => { 
                 btn.classList.remove('text-fuji-primary', 'text-fuji-accent'); 
                 btn.classList.add('text-fuji-secondary'); 
@@ -795,6 +790,10 @@
 
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
+            if(tabName === 'lists') {
+                const stored = JSON.parse(localStorage.getItem('ok_checklist'));
+                renderChecklist(stored);
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -808,24 +807,91 @@
 
         // 行前準備行李資料預設建構器
         function initChecklist() {
+            // 新增欄位配置：分類 (category)、類型 (type)、數量 (qty)、備註 (note)
             const defaultChecklist = [
-                { id: 1, text: "中華民國護照 (效期6個月以上)", checked: true },
-                { id: 2, text: "日本上網卡 (eSIM / 實體卡)", checked: false },
-                { id: 3, text: "日文駕照譯本 ＆ 台灣駕照正本", checked: false }
+                { id: 1, category: "隨身重要證件", type: "必備重要", text: "中華民國護照", qty: 1, note: "確認有效期限需在 6 個月以上", checked: false },
+                { id: 2, category: "隨身重要證件", type: "網路通訊", text: "日本上網卡 (eSIM / 實體卡)", qty: 1, note: "出發前一天需完成 eSIM 啟用註冊", checked: false },
+                { id: 3, category: "隨身重要證件", type: "自駕必備", text: "日文駕照譯本 ＆ 台灣駕照正本", qty: 1, note: "租車櫃檯會核對雙正本，缺一不可", checked: false },
+                { id: 4, category: "隨身重要證件", type: "", text: "日幣現金 ＆ 實體信用卡", qty: 1, note: "建議準備部分千円面額日幣方便投幣", checked: false },
+                { id: 5, category: "日常衣物用品", type: "換洗衣物", text: "輕便外衣與長褲", qty: 4, note: "沖繩海風大，可採洋蔥式穿法", checked: false },
+                { id: 6, category: "日常衣物用品", type: "換洗衣物", text: "貼身內著服飾與襪子", qty: 4, note: "多備一套以防流汗更換", checked: false },
+                { id: 7, category: "日常衣物用品", type: "防曬防雨", text: "遮陽帽 ＆ 抗 UV 晴雨兩用傘", qty: 1, note: "", checked: false },
+                { id: 8, category: "3C電子配件", type: "充電設備", text: "行動電源 ＆ 手機充電線", qty: 2, note: "行動電源記得隨身攜帶不可託運", checked: false }
             ];
             if (!localStorage.getItem('ok_checklist')) localStorage.setItem('ok_checklist', JSON.stringify(defaultChecklist));
             renderChecklist(JSON.parse(localStorage.getItem('ok_checklist')));
         }
 
+        // 核心修改：將準備頁籤調整為大分類第一層、類型第二層的精緻雙層架構
         function renderChecklist(items) {
             const container = document.getElementById('checklist-container'); if(!container) return; container.innerHTML = '';
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-xs text-fuji-secondary font-medium">✨ 尚未建立任何準備項目。</div>`;
+                return;
+            }
+
+            // 1. 將資料依照「大分類 (category)」進行第一層分組
+            const categoryGroups = {};
             items.forEach(item => {
-                container.innerHTML += `
-                    <label class="flex items-start gap-2 text-xs text-fuji-dark font-medium py-0.5">
-                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${item.id})" class="mt-0.5 accent-fuji-primary h-3.5 w-3.5 rounded">
-                        <span class="${item.checked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark'}">${item.text}</span>
-                    </label>`;
+                const cat = item.category || "未分類項目";
+                if (!categoryGroups[cat]) categoryGroups[cat] = [];
+                categoryGroups[cat].push(item);
             });
+
+            // 2. 開始巡覽大分類，繪製第一區塊外殼
+            for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
+                let catHtml = `
+                    <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
+                        <div class="bg-fuji-primary/10 px-3 py-2 border-b border-fuji-light">
+                            <span class="font-extrabold text-xs text-fuji-primary tracking-wide"><i class="fa-solid fa-tags mr-1"></i>${categoryName}</span>
+                        </div>
+                        <div class="p-3 space-y-4">`;
+
+                // 3. 在大分類內部，再依照「類型 (type)」進行第二層分組
+                const typeGroups = {};
+                catItems.forEach(item => {
+                    const t = item.type ? item.type.trim() : "";
+                    if (!typeGroups[t]) typeGroups[t] = [];
+                    typeGroups[t].push(item);
+                });
+
+                // 4. 開始巡覽類型，繪製第二區塊
+                for (const [typeName, subItems] of Object.entries(typeGroups)) {
+                    const isDefaultGroup = (typeName === "");
+                    
+                    catHtml += `
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-1 text-[10px] font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-1.5 py-0.5 rounded w-fit'}">
+                                <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[7px]' : 'fa-folder-open'}"></i>
+                                <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
+                            </div>
+                            <div class="pl-1 space-y-2.5">`;
+
+                    // 5. 繪製最終的行李核取清單條目
+                    subItems.forEach(item => {
+                        const isChecked = item.checked === true;
+                        const itemQty = item.qty || 1;
+                        
+                        catHtml += `
+                            <label class="flex items-start gap-2.5 text-xs text-fuji-dark font-medium cursor-pointer select-none group">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${item.id})" class="mt-0.5 accent-fuji-primary h-3.5 w-3.5 rounded flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark'} break-all">${item.text}</span>
+                                        <span class="text-[9px] font-extrabold px-1.5 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
+                                    </div>
+                                    ${item.note ? `<p class="text-[10px] text-fuji-secondary/90 font-medium mt-0.5 leading-normal break-all"><i class="fa-regular fa-comment-dots text-[9px] mr-0.5"></i>${item.note}</p>` : ''}
+                                </div>
+                            </label>`;
+                    });
+
+                    catHtml += `</div></div>`; // 關閉第二層類型包裹
+                }
+
+                catHtml += `</div></div>`; // 關閉第一層大分類包裹
+                container.innerHTML += catHtml;
+            }
         }
 
         function toggleCheck(id) {
