@@ -805,21 +805,48 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 行前準備行李資料預設建構器
+        // 依據圖片內容全新配置的行前準備清單
         function initChecklist() {
-            // 新增欄位配置：分類 (category)、類型 (type)、數量 (qty)、備註 (note)
             const defaultChecklist = [
-                { id: 1, category: "隨身重要證件", type: "必備重要", text: "中華民國護照", qty: 1, note: "確認有效期限需在 6 個月以上", checked: false },
-                { id: 2, category: "隨身重要證件", type: "網路通訊", text: "日本上網卡 (eSIM / 實體卡)", qty: 1, note: "出發前一天需完成 eSIM 啟用註冊", checked: false },
-                { id: 3, category: "隨身重要證件", type: "自駕必備", text: "日文駕照譯本 ＆ 台灣駕照正本", qty: 1, note: "租車櫃檯會核對雙正本，缺一不可", checked: false },
-                { id: 4, category: "隨身重要證件", type: "", text: "日幣現金 ＆ 實體信用卡", qty: 1, note: "建議準備部分千円面額日幣方便投幣", checked: false },
-                { id: 5, category: "日常衣物用品", type: "換洗衣物", text: "輕便外衣與長褲", qty: 4, note: "沖繩海風大，可採洋蔥式穿法", checked: false },
-                { id: 6, category: "日常衣物用品", type: "換洗衣物", text: "貼身內著服飾與襪子", qty: 4, note: "多備一套以防流汗更換", checked: false },
-                { id: 7, category: "日常衣物用品", type: "防曬防雨", text: "遮陽帽 ＆ 抗 UV 晴雨兩用傘", qty: 1, note: "", checked: false },
-                { id: 8, category: "3C電子配件", type: "充電設備", text: "行動電源 ＆ 手機充電線", qty: 2, note: "行動電源記得隨身攜帶不可託運", checked: false }
+                // 1. 隨身重要證件
+                { id: 1, category: "隨身重要證件", type: "必備重要", text: "中華民國護照正本", qty: 5, note: "三大二小，確認效期6個月以上", checked: false },
+                { id: 2, category: "隨身重要證件", type: "網路通訊", text: "日本上網卡 (DJB eSIM)", qty: 3, note: "大人手機使用，確認出發前開通", checked: false },
+                { id: 3, category: "隨身重要證件", type: "自駕必備", text: "日文駕照譯本 ＆ 台灣駕照正本", qty: 2, note: "租車必備雙正本，兩位駕駛皆帶", checked: false },
+                { id: 4, category: "隨身重要證件", type: "重要卡片", text: "日幣現金、吉鶴卡、玉山熊本熊卡", qty: 1, note: "多備千圓面額日幣方便投幣機", checked: false },
+                { id: 5, category: "隨身重要證件", type: "重要卡片", text: "Visit Japan Web 截圖", qty: 1, note: "大人小孩皆完成填寫並截圖通關QR", checked: false },
+                
+                // 2. 日常衣物用品
+                { id: 6, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶包屁衣、外衣與長褲", qty: 15, note: "每人 5 套，沖繩海風大洋蔥式穿法", checked: false },
+                { id: 7, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶防風外套、保暖圍巾", qty: 3, note: "每人 1 套，防早晚溫差", checked: false },
+                { id: 8, category: "日常衣物用品", type: "嬰幼兒衣物", text: "寶寶小襪子與學步鞋", qty: 6, note: "襪子多帶備用", checked: false },
+                { id: 9, category: "日常衣物用品", type: "成人衣物", text: "大人輕便外衣、內著、長褲", qty: 4, note: "4天3夜份量，好穿脫防風為主", checked: false },
+                { id: 10, category: "日常衣物用品", type: "防曬防雨", text: "遮陽帽、抗UV晴雨兩用傘", qty: 2, note: "", checked: false },
+
+                // 3. 3C電子配件
+                { id: 11, category: "3C電子配件", type: "充電設備", text: "行動電源 ＆ 手機充電線", qty: 3, note: "行動電源需隨身攜帶，不可託運！", checked: false },
+                { id: 12, category: "3C電子配件", type: "充電設備", text: "多孔延長線、豆腐充", qty: 1, note: "飯店插座多時很方便", checked: false },
+                { id: 13, category: "3C電子配件", type: "攝影器材", text: "相機、記憶卡、腳架", qty: 1, note: "紀錄寶貝沖繩出遊回憶", checked: false },
+
+                // 4. 藥品與個人衛生
+                { id: 14, category: "藥品與個人衛生", type: "常備藥品", text: "小兒感冒糖漿、退燒藥、備用藥", qty: 1, note: "請小兒科醫生開立常備藥", checked: false },
+                { id: 15, category: "藥品與個人衛生", type: "常備藥品", text: "大人感冒藥、止痛藥、暈車藥", qty: 1, note: "", checked: false },
+                { id: 16, category: "藥品與個人衛生", type: "潔牙用品", text: "大人與寶寶專用牙刷、牙膏", qty: 1, note: "部分日本飯店不主動提供小童牙刷", checked: false },
+                { id: 17, category: "藥品與個人衛生", type: "沐浴保養", text: "寶寶乳液 (慕之恬廊)、屁屁膏", qty: 1, note: "帶常用的避免沖繩乾燥過敏", checked: false },
+                { id: 18, category: "藥品與個人衛生", type: "沐浴保養", text: "防蚊液、防曬乳、指甲剪", qty: 1, note: "", checked: false },
+
+                // 5. 嬰幼兒專用大件與用品
+                { id: 19, category: "嬰幼兒專用大件與用品", type: "大型設備", text: "雙人/單人輕便推車", qty: 2, note: "確認可登機或進艙託運辦理", checked: false },
+                { id: 20, category: "嬰幼兒專用大件與用品", type: "大型設備", text: "寶寶揹帶", qty: 1, note: "水族館或階梯多時機動使用", checked: false },
+                { id: 21, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "奶粉、奶瓶、拋棄式奶瓶袋", qty: 1, note: "計算 4 天總奶量，拋棄式省空間", checked: false },
+                { id: 22, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "保溫瓶 (泡奶熱水用)", qty: 2, note: "大容量上飛機前可裝熱水", checked: false },
+                { id: 23, category: "嬰幼兒專用大件與用品", type: "餵食用品", text: "寶寶剪刀、便攜餐具、圍兜", qty: 2, note: "剪刀記得託運，不可隨身！", checked: false },
+                { id: 24, category: "嬰幼兒專用大件與用品", type: "清潔防護", text: "幫寶適尿布、濕紙巾", qty: 1, note: "預估天數份量，不夠再去西松屋買", checked: false },
+                { id: 25, category: "嬰幼兒專用大件與用品", type: "清潔防護", text: "寶寶安撫玩具、奶嘴、奶嘴鍊", qty: 3, note: "坐飛機與坐車安撫必備", checked: false }
             ];
-            if (!localStorage.getItem('ok_checklist')) localStorage.setItem('ok_checklist', JSON.stringify(defaultChecklist));
-            renderChecklist(JSON.parse(localStorage.getItem('ok_checklist')));
+            
+            // 為了讓您看最新的成果，這裡每次重新整理都會重設 LocalStorage，方便體驗
+            localStorage.setItem('ok_checklist', JSON.stringify(defaultChecklist));
+            renderChecklist(defaultChecklist);
         }
 
         // 核心修改：將準備頁籤調整為大分類第一層、類型第二層的精緻雙層架構
