@@ -921,7 +921,7 @@
                     const isDefaultGroup = (typeName === "");
                     catHtml += `
                         <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-xs font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[11px]'}">
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}">
                                 <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
@@ -937,7 +937,7 @@
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
                                         <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all"><i class="fa-regular fa-comment-dots text-[12px] mr-0.5 text-fuji-secondary"></i>${item.note}</p>` : ''}
+                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
                                 </div>
                             </label>`;
                     });
@@ -1016,7 +1016,7 @@
                     const isDefaultGroup = (typeName === "");
                     catHtml += `
                         <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-xs font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}" style="letter-spacing: 0.02em;">
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}" style="letter-spacing: 0.02em;">
                                 <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
@@ -1033,7 +1033,7 @@
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
                                         <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all"><i class="fa-regular fa-comment-dots text-[12px] mr-0.5 text-fuji-secondary"></i>${item.note}</p>` : ''}
+                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
                                 </div>
                             </label>`;
                     });
