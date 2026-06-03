@@ -94,9 +94,11 @@
             </section>
 
             <section id="page-shopping" class="tab-content hidden">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-2 flex items-center gap-1">
-                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
-                </h2>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
+                        <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
+                    </h2>
+                </div>
                 
                 <div class="bg-fuji-paper p-3 rounded-xl border border-fuji-light shadow-sm mb-4 space-y-2">
                     <div class="flex justify-between items-center">
@@ -115,10 +117,22 @@
                         <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
                         <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-center font-bold">
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <input type="text" id="shop-item-store" placeholder="店家" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
-                        <input type="text" id="shop-item-note" placeholder="備註或商品圖片網址" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                    
+                    <div class="grid grid-cols-1">
+                        <input type="text" id="shop-item-store" placeholder="店家名稱 (如: 全家、大國藥妝)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
                     </div>
+
+                    <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
+                        <span><i class="fa-solid fa-plus text-fuji-primary mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
+                        <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform"></i>
+                    </button>
+
+                    <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
+                        <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-image" placeholder="商品圖片網址 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-link" placeholder="參考網頁連結 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none">
+                    </div>
+
                     <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all">
                         <i class="fa-solid fa-plus mr-1"></i>存入個人清單
                     </button>
@@ -240,23 +254,19 @@
     </div>
 
     <script>
-        // 全域參數配置 (維持原始不變)
+         // 全域參數配置
         const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
 
-        // GAS 表單實體接收網址
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
 
         let cloudShoppingItems = [];
         let currentPostType = 'local'; 
         let walletCollapsedDays = {};
-        
-        // 【新增全域變數】管理購物分頁中店家的收合狀態紀錄
-        let shoppingCollapsedStores = {};
+        let shoppingCollapsedStores = {}; // 新增：控管店家欄位折疊狀態
 
-        // 頁面初始化生命週期
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
@@ -269,7 +279,7 @@
             initCalc();
         });
 
-        // 串接外部 API 異步取得即時台銀日幣匯率資料 (維持原本設計)
+        // 串接外部 API 異步取得即時台銀日幣匯率資料
         async function fetchBotExchangeRate() {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -291,34 +301,18 @@
             }
         }
 
-        // 處理小帳本手風琴選單切換開關 (維持原本互斥邏輯)
+        // 核心手風琴折疊控制
         function toggleSection(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
-            const isForm = contentId === 'sec-form-content';
+            if (!content) return;
             
             if (content.classList.contains('hidden')) {
-                if(contentId === 'sec-rate-content') {
-                    document.getElementById('sec-form-content').classList.add('hidden');
-                    document.getElementById('sec-form-arrow').className = "fa-solid fa-plus text-[10px] ml-1";
-                } else {
-                    document.getElementById('sec-rate-content').classList.add('hidden');
-                    document.getElementById('sec-rate-arrow').className = "fa-solid fa-chevron-right text-[10px] ml-1 transition-transform";
-                }
-                
                 content.classList.remove('hidden');
-                if(isForm) {
-                    arrow.className = "fa-solid fa-minus text-[10px] ml-1";
-                } else {
-                    arrow.classList.add('rotate-90');
-                }
+                if (arrow) arrow.className = "fa-solid fa-chevron-down text-[10px] transition-transform";
             } else {
                 content.classList.add('hidden');
-                if(isForm) {
-                    arrow.className = "fa-solid fa-plus text-[10px] ml-1";
-                } else {
-                    arrow.classList.remove('rotate-90');
-                }
+                if (arrow) arrow.className = "fa-solid fa-chevron-right text-[10px] transition-transform";
             }
         }
 
@@ -328,17 +322,13 @@
             renderExpenses();
         }
 
-        // 【新增函數】控制購物店家的收合狀態切換
+        // 新增：切換店家卡片摺疊狀態
         function toggleStoreCollapse(storeName) {
-            if (shoppingCollapsedStores[storeName] === undefined) {
-                shoppingCollapsedStores[storeName] = false; // 點擊切換為展開
-            } else {
-                shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
-            }
+            shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
             renderCombinedShoppingList();
         }
 
-        // 下載並解析試算表行事曆 CSV (維持原本架構)
+        // 下載並解析試算表行事曆 CSV
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -348,7 +338,7 @@
             } catch (error) { console.error(error); }
         }
 
-        // 完美解析標準 CSV（包含雙引號內逗號與多行文字過濾過濾處理）
+         // 完美解析標準 CSV（包含雙引號內逗號與多行文字過濾過濾處理）
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if(lines.length <= 1) return;
@@ -395,34 +385,17 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-        // 【修改項目】店家 LOGO 前方改為抓取試算表中的 LOGO 圖片連結
-        function getStoreMeta(storeName, logoUrl) {
-            const name = (storeName || '').trim();
-            // 若有自訂的 Google 試算表 LOGO 網址則優先採用，並防止損壞時顯示防錯機制
-            if (logoUrl && (logoUrl.startsWith('http://') || logoUrl.startsWith('https://'))) {
-                return { icon: `<img src="${logoUrl}" referrerpolicy="no-referrer" class="w-5 h-5 object-contain rounded-md border border-gray-100 shadow-2xs inline-block" alt="${name} logo" onerror="this.outerHTML='<i class=\'fa-solid fa-shop text-fuji-primary\'></i>';">` };
-            }
-            
-            // 備用方案：若無則沿用原本分析大國藥妝、唐吉訶德、AEON 的專屬圖示
-            let icon = '<i class="fa-solid fa-shop text-fuji-primary"></i>';
-            if (name.includes('大國')) icon = '<span class="bg-orange-500 text-white font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">大國</span>';
-            else if (name.includes('唐吉') || name.includes('驚安') || name.includes('Donki')) icon = '<span class="bg-yellow-400 text-black font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">🐧 DONKI</span>';
-            else if (name.includes('AEON') || name.includes('永旺')) icon = '<span class="bg-purple-600 text-white font-extrabold text-[9px] px-1 py-0.5 rounded shadow-sm">AEON</span>';
-            return { icon };
-        }
-
-        // 處理 Google 雲端硬碟圖片縮圖網址轉換 (維持原功能)
+        // 雲端硬碟圖片連結解析轉換
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
             if (cleanUrl.includes('drive.google.com')) {
                 const match = cleanUrl.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,35})/);
-                if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                if (match && match[1]) return `https://lh3.googleusercontent.com/d/$${match[1]}`;
             }
             return cleanUrl;
         }
 
-        // 非同步拉取雲端購物 CSV 清單並整合自訂 LOGO 欄位
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
@@ -436,15 +409,16 @@
                     for (let i = 1; i < lines.length; i++) {
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         if (currentLine.length < 3 || !currentLine[2]) continue;
+                        
                         cloudShoppingItems.push({
                             id: 'cloud-' + i, 
+                            logo: parseImageUrl(currentLine[0]), // 抓取第一欄的店家 LOGO 網址
+                            store: currentLine[1] || '其他待辦', 
                             name: currentLine[2], 
                             qty: parseInt(currentLine[3]) || 1, 
-                            store: currentLine[1] || '其他待辦', 
                             note: (currentLine[4] || '').substring(0, 40), 
                             link: currentLine[5] || '', 
                             image: parseImageUrl(currentLine[6]), 
-                            storeLogo: currentLine[7] || '', // 【新增】讀取試算表第 8 欄 (Index 7) 店家LOGO網址
                             isCloud: true
                         });
                     }
@@ -453,7 +427,7 @@
             renderCombinedShoppingList();
         }
 
-        // 控制購物模式切換 (維持原樣式切換邏輯)
+        // 控制購物模式切換
         function setPostType(type) {
             currentPostType = type;
             const localBtn = document.getElementById('toggle-type-local');
@@ -478,15 +452,25 @@
             const name = document.getElementById('shop-item-name').value.trim();
             const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
             const store = document.getElementById('shop-item-store').value.trim() || (currentPostType === 'local' ? '個人私房購買' : '未分類商店');
-            const noteOrImg = document.getElementById('shop-item-note').value.trim();
+            const note = document.getElementById('shop-item-note').value.trim();
+            const imgUrl = document.getElementById('shop-item-image').value.trim();
+            const linkUrl = document.getElementById('shop-item-link').value.trim();
 
             if (!name) { alert('請填寫商品名稱唷！'); return; }
 
             if (currentPostType === 'local') {
                 const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
-                let finalImg = ''; let finalNote = noteOrImg;
-                if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) { finalImg = parseImageUrl(noteOrImg); finalNote = '私房附圖'; }
-                localItems.push({ id: 'local-' + Date.now(), name, qty, store, note: finalNote, image: finalImg, storeLogo: '', isCloud: false });
+                localItems.push({ 
+                    id: 'local-' + Date.now(), 
+                    logo: '', 
+                    store, 
+                    name, 
+                    qty, 
+                    note, 
+                    image: parseImageUrl(imgUrl), 
+                    link: linkUrl, 
+                    isCloud: false 
+                });
                 localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
                 clearShoppingForm(); renderCombinedShoppingList();
             } else {
@@ -494,9 +478,7 @@
                 const submitBtn = document.getElementById('add-shop-btn');
                 submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
 
-                let finalNote = noteOrImg; let finalImage = '';
-                if (noteOrImg.startsWith('http://') || noteOrImg.startsWith('https://')) { finalImage = noteOrImg; finalNote = '網頁附圖上傳'; }
-                const payload = { store, name, qty, note: finalNote, link: '', image: finalImage };
+                const payload = { store, name, qty, note, link: linkUrl, image: imgUrl };
 
                 fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
                 .then(() => {
@@ -511,9 +493,13 @@
             document.getElementById('shop-item-qty').value = '1';
             document.getElementById('shop-item-store').value = '';
             document.getElementById('shop-item-note').value = '';
+            document.getElementById('shop-item-image').value = '';
+            document.getElementById('shop-item-link').value = '';
+            document.getElementById('sec-shop-detail').classList.add('hidden');
+            document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
         }
 
-        // 【修改項目】購物清單渲染方法優化：包含預設收合、字體加大、顯眼刪除背景、已完成購買圖片自動消失
+        // 核心修改：重新繪製整合購物清單，整合 Logo、加重店家文字與折疊功能
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -525,73 +511,70 @@
                 container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🛒 清單空空如也。</div>`; return;
             }
 
-            // 店家資料分組
             const storeGroups = {};
             allItems.forEach(item => {
                 const storeName = item.store || '其他待辦購買';
                 if (!storeGroups[storeName]) {
-                    storeGroups[storeName] = { items: [], logo: item.storeLogo || '' };
-                }
-                if (item.storeLogo && !storeGroups[storeName].logo) {
-                    storeGroups[storeName].logo = item.storeLogo;
+                    storeGroups[storeName] = { 
+                        items: [],
+                        logo: item.logo || '' // 保存該店家的首發 Logo
+                    };
                 }
                 if (modifiedQtys[item.id] !== undefined) item.qty = modifiedQtys[item.id];
                 storeGroups[storeName].items.push(item);
             });
 
-            // 迴圈產生各店家區塊 HTML
             for (const [storeName, group] of Object.entries(storeGroups)) {
-                const meta = getStoreMeta(storeName, group.logo);
-                
-                // 【修改 1】設定預設為關閉收合 (即 isStoreCollapsed = true)
-                if (shoppingCollapsedStores[storeName] === undefined) {
-                    shoppingCollapsedStores[storeName] = true;
-                }
-                const isStoreCollapsed = shoppingCollapsedStores[storeName];
-                const storeArrow = isStoreCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
+                const isCollapsed = shoppingCollapsedStores[storeName] === true;
+                const arrowIcon = isCollapsed ? 'fa-triangle' : 'fa-triangle rotate-180'; // 仿 FamilyMart 的上下三角形指示
 
-                // 【修改 2】將標題改為顯眼一點 (加大 text-[13px] 加粗 text-fuji-dark) 並附加點擊收合按鈕
+                // 店家 Logo 圖片區塊
+                let logoHtml = `<div class="w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light flex-shrink-0"><i class="fa-solid fa-shop"></i></div>`;
+                if (group.logo) {
+                    logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-7 h-7 object-contain rounded-md border border-fuji-light bg-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'><i class=\'fa-solid fa-shop\'></i></div>'">`;
+                }
+
+                // 2. 改良版：強化視覺的店家標題列 (比照FamilyMart卡片外觀，整行支援點擊收合)
                 let groupHtml = `
-                    <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden bg-white">
-                        <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-bg/90 active:bg-fuji-light/80 px-3 py-2.5 border-b border-fuji-light flex justify-between items-center cursor-pointer select-none">
-                            <div class="flex items-center gap-2 font-bold text-sm text-fuji-dark tracking-wide">
-                                ${meta.icon}
-                                <span class="text-[13px] font-extrabold text-fuji-dark">${storeName}</span>
+                    <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
+                        <div onclick="toggleStoreCollapse('${storeName}')" class="bg-white px-3 py-2.5 border-b border-fuji-light flex justify-between items-center cursor-pointer hover:bg-fuji-bg/30 select-none transition-all">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                ${logoHtml}
+                                <div class="flex flex-col text-left">
+                                    <span class="font-extrabold text-sm text-fuji-dark tracking-wide truncate">${storeName}</span>
+                                    <span class="text-[9px] text-fuji-secondary font-medium -mt-0.5">${group.items.length} 件商品</span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-1.5 text-fuji-secondary text-[11px] font-bold">
-                                <span class="bg-fuji-light text-fuji-primary px-1.5 py-0.2 rounded-full text-[10px]">${group.items.length}件</span>
-                                <i class="fa-solid ${storeArrow} text-[10px] transition-transform"></i>
+                            <div class="text-fuji-secondary/70 pr-1 text-[8px] transition-transform">
+                                <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-fuji-secondary"></i>
                             </div>
                         </div>
-                        <div class="divide-y divide-fuji-light ${isStoreCollapsed ? 'hidden' : ''}">`;
+                        <div class="${isCollapsed ? 'hidden' : ''} divide-y divide-fuji-light">`;
 
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
-                    
-                    // 【修改 3、4】點選完成購買：調整為更看得出差異的淡煙燻灰色背景 (bg-gray-100/80)，且字體加大至 text-[13px]
-                    // 【修改 3】圖片檔自動消失限制：只要 isChecked 為 true，下方條件 `item.image && !isChecked` 將會自動隱藏圖片
                     groupHtml += `
-                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-gray-100/80' : ''}">
+                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="font-bold text-[13px] select-none break-all ${isChecked ? 'line-through text-gray-400 font-normal' : 'text-fuji-dark'}">${item.name}</span>
+                                        <span class="font-bold text-xs select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
                                         ${!item.isCloud ? `<span class="text-[8px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <div class="flex items-center border border-fuji-light rounded-md bg-fuji-bg overflow-hidden shadow-2xs">
                                         <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[9px]"></i></button>
-                                        <span class="px-1 text-[13px] font-extrabold text-fuji-dark min-w-[14px] text-center select-none">${item.qty}</span>
+                                        <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[12px] text-center select-none">${item.qty}</span>
                                         <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[9px]"></i></button>
                                     </div>
                                     ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs"><i class="fa-regular fa-trash-can text-[11px]"></i></button>` : '<div class="w-3"></div>'}
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[11px] ${isChecked ? 'text-gray-400' : 'text-fuji-secondary'} font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[10px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i> 連結</a></div>` : ''}
-                                ${item.image && !isChecked ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
+                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[9px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i> 連結</a></div>` : ''}
+                                ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
                         </div>`;
                 });
@@ -683,7 +666,6 @@
             }
         }
 
-        // 【修改項目】錢包分頁明細樣式排版優化：備註純文字化、支付方式套用黃色系框線背景
         function renderExpenses() {
             const container = document.getElementById('expense-list'); if (!container) return; container.innerHTML = '';
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
@@ -740,8 +722,6 @@
                     const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
 
-                    // 【修改 2】將明細中支付方式與卡片改用原備註黃色系顏色背景 (bg-amber-50 border-amber-200)
-                    // 【修改 1】備註改為不須框線與背景之純文字，並與時間相同套用 text-fuji-secondary 顏色
                     groupHtml += `
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
@@ -755,12 +735,10 @@
                                 <div class="text-[10px] text-fuji-secondary font-medium flex items-center gap-1.5 flex-wrap">
                                     <span><i class="fa-regular fa-clock text-[9px]"></i> ${item.time}</span>
                                     <span>•</span>
-                                    <span class="font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded text-amber-800 shadow-3xs text-[9px]">
-                                        ${item.method}${item.card ? ` (${item.card})` : ''}
-                                    </span>
+                                    <span class="font-bold bg-fuji-light/70 px-1 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
                                 </div>
 
-                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all pt-0.5"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block break-all font-medium"><i class="fa-regular fa-comment-dots mr-0.5"></i>備註：${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
@@ -777,7 +755,7 @@
             }
         }
 
-        // 頁面主導覽分頁切換控制
+         // 頁面主導覽分頁切換控制
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
