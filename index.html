@@ -277,16 +277,16 @@
             return { icon, defaultLink };
         }
 
-        // 🛠️ 優化後的 Google Drive 圖片自動智慧解析機制
+        // 🛠️ 升級版：最不容易被瀏覽器封鎖的 Google Drive 圖片外連直連解析機制
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
             
             if (cleanUrl.includes('drive.google.com')) {
-                // 使用更精準的正則表達式來抓取不論何種格式的 File ID
                 const match = cleanUrl.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,35})/);
                 if (match && match[1]) {
-                    return `https://docs.google.com/uc?export=view&id=${match[1]}`;
+                    // 採用高相容性、繞過企業網域驗證阻擋的 googleusercontent 直連格式
+                    return `https://lh3.googleusercontent.com/u/0/d/${match[1]}`;
                 }
             }
             return cleanUrl;
@@ -413,7 +413,7 @@
             document.getElementById('shop-item-note').value = '';
         }
 
-        // 渲染總購物卡片群組 (🔥 重新排版：左側無小圖，大圖獨立展開在下方)
+        // 渲染總購物卡片群組 
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container');
             if (!container) return;
@@ -458,7 +458,6 @@
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
 
-                    // 🔥 【新結構】改為單純縱向排列，方便大圖於下方完美展開
                     groupHtml += `
                         <div class="p-4 flex flex-col gap-2 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
                             
@@ -498,8 +497,8 @@
                                 }
 
                                 ${item.image ? `
-                                    <div class="mt-2 w-full overflow-hidden rounded-xl border border-fuji-light bg-fuji-bg shadow-2xs max-h-52 flex items-center justify-center">
-                                        <img src="${item.image}" class="w-full h-full object-contain max-h-52" alt="商品圖片" onerror="this.parentElement.style.display='none';">
+                                    <div class="mt-2 w-full overflow-hidden rounded-xl border border-fuji-light bg-fuji-bg shadow-2xs max-h-56 flex items-center justify-center">
+                                        <img src="${item.image}" class="w-full h-full object-contain max-h-56" alt="商品圖片" onerror="this.parentElement.style.display='none';">
                                     </div>` : ''
                                 }
                             </div>
@@ -526,6 +525,7 @@
             renderCombinedShoppingList();
         }
 
+        // 其餘邏輯保持不變...
         function toggleShoppingCheck(id) {
             let checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
             if (checkedIds.includes(id)) {
