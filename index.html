@@ -57,7 +57,7 @@
         </header>
 
         <main class="flex-1 p-3 overflow-y-auto">
-            //tab1.行程
+            <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block">
                 <div class="flex justify-between items-center mb-3 pb-1">
                     <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
@@ -79,7 +79,7 @@
                 <div id="day-d4" class="day-timeline space-y-3 hidden"></div>
             </section>
 
-            //tab2.地圖
+            <!-- tab2.地圖 -->
             <section id="page-guide" class="tab-content hidden">
                 <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳地圖導覽</h2>
                 <div class="space-y-4">
@@ -94,7 +94,7 @@
                 </div>
             </section>
 
-            //tab3.購物
+            <!-- tab3.購物 -->
             <section id="page-shopping" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
@@ -104,14 +104,14 @@
                 
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
                     <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
-                        <div class="text-[11px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
+                        <div class="text-[15px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
                         <i id="main-shop-arrow" class="fa-solid fa-chevron-down text-[10px] transition-transform text-fuji-primary"></i>
                     </div>
                     
                     <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50">
                         <div class="flex justify-between items-center">
-                            <div class="text-[10px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
-                            <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[9px] font-bold relative shadow-2xs">
+                            <div class="text-[13px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
+                            <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[12px] font-bold relative shadow-2xs">
                                 <button id="toggle-type-local" onclick="setPostType('local')" class="px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5">
                                     <i class="fa-solid fa-user-lock"></i>個人私人
                                 </button>
@@ -152,7 +152,7 @@
                 </div>
             </section>
 
-            //tab4.錢包
+            <!-- tab4.錢包 -->
             <section id="page-wallet" class="tab-content hidden text-xs">
                 <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1">
                     <i class="fa-solid fa-coins text-fuji-accent"></i> 隨身小帳本
@@ -161,11 +161,11 @@
                 <div class="grid grid-cols-12 gap-2 mb-3 items-stretch">
                     <div class="col-span-5 flex flex-col gap-1.5">
                         <button onclick="toggleSection('sec-rate-content', 'sec-rate-arrow')" class="w-full bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-xl px-2 py-1.5 flex items-center justify-between text-left font-bold text-fuji-dark transition-all shadow-2xs">
-                            <span class="truncate"><i class="fa-solid fa-calculator text-fuji-primary mr-0.5"></i>匯率計算</span>
+                            <span class="truncate text-[15px]"><i class="fa-solid fa-calculator text-fuji-primary mr-2"></i>匯率計算</span>
                             <i id="sec-rate-arrow" class="fa-solid fa-chevron-right text-[10px] ml-1 transition-transform"></i>
                         </button>
-                        <button onclick="toggleSection('sec-form-content', 'sec-form-arrow')" class="w-full bg-fuji-primary hover:bg-fuji-dark text-white rounded-xl px-2 py-1.5 flex items-center justify-between text-left font-bold transition-all shadow-2xs">
-                            <span><i class="fa-solid fa-pen text-fuji-accent mr-1"></i>快速記帳</span>
+                        <button onclick="toggleSection('sec-form-content', 'sec-form-arrow')" class="w-full bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-xl px-2 py-1.5 flex items-center justify-between text-left font-bold text-fuji-dark transition-all shadow-2xs">
+                            <span class="truncate text-[15px]"><i class="fa-solid fa-pen text-fuji-primary mr-1"></i>快速記帳</span>
                             <i id="sec-form-arrow" class="fa-solid fa-plus text-[10px] ml-1"></i>
                         </button>
                     </div>
@@ -173,11 +173,11 @@
                     <div class="col-span-7 bg-fuji-dark rounded-xl text-white px-3 py-1.5 flex flex-col justify-center shadow-sm relative overflow-hidden">
                         <div class="absolute -right-2 -bottom-2 text-white/5 text-3xl"><i class="fa-solid fa-wallet"></i></div>
                         <div class="flex items-center justify-between border-b border-white/10 pb-0.5 mb-0.5">
-                            <span class="text-[10px] text-fuji-light/70 font-bold">總日幣</span>
+                            <span class="text-[13px] text-fuji-light/70 font-bold">總日幣</span>
                             <span id="total-jpy" class="font-cute font-extrabold text-sm text-fuji-light">¥ 0</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-fuji-light/70 font-bold">總台幣</span>
+                            <span class="text-[13px] text-fuji-light/70 font-bold">總台幣</span>
                             <span id="total-twd" class="font-cute font-extrabold text-sm text-fuji-accent">NT$ 0</span>
                         </div>
                     </div>
@@ -238,7 +238,7 @@
                 <div id="expense-list" class="space-y-3"></div>
             </section>
 
-            //tab5.準備
+            <!-- tab5.準備 -->
             <section id="page-lists" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
                     <i class="fa-solid fa-clipboard-check text-fuji-accent"></i> 行前行李檢查點
@@ -250,7 +250,7 @@
                 </div>
             </section>
 
-            //tab6.資訊
+            <!-- tab6.資訊 -->
             <section id="page-info" class="tab-content hidden">
                 <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊</h2>
                 <div class="bg-fuji-paper p-5 rounded-xl border border-fuji-light shadow-sm text-center">
@@ -261,14 +261,14 @@
             </section>
         </main>
 
-        //tab總覽
+        <!-- tab總覽 -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-1.5 z-50 shadow-lg rounded-t-xl px-1">
-            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[9px] font-bold mt-0.5">行程</span></button>
-            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[9px] font-bold mt-0.5">地圖</span></button>
-            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[9px] font-bold mt-0.5">購物</span></button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[9px] font-bold mt-0.5">錢包</span></button>
-            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[9px] font-bold mt-0.5">準備</span></button>
-            <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-sm"></i><span class="text-[9px] font-bold mt-0.5">資訊</span></button>
+            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[13px] font-bold mt-0.5">行程</span></button>
+            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[13px] font-bold mt-0.5">地圖</span></button>
+            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[13px] font-bold mt-0.5">購物</span></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[13px] font-bold mt-0.5">錢包</span></button>
+            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[13px] font-bold mt-0.5">準備</span></button>
+            <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-sm"></i><span class="text-[13px] font-bold mt-0.5">資訊</span></button>
         </nav>
     </div>
 
@@ -462,12 +462,12 @@
                 localBtn.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
                 cloudBtn.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
                 submitBtn.className = "w-full bg-amber-500 text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入手機私房清單`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
             } else {
                 localBtn.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
                 cloudBtn.className = "px-2 py-0.5 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-0.5";
                 submitBtn.className = "w-full bg-fuji-primary text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至團隊 Google 表單`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
             }
         }
 
@@ -567,8 +567,8 @@
                             <div class="flex items-center gap-2.5 min-w-0">
                                 ${logoHtml}
                                 <div class="flex flex-col text-left">
-                                    <span class="font-extrabold text-sm text-white tracking-wide truncate">${storeName}</span>
-                                    <span class="text-[9px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
+                                    <span class="font-extrabold text-md text-white tracking-wide truncate">${storeName}</span>
+                                    <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[8px]">
@@ -584,8 +584,8 @@
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="font-bold text-xs select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
-                                        ${!item.isCloud ? `<span class="text-[8px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
+                                        <span class="font-bold text-sm select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
+                                        ${!item.isCloud ? `<span class="text-[12px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
@@ -598,8 +598,8 @@
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[10px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[9px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>  連結</a></div>` : ''}
+                                ${item.note ? `<div class="text-[12px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[12px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>  連結</a></div>` : ''}
                                 ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
                         </div>`;
