@@ -303,27 +303,29 @@
                 const csvText = await response.text();
                 const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 cloudShoppingItems = [];
-                
+        
                 if (lines.length > 1) {
+                    // 這裡保留原先的 headers 讀取（若後續需要偵錯可用），但解析時改採固定索引，不依賴標題字串
                     const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
-                    for(let i=1; i<lines.length; i++) {
+                    
+                    for (let i = 1; i < lines.length; i++) {
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        if (currentLine.length < headers.length) continue;
-                        let row = {};
-                        headers.forEach((header, index) => { row[header] = currentLine[index]; });
                         
-                        if (row['商品名稱']) {
-                            cloudShoppingItems.push({
-                                id: 'cloud-' + i,
-                                name: row['商品名稱'],
-                                qty: parseInt(row['數量']) || 1,
-                                store: row['店家'] || '其他待辦購買',
-                                note: (row['備註'] || '').substring(0, 40), // 避免網址太長截斷
-                                link: row['連結'] || '',
-                                image: parseImageUrl(row['商品圖片']),
-                                isCloud: true
-                            });
-                        }
+                        // 檢查機制：至少要有前三欄的資料長度，且商品名稱（索引2）不能為空，否則跳過
+                        if (currentLine.length < 3 || !currentLine[2]) continue;
+        
+                        // 依據您的試算表實際欄位結構進行索引塞值：
+                        // A[0]:店家LOGO, B[1]:店家, C[2]:商品名稱, D[3]:數量, E[4]:備註, F[5]:連結, G[6]:商品圖片
+                        cloudShoppingItems.push({
+                            id: 'cloud-' + i,
+                            name: currentLine[2],                                      // C欄：商品名稱
+                            qty: parseInt(currentLine[3]) || 1,                        // D欄：數量 (防呆預設 1)
+                            store: currentLine[1] || '其他待辦購買',                    // B欄：店家 (為空則帶預設文字)
+                            note: (currentLine[4] || '').substring(0, 40),             // E欄：備註 (防呆截斷避免網址太長)
+                            link: currentLine[5] || '',                                // F欄：連結
+                            image: parseImageUrl(currentLine[6]),                      // G欄：商品圖片 (走原有的解析網址方法)
+                            isCloud: true
+                        });
                     }
                 }
             } catch (error) {
