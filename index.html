@@ -277,20 +277,17 @@
             return { icon, defaultLink };
         }
 
-        // Google Drive 圖片自動智慧解析
+        // 🛠️ 優化後的 Google Drive 圖片自動智慧解析機制
         function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
+            
             if (cleanUrl.includes('drive.google.com')) {
-                let fileId = '';
-                if (cleanUrl.includes('/file/d/')) {
-                    const parts = cleanUrl.split('/file/d/');
-                    if (parts[1]) fileId = parts[1].split('/')[0].split('?')[0];
-                } else if (cleanUrl.includes('id=')) {
-                    const urlParams = new URLSearchParams(cleanUrl.split('?')[1]);
-                    fileId = urlParams.get('id') || '';
+                // 使用更精準的正則表達式來抓取不論何種格式的 File ID
+                const match = cleanUrl.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,35})/);
+                if (match && match[1]) {
+                    return `https://docs.google.com/uc?export=view&id=${match[1]}`;
                 }
-                if (fileId) return `https://drive.google.com/uc?export=view&id=${fileId}`;
             }
             return cleanUrl;
         }
@@ -416,7 +413,7 @@
             document.getElementById('shop-item-note').value = '';
         }
 
-        // 渲染總購物卡片群組
+        // 渲染總購物卡片群組 (🔥 重新排版：左側無小圖，大圖獨立展開在下方)
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container');
             if (!container) return;
@@ -460,22 +457,38 @@
 
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
-                    const imgUrl = item.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238FAEC3"><path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-9-1a2 2 0 0 1 4 0v1h-4zm9 14H5V9h3v2h2V9h4v2h2V9h3z"/></svg>';
 
+                    // 🔥 【新結構】改為單純縱向排列，方便大圖於下方完美展開
                     groupHtml += `
-                        <div class="p-3.5 flex items-center gap-3 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
-                            <div class="w-11 h-11 rounded-xl bg-fuji-bg border border-fuji-light flex-shrink-0 overflow-hidden flex items-center justify-center shadow-2xs">
-                                <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%238FAEC3\'><path d=\'M19 7h-3V6a4 4 0 0 0-8 0v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-9-1a2 2 0 0 1 4 0v1h-4zm9 14H5V9h3v2h2V9h4v2h2V9h3z\'/></svg>'">
+                        <div class="p-4 flex flex-col gap-2 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
+                            
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-bold text-sm select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">
+                                            ${item.name}
+                                        </span>
+                                        ${!item.isCloud ? `<span class="text-[9px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200 flex-shrink-0">私人</span>` : ''}
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    <div class="flex items-center border border-fuji-light rounded-lg bg-fuji-bg overflow-hidden shadow-2xs">
+                                        <button onclick="adjustQty('${item.id}', -1)" class="px-2 py-0.5 text-fuji-primary hover:bg-fuji-light transition-all text-xs font-bold"><i class="fa-solid fa-minus"></i></button>
+                                        <span class="px-1.5 text-xs font-extrabold text-fuji-dark min-w-[16px] text-center select-none">${item.qty}</span>
+                                        <button onclick="adjustQty('${item.id}', 1)" class="px-2 py-0.5 text-fuji-primary hover:bg-fuji-light transition-all text-xs font-bold"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                    ${!item.isCloud ? `
+                                        <button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 transition-all text-xs">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>` : '<div class="w-4"></div>'
+                                    }
+                                </div>
                             </div>
 
-                            <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-sm select-none break-words ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">
-                                        ${item.name}
-                                    </span>
-                                    ${!item.isCloud ? `<span class="text-[9px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200 flex-shrink-0">私人</span>` : ''}
-                                </div>
-                                ${item.note ? `<div class="text-[11px] text-fuji-secondary mt-0.5 font-medium truncate"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                            <div class="space-y-1.5 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
+                                ${item.note ? `<div class="text-[11px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                
                                 ${item.link ? `
                                     <div class="mt-1">
                                         <a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[10px] font-bold text-fuji-primary hover:text-fuji-accent bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
@@ -483,20 +496,14 @@
                                         </a>
                                     </div>` : ''
                                 }
-                            </div>
 
-                            <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
-                                <div class="flex items-center border border-fuji-light rounded-lg bg-fuji-bg overflow-hidden shadow-2xs">
-                                    <button onclick="adjustQty('${item.id}', -1)" class="px-2 py-1 text-fuji-primary hover:bg-fuji-light transition-all text-xs font-bold"><i class="fa-solid fa-minus"></i></button>
-                                    <span class="px-2 text-xs font-extrabold text-fuji-dark min-w-[20px] text-center select-none">${item.qty}</span>
-                                    <button onclick="adjustQty('${item.id}', 1)" class="px-2 py-1 text-fuji-primary hover:bg-fuji-light transition-all text-xs font-bold"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                                ${!item.isCloud ? `
-                                    <button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>` : '<div class="w-7"></div>'
+                                ${item.image ? `
+                                    <div class="mt-2 w-full overflow-hidden rounded-xl border border-fuji-light bg-fuji-bg shadow-2xs max-h-52 flex items-center justify-center">
+                                        <img src="${item.image}" class="w-full h-full object-contain max-h-52" alt="商品圖片" onerror="this.parentElement.style.display='none';">
+                                    </div>` : ''
                                 }
                             </div>
+
                         </div>`;
                 });
 
