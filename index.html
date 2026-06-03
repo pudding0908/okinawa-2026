@@ -271,7 +271,7 @@
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
         // 行前準備清單分頁的 CSV 線上讀取網址 (指定抓取分頁：「準備」)
-        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=%E6%BA%96%E5%82%96`;
+        const CHECKLIST_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&sheet=' + encodeURIComponent('準備');
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
 
@@ -799,39 +799,38 @@
             document.getElementById(`btn-${dayId}`).className = "day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm";
         }
 
-        // 從雲端 Google Sheet 拉取全新行李清單資料 (改用安全逗號切割，且依據 A,B,C,D,E,F 欄位順序解析)
+        // 從雲端 Google Sheet 拉取全新行李清單資料 (依據 A,B,C,D,E,F 欄位絕對順序解析，不比對任何文字名稱)
         async function fetchCloudChecklist() {
             try {
                 const response = await fetch(CHECKLIST_CSV_URL);
                 if (!response.ok) throw new Error("網路讀取失敗");
                 const csvText = await response.text();
                 
-                // 將每一行切開
+                // 按行切開資料
                 const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 globalChecklistItems = [];
         
+                // 確保留實資料大於一列 (i=0 是 A,B,C,D... 欄位名稱列，我們從 i=1 開始抓真實內容)
                 if (lines.length > 1) {
-                    // 從本機取得目前的使用者勾選狀態紀錄庫
+                    // 自本機手機記憶庫取得已勾選的狀態
                     const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
         
-                    // i=0 是欄位名稱（A,B,C,D...那一列），我們從 i=1 開始抓取第一筆真實資料
                     for (let i = 1; i < lines.length; i++) {
+                        // 安全切割欄位，並清除欄位兩端的雙引號
+                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         
-                        // 這裡改用最安全的簡單逗號與移除雙引號來切開 A, B, C, D, E, F 欄
-                        const currentLine = lines[i].split(',').map(v => v.replace(/["']/g, '').trim());
-                        
-                        // 檢查：如果切出來的欄位數量太少，或者關鍵的 D 欄（項目名稱，索引值是 3）是空的，就跳過
+                        // 防禦機制：若 A、B、C、D 欄位長度不足，或關鍵的 D 欄(項目名稱)為空，就跳過此行
                         if (currentLine.length < 4 || !currentLine[3]) continue; 
                         
-                        // 🚀 完全依照欄位 A, B, C, D, E, F 的絕對順序抓取資料
-                        const itemId = currentLine[0] || 'chk-' + i;       // A欄 (ID)
-                        const catName = currentLine[1] || '其他未分類';     // B欄 (區域/大分類)
-                        const typeName = currentLine[2] || '';             // C欄 (分類/次類型)
-                        const itemText = currentLine[3];                   // D欄 (項目名稱)
-                        const itemQty = parseInt(currentLine[4]) || 1;     // E欄 (數量)
-                        const itemNote = currentLine[5] || '';             // F欄 (備註)
+                        // 🚀 核心修正：完全不管欄位名稱是什麼，直接用陣列索引(第幾欄)抓取
+                        const itemId = currentLine[0] || 'chk-' + i;       // A 欄：唯一 ID (例如 chk-01)
+                        const catName = currentLine[1] || '其他未分類';     // B 欄：大分類 / 區域
+                        const typeName = currentLine[2] || '';             // C 欄：次分類 / 類型
+                        const itemText = currentLine[3];                   // D 欄：行李項目名稱
+                        const itemQty = parseInt(currentLine[4]) || 1;     // E 欄：準備數量
+                        const itemNote = currentLine[5] || '';             // F 欄：備註說明
         
-                        // 初始化折疊狀態預設為展開
+                        // 初始化大分類卡片的折疊狀態 (預設展開)
                         if (checklistCollapsedCategories[catName] === undefined) {
                             checklistCollapsedCategories[catName] = false;
                         }
@@ -843,17 +842,18 @@
                             text: itemText,
                             qty: itemQty,
                             note: itemNote,
-                            checked: userCheckedStates[itemId] === true
+                            checked: userCheckedStates[itemId] === true // 比對手機本機的打勾紀錄
                         });
                     }
                 }
+                // 送出渲染畫面
                 renderChecklist(globalChecklistItems);
             } catch (error) {
                 console.error("行前準備清單拉取異常:", error);
                 document.getElementById('checklist-container').innerHTML = `
                     <div class="text-center py-8 text-sm text-fuji-accent font-medium">
-                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從 Google 試算表讀取「準備」分頁。<br>
-                        請確認 Excel 的分頁名稱是否確實叫做「準備」。
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法順利同步「準備」分頁資料。<br>
+                        請確認您當前的手機網路是否順暢。
                     </div>`;
             }
         }
