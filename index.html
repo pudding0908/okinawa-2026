@@ -44,20 +44,21 @@
 
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         
-        <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
-            <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
-            <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
-            <div class="text-[10px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
-            <h1 class="font-cute text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
-                <i class="fa-solid fa-umbrella-beach text-fuji-accent"></i> 日本沖繩行
-            </h1>
-            <p class="text-[11px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
-                <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
-            </p>
-        </header>
+        <div class="sticky top-0 z-50 bg-fuji-bg w-full">
+            
+            <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
+                <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
+                <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
+                <div class="text-[10px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
+                <h1 class="font-cute text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-umbrella-beach text-fuji-accent"></i> 日本沖繩行
+                </h1>
+                <p class="text-[11px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
+                    <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
+                </p>
+            </header>
 
-        <main class="flex-1 p-3 overflow-y-auto">
-           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 mb-2 px-1">
+            <div id="sticky-day-container" class="pt-3 pb-2 mb-1 px-4 block">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
                         <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
@@ -78,6 +79,9 @@
                 </div>
             </div>
 
+        </div>
+        
+        <main class="flex-1 p-3 overflow-y-auto">
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block mt-2">
                 <div class="flex justify-between items-center mb-2">
@@ -885,7 +889,7 @@
                 groupHtml += `</div></div>`; container.innerHTML += groupHtml;
             }
         }
-
+    
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
@@ -900,6 +904,16 @@
                 activeNav.classList.add('text-fuji-accent');
             }
 
+            // 🚀 【純加法控制】：利用 style.display 控制日期方格的隱現，絕不改動或破壞原本的 class 與既有功能
+            const dayBox = document.getElementById('sticky-day-container');
+            if (dayBox) {
+                if (tabName === 'plan' || tabName === 'guide') {
+                    dayBox.style.display = ''; // 當切換到行程 (plan) 或 地圖 (guide) 時顯示
+                } else {
+                    dayBox.style.display = 'none'; // 其餘頁面直接無感隱藏
+                }
+            }
+            
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
             if(tabName === 'lists') fetchCloudChecklist(); // 切換到準備頁籤時即時重新拉取雲端
