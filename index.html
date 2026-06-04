@@ -56,21 +56,24 @@
             </p>
         </header>-->
 
-        <main class="flex-1 px-4 pt-2 pb-24 overflow-y-auto relative">
+        <main class="flex-1 px-4 relative">
             <!--全域固定-->
-           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 pb-3 mb-4 shadow-[0_4px_6px_-2px_rgba(243,247,250,0.8)]">
-                <div class="w-full bg-[#4A7C9D] text-white rounded-2xl p-4 text-center relative overflow-hidden mb-3 shadow-xs">
-                    <div class="text-[10px] tracking-widest font-bold opacity-90 mb-1 flex items-center justify-center gap-1">
+           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 pb-3 mb-2 px-1">
+               <div class="w-full bg-[#4A7C9D] text-white rounded-3xl p-5 relative overflow-hidden mb-4 shadow-sm flex flex-col justify-center items-start min-h-[110px]">
+                    <div class="absolute right-[-15px] top-[15px] opacity-10 text-[90px] font-bold select-none pointer-events-none font-cute leading-none">⚙️</div>
+                    
+                    <div class="text-[10px] tracking-widest font-bold opacity-80 mb-1 flex items-center gap-1">
                         ✨ OKINAWA TRIP MEMO ✨
                     </div>
-                    <h2 class="text-xl font-bold tracking-wide flex items-center justify-center gap-1.5">
-                        <span class="text-2xl">🏖️</span> 日本沖繩行
+                    <h2 class="text-2xl font-bold tracking-wide flex items-center gap-2">
+                        <span class="text-2xl filter drop-shadow-sm">⛱️</span> 日本沖繩行
                     </h2>
-                    <div class="inline-block bg-white/15 text-[11px] font-medium px-2.5 py-0.5 rounded-full mt-2 backdrop-blur-xs">
+                    <div class="bg-white/15 text-[10px] font-medium px-2.5 py-0.5 rounded-full mt-2 backdrop-blur-xs flex items-center gap-1 shadow-3xs">
                         📅 2026 / 10 / 01 — 10 / 04
                     </div>
                 </div>
-                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start px-1">
+
+                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
                         <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
                         <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 1</span>
