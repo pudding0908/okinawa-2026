@@ -58,13 +58,19 @@
 
         <main class="flex-1 px-4 pt-2 pb-24 overflow-y-auto relative">
             <!--全域固定-->
-            <div class="sticky top-0 z-50 bg-fuji-bg pb-3 shadow-[0_4px_6px_-2px_rgba(243,247,250,0.8)]">
-                <div class="flex items-baseline gap-2 mb-3 px-1">
-                    <h2 class="text-xl font-bold text-fuji-dark tracking-wide">2026 日本沖繩行</h2>
-                    <span class="text-[10px] bg-fuji-primary/10 text-fuji-primary px-2 py-0.5 rounded-full font-medium">富士藍度假版</span>
+           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 pb-3 mb-4 shadow-[0_4px_6px_-2px_rgba(243,247,250,0.8)]">
+                <div class="w-full bg-[#4A7C9D] text-white rounded-2xl p-4 text-center relative overflow-hidden mb-3 shadow-xs">
+                    <div class="text-[10px] tracking-widest font-bold opacity-90 mb-1 flex items-center justify-center gap-1">
+                        ✨ OKINAWA TRIP MEMO ✨
+                    </div>
+                    <h2 class="text-xl font-bold tracking-wide flex items-center justify-center gap-1.5">
+                        <span class="text-2xl">🏖️</span> 日本沖繩行
+                    </h2>
+                    <div class="inline-block bg-white/15 text-[11px] font-medium px-2.5 py-0.5 rounded-full mt-2 backdrop-blur-xs">
+                        📅 2026 / 10 / 01 — 10 / 04
+                    </div>
                 </div>
-    
-                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
+                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start px-1">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
                         <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
                         <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 1</span>
@@ -75,7 +81,7 @@
                     </button>
                     <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
                         <span class="text-[11px] opacity-70 pointer-events-none">10/3</span>
-                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 2</span>
+                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 3</span>
                     </button>
                     <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
                         <span class="text-[11px] opacity-70 pointer-events-none">10/4</span>
@@ -83,7 +89,7 @@
                     </button>
                 </div>
             </div>
-
+            
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block mt-2">
                 
