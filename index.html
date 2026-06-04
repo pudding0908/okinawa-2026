@@ -381,7 +381,7 @@
             }
         }
 
-     function renderTimelineCard(row) {
+        function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
@@ -405,7 +405,7 @@
             if (row['區間']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2 inline-flex items-center gap-0.5"><i class="fa-regular fa-clock text-[11px]"></i>${row['區間']}</span>`;
             if (row['費用']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2">💰 ${row['費用']}</span>`;
             
-            // 3. 檢查並建立「▶ 更多資訊」收合區塊 (依截圖規格：包含備註、網頁、地圖)
+            // 3. 檢查並建立「▶ 更多資訊」收合區塊
             let hasMoreInfo = !!(row['備註'] || row['Google Map'] || row['網頁']);
             let toggleBtnHtml = '';
             let expandableHtml = '';
@@ -443,7 +443,7 @@
                 categoryHtml = `<span class="text-fuji-accent text-[11px] whitespace-nowrap ml-2"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
             }
 
-            // 精準重現手動草圖佈局
+            // 精準調整後的結構：資訊行移至說明下方
             let cardHtml = `
                 <div class="relative flex gap-2.5 pl-1 group">
                     
@@ -468,19 +468,19 @@
                             : 'bg-fuji-paper border-fuji-light'
                         }">
                             
-                            ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex items-center text-[11px] mb-2 pb-1 border-b border-fuji-light/40">
-                                    <div class="flex items-center">${metaHtml}</div>
-                                    ${toggleBtnHtml}
-                                </div>
-                            ` : ''}
-
                             <div class="flex justify-between items-start w-full">
                                 <h4 class="font-bold text-fuji-dark text-sm tracking-wide leading-tight flex-1 min-w-0 break-all">${row['標題'] || '未命名行程'}</h4>
                                 ${categoryHtml}
                             </div>
                             
                             ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
+                            
+                            ${(metaHtml || toggleBtnHtml) ? `
+                                <div class="flex items-center text-[11px] mt-2 pt-1.5 border-t border-dashed border-fuji-light/40">
+                                    <div class="flex items-center">${metaHtml}</div>
+                                    ${toggleBtnHtml}
+                                </div>
+                            ` : ''}
                             
                             ${expandableHtml}
 
