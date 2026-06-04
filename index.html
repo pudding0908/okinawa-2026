@@ -44,7 +44,7 @@
 
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         
-        <header class="bg-fuji-primary p-4 pt-6 pb-6 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
+        <!--<header class="bg-fuji-primary p-4 pt-6 pb-6 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
             <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
             <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
             <div class="text-[10px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
@@ -54,47 +54,56 @@
             <p class="text-[11px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
                 <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
             </p>
-        </header>
+        </header>-->
 
-        <main class="flex-1 p-3 overflow-y-auto">
-            <!-- tab1.行程 -->
-            <section id="page-plan" class="tab-content block">
-                <div class="flex justify-between items-center mb-3 pb-1">
-                    <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
-                        <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
-                    </h2>
-                    <!--<div class="flex gap-1 text-xs font-bold">
-                        <button onclick="switchDay('d1')" id="btn-d1" class="day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm transition-all">D1</button>
-                        <button onclick="switchDay('d2')" id="btn-d2" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D2</button>
-                        <button onclick="switchDay('d3')" id="btn-d3" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D3</button>
-                        <button onclick="switchDay('d4')" id="btn-d4" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D4</button>
-                    </div>-->
-                    <div class="flex flex-nowrap gap-2.5 mb-5 text-xs font-bold w-full overflow-x-auto no-scrollbar py-0.5 justify-start">
-                        <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
-                            <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
-                            <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 1</span>
-                        </button>
-                        <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                            <span class="text-[11px] opacity-70 pointer-events-none">10/2</span>
-                            <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 2</span>
-                        </button>
-                        <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                            <span class="text-[11px] opacity-70 pointer-events-none">10/3</span>
-                            <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 3</span>
-                        </button>
-                        <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                            <span class="text-[11px] opacity-70 pointer-events-none">10/4</span>
-                            <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 4</span>
-                        </button>
-                    </div>
+        <main class="flex-1 px-4 pt-2 pb-24 overflow-y-auto relative">
+            <!--全域固定-->
+            <div class="sticky top-0 z-50 bg-fuji-bg pb-3 shadow-[0_4px_6px_-2px_rgba(243,247,250,0.8)]">
+                <div class="flex items-baseline gap-2 mb-3 px-1">
+                    <h2 class="text-xl font-bold text-fuji-dark tracking-wide">2026 日本沖繩行</h2>
+                    <span class="text-[10px] bg-fuji-primary/10 text-fuji-primary px-2 py-0.5 rounded-full font-medium">富士藍度假版</span>
                 </div>
+    
+                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
+                    <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
+                        <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
+                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 1</span>
+                    </button>
+                    <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[11px] opacity-70 pointer-events-none">10/2</span>
+                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 2</span>
+                    </button>
+                    <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[11px] opacity-70 pointer-events-none">10/3</span>
+                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 2</span>
+                    </button>
+                    <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[11px] opacity-70 pointer-events-none">10/4</span>
+                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 4</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- tab1.行程 -->
+            <section id="page-plan" class="tab-content block mt-2">
+                
+                <!-- 補回的行程時光軸標題列（帶有原本的精緻橘色圖標） -->
+                <div class="flex items-center gap-1.5 mb-4 px-1">
+                    <i class="fa-solid fa-route text-fuji-accent text-sm"></i>
+                    <h3 class="font-bold text-fuji-dark text-sm tracking-wide">行程時光軸</h3>
+                </div>
+
                 <div id="loading-status" class="text-center py-12 text-xs text-fuji-secondary font-medium">
                     <i class="fa-solid fa-water fa-bounce mr-2 text-fuji-primary"></i>輕輕划向雲端手帳中...
                 </div>
-                <div id="day-d1" class="day-timeline"></div>
-                <div id="day-d2" class="day-timeline hidden"></div>
-                <div id="day-d3" class="day-timeline hidden"></div>
-                <div id="day-d4" class="day-timeline hidden"></div>
+                
+                <!-- 行程時間軸卡片容器 -->
+                <div id="timeline-container" class="space-y-1">
+                    <div id="day-d1" class="day-timeline space-y-1"></div>
+                    <div id="day-d2" class="day-timeline space-y-1 hidden"></div>
+                    <div id="day-d3" class="day-timeline space-y-1 hidden"></div>
+                    <div id="day-d4" class="day-timeline space-y-1 hidden"></div>
+                </div>
             </section>
 
             <!-- tab2.地圖 -->
@@ -912,12 +921,12 @@
             const targetEl = document.getElementById(dayId);
             if (targetEl) targetEl.classList.remove('hidden');
 
-            // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式 (補足佈局樣式，防扭曲)
+            // 3. 還原所有頁籤按鈕為「未選取」的淡色方形樣式 (保持 w-14 h-14 方形佈局)
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
             });
 
-            // 4. 精準將當前點選的按鈕切換為「深藍色選取」樣式
+            // 4. 將當前點選的按鈕切換為「深藍色選取」高亮樣式
             const activeBtn = document.getElementById('btn-' + dayId);
             if (activeBtn) {
                 activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
