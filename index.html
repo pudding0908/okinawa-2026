@@ -44,7 +44,7 @@
 
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         
-        <!--<header class="bg-fuji-primary p-4 pt-6 pb-6 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
+        <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
             <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
             <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
             <div class="text-[10px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
@@ -54,25 +54,10 @@
             <p class="text-[11px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
                 <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
             </p>
-        </header>-->
+        </header>
 
-        <main class="flex-1 px-4 relative">
-            <!--全域固定-->
-           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 pb-3 mb-2 px-1">
-               <div class="w-full bg-[#4A7C9D] text-white rounded-3xl p-5 relative overflow-hidden mb-4 shadow-sm flex flex-col justify-center items-start min-h-[110px]">
-                    <div class="absolute right-[-15px] top-[15px] opacity-10 text-[90px] font-bold select-none pointer-events-none font-cute leading-none">⚙️</div>
-                    
-                    <div class="text-[10px] tracking-widest font-bold opacity-80 mb-1 flex items-center gap-1">
-                        ✨ OKINAWA TRIP MEMO ✨
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-wide flex items-center gap-2">
-                        <span class="text-2xl filter drop-shadow-sm">⛱️</span> 日本沖繩行
-                    </h2>
-                    <div class="bg-white/15 text-[10px] font-medium px-2.5 py-0.5 rounded-full mt-2 backdrop-blur-xs flex items-center gap-1 shadow-3xs">
-                        📅 2026 / 10 / 01 — 10 / 04
-                    </div>
-                </div>
-
+        <main class="flex-1 p-3 overflow-y-auto">
+           <div class="sticky top-0 z-50 bg-fuji-bg pt-2 mb-2 px-1">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
                         <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
@@ -92,14 +77,13 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block mt-2">
-                
-                <!-- 補回的行程時光軸標題列（帶有原本的精緻橘色圖標） -->
-                <div class="flex items-center gap-1.5 mb-4 px-1">
-                    <i class="fa-solid fa-route text-fuji-accent text-sm"></i>
-                    <h3 class="font-bold text-fuji-dark text-sm tracking-wide">行程時光軸</h3>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
+                        <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
+                    </h2>
                 </div>
 
                 <div id="loading-status" class="text-center py-12 text-xs text-fuji-secondary font-medium">
@@ -512,7 +496,7 @@
                             ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
                             
                             ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex items-center text-[11px] mt-1.5">
+                                <div class="flex items-center text-[11px] mt-2 pt-1.5 border-t border-dashed border-fuji-light/40">
                                     <div class="flex items-center">${metaHtml}</div>
                                     ${toggleBtnHtml}
                                 </div>
@@ -930,12 +914,12 @@
             const targetEl = document.getElementById(dayId);
             if (targetEl) targetEl.classList.remove('hidden');
 
-            // 3. 還原所有頁籤按鈕為「未選取」的淡色方形樣式 (保持 w-14 h-14 方形佈局)
+            // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
             });
 
-            // 4. 將當前點選的按鈕切換為「深藍色選取」高亮樣式
+            // 4. 精準將當前點選的按鈕切換為「深藍色選取」樣式
             const activeBtn = document.getElementById('btn-' + dayId);
             if (activeBtn) {
                 activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
