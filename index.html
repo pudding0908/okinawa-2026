@@ -63,11 +63,29 @@
                     <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
                         <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
                     </h2>
-                    <div class="flex gap-1 text-xs font-bold">
+                    <!--<div class="flex gap-1 text-xs font-bold">
                         <button onclick="switchDay('d1')" id="btn-d1" class="day-btn px-2.5 py-1 bg-fuji-primary text-white rounded-full shadow-sm transition-all">D1</button>
                         <button onclick="switchDay('d2')" id="btn-d2" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D2</button>
                         <button onclick="switchDay('d3')" id="btn-d3" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D3</button>
                         <button onclick="switchDay('d4')" id="btn-d4" class="day-btn px-2.5 py-1 bg-fuji-paper text-fuji-primary border border-fuji-light rounded-full shadow-sm transition-all">D4</button>
+                    </div>-->
+                    <div class="flex gap-2 mb-5 text-xs font-bold w-full">
+                        <button onclick="switchTab('day-d1')" id="btn-day-d1" class="tab-btn flex-1 py-1.5 text-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
+                            <span class="block text-[12px] opacity-90">10/1</span>
+                            <span class="block text-xs font-cute mt-0.5">Day 1</span>
+                        </button>
+                        <button onclick="switchTab('day-d2')" id="btn-day-d2" class="tab-btn flex-1 py-1.5 text-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                            <span class="block text-[11px] opacity-70">10/2</span>
+                            <span class="block text-xs font-cute mt-0.5">Day 2</span>
+                        </button>
+                        <button onclick="switchTab('day-d3')" id="btn-day-d3" class="tab-btn flex-1 py-1.5 text-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                            <span class="block text-[11px] opacity-70">10/3</span>
+                            <span class="block text-xs font-cute mt-0.5">Day 3</span>
+                        </button>
+                        <button onclick="switchTab('day-d4')" id="btn-day-d4" class="tab-btn flex-1 py-1.5 text-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                            <span class="block text-[11px] opacity-70">10/4</span>
+                            <span class="block text-xs font-cute mt-0.5">Day 4</span>
+                        </button>
                     </div>
                 </div>
                 <div id="loading-status" class="text-center py-12 text-xs text-fuji-secondary font-medium">
@@ -476,7 +494,7 @@
                             ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
                             
                             ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex items-center text-[11px] mt-2 pt-1.5 border-t border-dashed border-fuji-light/40">
+                                <div class="flex items-center text-[11px] mt-1.5">
                                     <div class="flex items-center">${metaHtml}</div>
                                     ${toggleBtnHtml}
                                 </div>
