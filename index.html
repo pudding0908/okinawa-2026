@@ -187,7 +187,7 @@
                     <div class="flex items-center justify-between">
                         <label class="font-bold text-fuji-primary">日幣匯率 (1 JPY = TWD)</label>
                         <div class="flex items-center gap-1">
-                            <span id="bot-rate-tag" class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1 py-0.5 rounded hidden">台銀即時</span>
+                            <span id="bot-rate-tag" class="text-[12px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1 py-0.5 rounded hidden">台銀即時</span>
                             <input type="number" id="exchange-rate" value="0.215" step="0.001" oninput="renderExpenses();" class="w-20 px-2 py-0.5 text-right border border-fuji-light rounded bg-fuji-bg font-bold text-fuji-primary">
                         </div>
                     </div>
@@ -396,10 +396,11 @@
             if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[12px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
             let metaHtml = '';
-            if (row['區間費用']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[12px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['區間費用']}</span>`;
+            if (row['區間']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[12px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['區間']}</span>`;
+            if (row['費用']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[12px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['費用']}</span>`;
             if (row['備註']) metaHtml += `<span class="text-[12px] text-fuji-primary font-bold">💬 ${row['備註']}</span>`;
 
-            let cardHtml = `<div class="bg-fuji-paper p-3 rounded-xl shadow-sm border border-fuji-light"><div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1"><span class="text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-full">${timeString}</span>${row['分類'] ? `<span class="text-[9px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}</div><h4 class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
+            let cardHtml = `<div class="bg-fuji-paper p-3 rounded-xl shadow-sm border border-fuji-light"><div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1"><span class="text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-full">${timeString}</span>${row['分類'] ? `<span class="text-[12px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}</div><h4 class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
             
             if (row['分類'] === '重要') {
                 cardHtml = `<div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-3 rounded-xl shadow-sm bg-white"><div class="flex justify-between text-[11px] text-fuji-accent font-bold mb-1"><span class="bg-fuji-accent text-white px-1.5 py-0.5 rounded-full">${timeString}</span><span><i class="fa-solid fa-star fa-spin mr-1"></i>重要</span></div><p class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</p>${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1 leading-relaxed bg-fuji-bg/50 p-2 rounded-lg text-justify">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
@@ -590,9 +591,9 @@
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <div class="flex items-center border border-fuji-light rounded-md bg-fuji-bg overflow-hidden shadow-2xs">
-                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[9px]"></i></button>
+                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[12px]"></i></button>
                                         <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[12px] text-center select-none">${item.qty}</span>
-                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[9px]"></i></button>
+                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[12px]"></i></button>
                                     </div>
                                     ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs"><i class="fa-regular fa-trash-can text-[11px]"></i></button>` : '<div class="w-3"></div>'}
                                 </div>
