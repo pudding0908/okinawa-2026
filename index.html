@@ -381,17 +381,17 @@
             }
         }
 
-       function renderTimelineCard(row) {
+     function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
             if (!targetContainer) return;
 
-            // 隨機生成唯一 ID，供「更多資訊」摺疊收合功能使用
+            // 隨機生成唯一 ID，供「更多資訊」收合功能使用
             const uniqueId = 'detail-' + Math.random().toString(36).substr(2, 9);
 
-            // 1. 處理時間軸左右兩端的時間資料
+            // 1. 取得起迄時間資料
             let timeStart = row['時間起'] || '';
             let timeEnd = row['時間迄'] || '';
 
@@ -400,24 +400,22 @@
             if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
             if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
-            // 2. 處理上方區間與費用
+            // 2. 建立「區間、費用」文字段落
             let metaHtml = '';
             if (row['區間']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2 inline-flex items-center gap-0.5"><i class="fa-regular fa-clock text-[11px]"></i>${row['區間']}</span>`;
             if (row['費用']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2">💰 ${row['費用']}</span>`;
             
-            // 3. 檢查是否有「更多資訊」需要收合
+            // 3. 檢查並建立「▶ 更多資訊」收合區塊 (依截圖規格：包含備註、網頁、地圖)
             let hasMoreInfo = !!(row['備註'] || row['Google Map'] || row['網頁']);
             let toggleBtnHtml = '';
             let expandableHtml = '';
 
             if (hasMoreInfo) {
-                // 產生「▶ 更多資訊」點擊切換鈕
                 toggleBtnHtml = `
-                    <button onclick="document.getElementById('${uniqueId}').classList.toggle('hidden'); this.querySelector('.arrow-icon').classList.toggle('rotate-90');" class="text-[11px] text-fuji-primary/80 font-bold hover:text-fuji-primary inline-flex items-center gap-0.5 transition-all focus:outline-none">
+                    <button onclick="document.getElementById('${uniqueId}').classList.toggle('hidden'); this.querySelector('.arrow-icon').classList.toggle('rotate-90');" class="text-[11px] text-fuji-primary/80 font-bold hover:text-fuji-primary inline-flex items-center gap-0.5 transition-all focus:outline-none ml-1">
                         <i class="fa-solid fa-caret-right arrow-icon transition-transform duration-200"></i>更多資訊
                     </button>
                 `;
-                // 預設隱藏的收合區塊
                 expandableHtml = `
                     <div id="${uniqueId}" class="hidden mt-2 pt-2 border-t border-dashed border-fuji-light/60 bg-fuji-bg/40 p-2 rounded-lg">
                         ${row['備註'] ? `<div class="text-[11px] text-fuji-dark font-medium mb-1.5">💬 ${row['備註']}</div>` : ''}
@@ -426,7 +424,7 @@
                 `;
             }
 
-            // 處理行程圖片來源
+            // 處理行程圖片
             let imgUrl = row['圖片'] || row['Image'] || '';
             let imgHtml = '';
             if (imgUrl && imgUrl.trim() !== '') {
@@ -445,7 +443,7 @@
                 categoryHtml = `<span class="text-fuji-accent text-[11px] whitespace-nowrap ml-2"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
             }
 
-            // 進階雙軸平行排版 HTML 結構
+            // 精準重現手動草圖佈局
             let cardHtml = `
                 <div class="relative flex gap-2.5 pl-1 group">
                     
@@ -471,9 +469,9 @@
                         }">
                             
                             ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex flex-wrap items-center justify-between mb-1.5 pb-1 border-b border-fuji-light/40">
-                                    <div class="flex flex-wrap items-center">${metaHtml}</div>
-                                    <div>${toggleBtnHtml}</div>
+                                <div class="flex items-center text-[11px] mb-2 pb-1 border-b border-fuji-light/40">
+                                    <div class="flex items-center">${metaHtml}</div>
+                                    ${toggleBtnHtml}
                                 </div>
                             ` : ''}
 
