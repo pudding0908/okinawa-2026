@@ -396,11 +396,19 @@
             if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[12px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
             let metaHtml = '';
-            if (row['區間']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[12px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['區間']}</span>`;
-            if (row['費用']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[12px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['費用']}</span>`;
-            if (row['備註']) metaHtml += `<span class="text-[12px] text-fuji-primary font-bold">💬 ${row['備註']}</span>`;
+            if (row['區間']) metaHtml += `<span class="text-fuji-secondary font-medium text-[12px] px-1.5 mr-1"><i class="fa-regular fa-clock text-[12px]"></i> ${row['區間']}</span>`;
+            if (row['費用']) metaHtml += `<span class="text-fuji-secondary font-medium text-[12px] px-1.5 mr-1">💰 ${row['費用']}</span>`;
+            if (row['備註']) metaHtml += `<span class="inline-block text-[12px] text-fuji-primary font-bold">💬 ${row['備註']}</span>`;
 
-            let cardHtml = `<div class="bg-fuji-paper p-3 rounded-xl shadow-sm border border-fuji-light"><div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1"><span class="text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-full">${timeString}</span>${row['分類'] ? `<span class="text-[12px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}</div><h4 class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
+            let cardHtml = `<div class="bg-fuji-paper p-3 rounded-xl shadow-sm border border-fuji-light">
+                                <div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1">
+                                    <span class="text-fuji-primary bg-fuji-light px-1.5 py-0.5 rounded-full">${timeString}</span>
+                                    ${row['分類'] ? `<span class="text-[12px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : ''}
+                                </div>
+                                <h4 class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</h4>${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
+                                <div>${metaHtml}</div>
+                                <div class="mt-2">${buttonHtml}</div>
+                            </div>`;
             
             if (row['分類'] === '重要') {
                 cardHtml = `<div class="bg-fuji-accent/10 border-l-4 border-fuji-accent p-3 rounded-xl shadow-sm bg-white"><div class="flex justify-between text-[11px] text-fuji-accent font-bold mb-1"><span class="bg-fuji-accent text-white px-1.5 py-0.5 rounded-full">${timeString}</span><span><i class="fa-solid fa-star fa-spin mr-1"></i>重要</span></div><p class="font-bold text-fuji-dark text-sm mt-1">${row['標題'] || '未命名行程'}</p>${row['說明'] ? `<p class="text-xs text-fuji-dark/80 mt-1 leading-relaxed bg-fuji-bg/50 p-2 rounded-lg text-justify">${row['說明']}</p>` : ''}<div class="mt-2">${metaHtml}</div><div class="mt-2">${buttonHtml}</div></div>`;
