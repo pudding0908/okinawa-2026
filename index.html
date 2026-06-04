@@ -381,45 +381,53 @@
             }
         }
 
-     function renderTimelineCard(row) {
+       function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
             if (!targetContainer) return;
 
-            // 建立起迄時間字串（依截圖樣式：簡單乾淨的換行呈現）
-            let timeString = '';
-            if (row['時間起']) timeString += `<div>${row['時間起']}</div>`;
-            if (row['時間迄']) timeString += `<div class="text-[10px] text-fuji-secondary/60 mt-0.5">↓ ${row['時間迄']}</div>`;
+            // 1. 處理時間欄（左側僅放「時間起」）
+            let timeStartString = row['時間起'] || '';
 
             // 處理導航與網站按鈕
             let buttonHtml = '';
             if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
             if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
-            // 處理費用與備註等資訊
+            // 處理區間、費用、備註資訊
             let metaHtml = '';
             if (row['區間']) metaHtml += `<span class="text-fuji-secondary font-medium text-[11px] mr-2 inline-flex items-center gap-0.5"><i class="fa-regular fa-clock text-[11px]"></i>${row['區間']}</span>`;
             if (row['費用']) metaHtml += `<span class="text-fuji-secondary font-medium text-[11px] mr-2">💰 ${row['費用']}</span>`;
-            if (row['備註']) metaHtml += `<span class="inline-block text-[11px] text-fuji-primary font-bold">💬 ${row['備註']}</span>`;
+            
+            let noteHtml = '';
+            if (row['備註']) noteHtml += `<span class="inline-block text-[11px] text-fuji-primary font-bold">💬 ${row['備註']}</span>`;
 
-            // 處理行程圖片來源 (支援欄位「圖片」或是「Image」)
+            // 處理行程圖片來源
             let imgUrl = row['圖片'] || row['Image'] || '';
             let imgHtml = '';
             if (imgUrl && imgUrl.trim() !== '') {
                 let cleanImgUrl = parseImageUrl(imgUrl);
-                imgHtml = `<div class="mt-2.5 rounded-xl overflow-hidden border border-fuji-light/60 max-h-48 shadow-2xs bg-white"><img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
+                imgHtml = `<div class="mt-2 rounded-xl overflow-hidden border border-fuji-light/60 max-h-48 shadow-2xs bg-white"><img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
             }
 
             // 判斷是否為重要行程
             const isImportant = row['分類'] === '重要';
 
-            // 仿截圖精緻排版：左側時間 + 圓點軸線 + 右側手帳卡片
+            // 2. 處理分類標籤 (準備與標題同行，固定最右側)
+            let categoryHtml = '';
+            if (row['分類']) {
+                categoryHtml = `<span class="${isImportant ? 'bg-fuji-accent text-white' : 'bg-fuji-bg text-fuji-primary border border-fuji-light'} px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ml-2">${row['分類']}</span>`;
+            } else if (isImportant) {
+                categoryHtml = `<span class="text-fuji-accent text-[11px] whitespace-nowrap ml-2"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
+            }
+
+            // 精緻手帳風 Timeline 渲染結構
             let cardHtml = `
                 <div class="relative flex items-stretch gap-2.5 pl-1 group">
                     <div class="w-12 text-right flex-shrink-0 text-[11px] font-bold text-fuji-dark font-cute pr-1 pt-3 leading-tight">
-                        ${timeString}
+                        <div>${timeStartString}</div>
                     </div>
 
                     <div class="flex flex-col items-center flex-shrink-0 w-3 relative">
@@ -437,23 +445,35 @@
                             ? 'bg-amber-50/20 border-fuji-accent' 
                             : 'bg-fuji-paper border-fuji-light'
                         }">
-                            <div class="flex justify-between items-center text-[10px] text-fuji-secondary font-bold mb-1">
-                                ${row['分類'] ? `<span class="${isImportant ? 'bg-fuji-accent text-white' : 'bg-fuji-bg text-fuji-primary border border-fuji-light'} px-1.5 py-0.5 rounded-full">${row['分類']}</span>` : '<span></span>'}
-                                ${isImportant ? `<span class="text-fuji-accent text-[11px]"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>` : ''}
-                            </div>
                             
-                            <h4 class="font-bold text-fuji-dark text-sm mt-0.5 tracking-wide">${row['標題'] || '未命名行程'}</h4>
+                            <div class="flex justify-between items-start w-full">
+                                <h4 class="font-bold text-fuji-dark text-sm tracking-wide leading-tight flex-1 min-w-0 break-all">${row['標題'] || '未命名行程'}</h4>
+                                ${categoryHtml}
+                            </div>
                             
                             ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
                             
-                            ${imgHtml}
-                            
-                            ${(metaHtml || buttonHtml) ? `
-                                <div class="mt-2.5 pt-2 border-t border-dashed border-fuji-light/60">
-                                    ${metaHtml ? `<div class="mb-1.5 flex flex-wrap items-center">${metaHtml}</div>` : ''}
-                                    ${buttonHtml ? `<div class="flex flex-wrap items-center">${buttonHtml}</div>` : ''}
+                            ${(metaHtml || noteHtml || buttonHtml) ? `
+                                <div class="mt-2 pt-2 border-t border-dashed border-fuji-light/60">
+                                    ${metaHtml ? `<div class="mb-1 flex flex-wrap items-center">${metaHtml}</div>` : ''}
+                                    ${(noteHtml || buttonHtml) ? `
+                                        <div class="flex flex-wrap items-center gap-y-1">
+                                            ${noteHtml}
+                                            ${(noteHtml && buttonHtml) ? '<span class="mx-1 text-fuji-light">|</span>' : ''}
+                                            ${buttonHtml}
+                                        </div>
+                                    ` : ''}
                                 </div>
                             ` : ''}
+
+                            ${imgHtml}
+
+                            ${row['時間迄'] ? `
+                                <div class="mt-2.5 text-[10px] text-fuji-secondary/60 font-cute text-right">
+                                    結束時間：${row['時間迄']}
+                                </div>
+                            ` : ''}
+
                         </div>
                     </div>
                 </div>
