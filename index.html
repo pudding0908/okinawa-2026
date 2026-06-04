@@ -382,112 +382,79 @@
         }
 
       function renderTimelineCard(row) {
-            var dayValue = (row['Day'] || '').trim().toLowerCase(); 
-            if (dayValue.indexOf('d') === 0) { 
-                dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); 
-            }
-            var containerId = 'day-' + dayValue;
-            var targetContainer = document.getElementById(containerId);
+            let dayValue = (row['Day'] || '').trim().toLowerCase(); 
+            if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
+            const containerId = `day-${dayValue}`;
+            const targetContainer = document.getElementById(containerId);
             if (!targetContainer) return;
 
-            // 1. 處理上下排列的起迄時間
-            var timeStart = row['時間起'] || '';
-            var timeEnd = row['時間迄'] || '';
-            var timeString = timeStart;
-            if (timeEnd) { 
-                timeString += '<br>➔<br>' + timeEnd; 
-            }
+            // 建立起迄時間字串
+            let timeString = row['時間起'] || '';
+            if (row['時間迄']) { timeString += `<br>➔<br>${row['時間迄']}`; }
 
-            // 2. 處理導航與網站按鈕
-            var buttonHtml = '';
-            if (row['Google Map']) {
-                buttonHtml += '<a href="' + row['Google Map'] + '" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>';
-            }
-            if (row['網頁']) {
-                buttonHtml += '<a href="' + row['網頁'] + '" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-earth-asia"></i>網站</a>';
-            }
+            // 處理導航與網站按鈕
+            let buttonHtml = '';
+            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
+            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-fuji-bg font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
-            // 3. 處理區間、費用、備註
-            var metaHtml = '';
-            if (row['區間']) {
-                metaHtml += '<span class="text-fuji-secondary font-medium text-[11px] mr-2 inline-flex items-center gap-0.5"><i class="fa-regular fa-clock text-[11px]"></i>' + row['區間'] + '</span>';
-            }
-            if (row['費用']) {
-                metaHtml += '<span class="text-fuji-secondary font-medium text-[11px] mr-2">💰 ' + row['費用'] + '</span>';
-            }
-            if (row['備註']) {
-                metaHtml += '<span class="inline-block text-[11px] text-fuji-primary font-bold">💬 ' + row['備註'] + '</span>';
-            }
+            // 處理費用與備註
+            let metaHtml = '';
+            if (row['區間費用']) metaHtml += `<span class="inline-block bg-fuji-light text-fuji-primary text-[9px] font-bold px-1.5 py-0.5 rounded mr-1">💰 ${row['區間費用']}</span>`;
+            if (row['備註']) metaHtml += `<span class="text-[10px] text-fuji-accent font-bold">💬 ${row['備註']}</span>`;
 
-            // 4. 處理雲端行程圖片 (支援欄位「圖片」或「Image」)
-            var imgUrl = row['圖片'] || row['Image'] || '';
-            var imgHtml = '';
+            // 新增：處理行程圖片 (欄位名稱不論是「圖片」或「Image」皆能自動對應)
+            let imgUrl = row['圖片'] || row['Image'] || row['商品圖片網址'] || '';
+            let imgHtml = '';
             if (imgUrl && imgUrl.trim() !== '') {
-                var cleanImgUrl = parseImageUrl(imgUrl);
-                imgHtml = '<div class="mt-2.5 rounded-lg overflow-hidden border border-fuji-light/60 max-h-44 shadow-3xs bg-white"><img src="' + cleanImgUrl + '" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>';
+                let cleanImgUrl = parseImageUrl(imgUrl);
+                imgHtml = `<div class="mt-2.5 rounded-lg overflow-hidden border border-fuji-light/60 max-h-40 shadow-3xs"><img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
             }
 
-            // 5. 判斷是否為重要行程
-            var isImportant = (row['分類'] === '重要');
+            // 判斷是否為重要行程
+            const isImportant = row['分類'] === '重要';
 
-            // 6. 核心排版：改用最安全的字串加號連接，防止瀏覽器因為引號被吃掉而崩潰
-            var cardHtml = '';
-            cardHtml += '<div class="relative flex gap-3 pl-1 group">';
+            // 核心調整：左側時間軸直線 + 起迄時間放在線上的佈局
+            let cardHtml = `
+                <div class="relative flex gap-3 pl-1 group">
+                    <div class="flex flex-col items-center flex-shrink-0 w-14 relative">
+                        <div class="absolute top-0 bottom-0 w-0.5 bg-fuji-primary/30 group-last:bottom-auto group-last:h-6"></div>
+                        <div class="z-10 w-14 py-1.5 rounded-xl text-[10px] font-bold text-center leading-tight shadow-sm transition-all border ${
+                            isImportant 
+                            ? 'bg-fuji-accent text-white border-fuji-accent animate-pulse' 
+                            : 'bg-fuji-light text-fuji-primary border-fuji-primary/30'
+                        }">
+                            ${timeString}
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-w-0 pb-4">
+                        <div class="p-3 rounded-xl shadow-2xs border bg-fuji-paper transition-all ${
+                            isImportant 
+                            ? 'border-fuji-accent bg-amber-50/20' 
+                            : 'border-fuji-light'
+                        }">
+                            <div class="flex justify-between items-center text-[11px] text-fuji-secondary font-bold mb-1">
+                                ${row['分類'] ? `<span class="text-[9px] bg-fuji-bg px-1.5 py-0.5 rounded-full text-fuji-primary border border-fuji-light">${row['分類']}</span>` : '<span></span>'}
+                                ${isImportant ? `<span class="text-fuji-accent text-[10px]"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>` : ''}
+                            </div>
+                            
+                            <h4 class="font-bold text-fuji-dark text-sm mt-0.5">${row['標題'] || '未命名行程'}</h4>
+                            
+                            ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
+                            
+                            ${imgHtml}
+                            
+                            ${(metaHtml || buttonHtml) ? `
+                                <div class="mt-2 pt-1.5 border-t border-dashed border-fuji-light/60">
+                                    <div class="mb-1">${metaHtml}</div>
+                                    <div>${buttonHtml}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            // 左側時間軸直線與球形時間節點
-            cardHtml += '  <div class="flex flex-col items-center flex-shrink-0 w-14 relative">';
-            cardHtml += '    <div class="absolute top-0 bottom-0 w-0.5 bg-fuji-primary/20 group-last:bottom-auto group-last:h-6"></div>';
-            
-            if (isImportant) {
-                cardHtml += '    <div class="z-10 w-14 py-2 rounded-xl text-[10px] font-bold text-center leading-tight shadow-sm transition-all border bg-fuji-accent text-white border-fuji-accent animate-pulse">' + timeString + '</div>';
-            } else {
-                cardHtml += '    <div class="z-10 w-14 py-2 rounded-xl text-[10px] font-bold text-center leading-tight shadow-sm transition-all border bg-fuji-light text-fuji-primary border-fuji-primary/40">' + timeString + '</div>';
-            }
-            cardHtml += '  </div>';
-
-            // 右側手帳卡片內容
-            if (isImportant) {
-                cardHtml += '  <div class="flex-1 min-w-0 pb-4"><div class="p-3 rounded-xl shadow-2xs border transition-all bg-amber-50/20 border-fuji-accent">';
-            } else {
-                cardHtml += '  <div class="flex-1 min-w-0 pb-4"><div class="p-3 rounded-xl shadow-2xs border transition-all bg-fuji-paper border-fuji-light">';
-            }
-
-            // 分類標籤
-            cardHtml += '    <div class="flex justify-between items-center text-[10px] text-fuji-secondary font-bold mb-1">';
-            if (row['分類']) {
-                if (isImportant) {
-                    cardHtml += '      <span class="bg-fuji-accent text-white px-1.5 py-0.5 rounded-full">' + row['分類'] + '</span>';
-                } else {
-                    cardHtml += '      <span class="bg-fuji-bg text-fuji-primary border border-fuji-light px-1.5 py-0.5 rounded-full">' + row['分類'] + '</span>';
-                }
-            } else {
-                cardHtml += '      <span></span>';
-            }
-            if (isImportant) {
-                cardHtml += '      <span class="text-fuji-accent"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>';
-            }
-            cardHtml += '    </div>';
-
-            // 標題與說明
-            cardHtml += '    <h4 class="font-bold text-fuji-dark text-sm mt-0.5">' + (row['標題'] || '未命名行程') + '</h4>';
-            if (row['說明']) {
-                cardHtml += '    <p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">' + row['說明'] + '</p>';
-            }
-
-            // 圖片嵌入
-            cardHtml += imgHtml;
-
-            // 底部按鈕區
-            if (metaHtml || buttonHtml) {
-                cardHtml += '    <div class="mt-2.5 pt-2 border-t border-dashed border-fuji-light/70">';
-                if (metaHtml) cardHtml += '      <div class="mb-1.5 flex flex-wrap">' + metaHtml + '</div>';
-                if (buttonHtml) cardHtml += '      <div class="flex flex-wrap">' + buttonHtml + '</div>';
-                cardHtml += '    </div>';
-            }
-
-            cardHtml += '  </div></div>';
-            cardHtml += '</div>';
-
             targetContainer.innerHTML += cardHtml;
         }
 
