@@ -141,8 +141,18 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1">
+                        <!-- <div class="grid grid-cols-1">
                             <input type="text" id="shop-item-store" placeholder="店家名稱" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                        </div> -->
+                        <div class="grid grid-cols-1">
+                            <div class="relative w-full">
+                                <input type="text" id="shop-item-store" list="existing-stores-list" oninput="toggleShopStoreClearBtn()" placeholder="點擊選取現有店家，或直接輸入新店家" class="w-full pr-7 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                                <button type="button" id="clear-shop-store-btn" onclick="clearShopStoreInput()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-fuji-secondary/50 hover:text-rose-500 transition-all">
+                                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                                </button>
+                            </div>
+                            <datalist id="existing-stores-list">
+                                </datalist>
                         </div>
                         
                         <div class="grid grid-cols-3 gap-1.5">
@@ -434,6 +444,9 @@
                                           </span>`;
             if (row['費用']) metaHtml += `<span class="text-fuji-secondary text-[13px] mr-2">💴 ${row['費用']}</span>`;
             
+            // 判斷是否為重要行程
+            const isImportant = row['分類'] === '重要';
+
             // 3. 檢查並建立「▶ 更多資訊」收合區塊
             let hasMoreInfo = !!(row['備註'] || row['Google Map'] || row['網頁']);
             let toggleBtnHtml = '';
@@ -446,8 +459,12 @@
                         <i class="fa-solid fa-caret-right arrow-icon transition-transform duration-200"></i>更多資訊
                     </button>
                 `;
+                
+                // 🔄 調整：重要分類展開區塊使用與卡片同色系的深橘設定，一般分類維持富士灰藍
+                let expandBgClass = isImportant ? 'bg-[rgb(255_225_175_/_70%)] border-amber-300/60' : 'bg-fuji-light/50 border-fuji-light';
+                
                 expandableHtml = `
-                    <div id="${uniqueId}" class="hidden mt-2 pt-2 border-t border-dashed border-fuji-light/60 bg-fuji-bg/40 p-2 rounded-lg">
+                    <div id="${uniqueId}" class="hidden mt-2 p-3 ${expandBgClass} border rounded-xl shadow-inner transition-all">
                         ${row['備註'] ? `<div class="text-[13px] text-fuji-dark font-medium mb-1.5"> ${row['備註']}</div>` : ''}
                         ${buttonHtml ? `<div class="flex flex-wrap items-center mt-1">${buttonHtml}</div>` : ''}
                     </div>
@@ -463,19 +480,37 @@
                                <img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
             }
 
-            // 判斷是否為重要行程
-            const isImportant = row['分類'] === '重要';
-
             // 處理分類標籤佈局
             let categoryHtml = '';
-            if (row['分類']) {
-                categoryHtml = `<span class="${isImportant ? 'bg-fuji-accent text-white' : 'bg-fuji-bg text-fuji-primary border border-fuji-light'} px-1.5 py-0.5 rounded-full text-[13px] font-bold whitespace-nowrap ml-2">${row['分類']}</span>`;
+            const catText = row['分類'] ? row['分類'].trim() : '';
+            if (catText) {
+                let tagColorClass = 'bg-fuji-bg text-fuji-primary border border-fuji-light'; // 預設
+                
+                if (isImportant) {
+                    tagColorClass = 'bg-fuji-accent text-white border-transparent';
+                } else if (catText.includes('美食') || catText.includes('吃')) {
+                    tagColorClass = 'bg-rose-50 text-rose-600 border border-rose-200/60';
+                } else if (catText.includes('景點') || catText.includes('玩')) {
+                    tagColorClass = 'bg-emerald-50 text-emerald-600 border border-emerald-200/60';
+                } else if (catText.includes('交通') || catText.includes('飛機') || catText.includes('自駕')) {
+                    tagColorClass = 'bg-sky-50 text-sky-600 border border-sky-200/60';
+                } else if (catText.includes('飯店') || catText.includes('住')) {
+                    tagColorClass = 'bg-indigo-50 text-indigo-600 border border-indigo-200/60';
+                } else if (catText.includes('購物') || catText.includes('買')) {
+                    tagColorClass = 'bg-amber-50 text-amber-600 border border-amber-200/60';
+                }
+
+                categoryHtml = `<span class="${tagColorClass} px-1.5 py-0.5 rounded-full text-[13px] font-bold whitespace-nowrap ml-2">${row['分類']}</span>`;
             } else if (isImportant) {
                 categoryHtml = `<span class="text-fuji-accent text-[13px] whitespace-nowrap ml-2">
                                     <i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
             }
 
+            // 重要分類內部的資訊分隔線顏色調整
+            let metaBorderClass = isImportant ? 'border-amber-300/50' : 'border-fuji-light/40';
+
             // 精準調整後的結構：資訊行移至說明下方
+            // 🔄 換色重點：卡片外層底色換成您指定的 bg-[rgb(255_238_207_/_60%)]
             let cardHtml = `
                 <div class="relative flex gap-2.5 pl-1 group">
                     <div class="w-12 text-right flex-shrink-0 flex flex-col justify-between text-[15px] text-fuji-secondary/50 font-cute pr-1 pt-3 pb-4 leading-tight">
@@ -495,7 +530,7 @@
                     <div class="flex-1 min-w-0 pb-4">
                         <div class="p-3 rounded-xl shadow-2xs border transition-all ${
                             isImportant 
-                            ? 'bg-amber-50/20 border-fuji-accent' 
+                            ? 'bg-[rgb(255_238_207_/_60%)] border-fuji-accent/60 shadow-xs' 
                             : 'bg-fuji-paper border-fuji-light'
                         }">
                             
@@ -507,7 +542,7 @@
                             ${row['說明'] ? `<p class="text-[15px] text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
                             
                             ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex items-center text-[13px] mt-1 border-t border-dashed border-fuji-light/40">
+                                <div class="flex items-center text-[13px] mt-1 border-dashed ${metaBorderClass}">
                                     <div class="flex items-center">${metaHtml}</div>
                                     ${toggleBtnHtml}
                                 </div>
@@ -571,22 +606,28 @@
             renderCombinedShoppingList();
         }
 
-        // 購物清單 存入個人或雲端
         function setPostType(type) {
-            const localBtn = document.getElementById('toggle-type-local');
-            const cloudBtn = document.getElementById('toggle-type-cloud');
-            const submitBtn = document.getElementById('add-shop-btn');
-
+            currentPostType = type;
+            const btnLocal = document.getElementById('toggle-type-local');
+            const btnCloud = document.getElementById('toggle-type-cloud');
+            const addBtn = document.getElementById('add-shop-btn');
+            
             if (type === 'local') {
-                localBtn.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
-                cloudBtn.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
-                submitBtn.className = "w-full bg-amber-500 text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
+                // 個人私人選中狀態：維持原本的橘色調
+                btnLocal.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
+                btnCloud.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
+                if(addBtn) {
+                    addBtn.className = "w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
+                    addBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
+                }
             } else {
-                localBtn.className = "px-2 py-0.5 rounded-md text-fuji-secondary transition-all flex items-center gap-0.5";
-                cloudBtn.className = "px-2 py-0.5 rounded-md bg-white text-fuji-primary shadow-2xs transition-all flex items-center gap-0.5";
-                submitBtn.className = "w-full bg-fuji-primary text-white text-xs font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
-                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
+                // 💡 修正後：團隊共同選中狀態，改為明顯的富士藍底色與白字
+                btnLocal.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
+                btnCloud.className = "px-2 py-0.5 rounded-md bg-fuji-primary text-white shadow-2xs transition-all flex items-center gap-0.5";
+                if(addBtn) {
+                    addBtn.className = "w-full bg-fuji-primary text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
+                    addBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
+                }
             }
         }
 
@@ -648,7 +689,7 @@
         }
 
         //購物清單
-        function renderCombinedShoppingList() {
+       function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
@@ -687,6 +728,11 @@
                                                                 <i class=\'fa-solid fa-shop\'></i></div>區域'">`;
                 }
 
+                const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
+
+                // 計算當前店家的已完成件數
+                const doneCount = group.items.filter(item => checkedIds.includes(item.id)).length;
+
                 let groupHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
                         <div onclick="toggleStoreCollapse('${storeName}')" class="bg-fuji-primary px-3 py-2.5 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
@@ -694,23 +740,41 @@
                                 ${logoHtml}
                                 <div class="flex flex-col text-left">
                                     <span class="font-extrabold text-[17px] text-white tracking-wide truncate">${storeName}</span>
-                                    <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
+                                    <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">已完成 ${doneCount} / ${group.items.length} 件商品</span>
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[10px]">
-                                <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-white transition-transform"></i>
+                                <i class="fa-solid ${arrowIcon} text-sm text-white"></i>
                             </div>
                         </div>
                         <div class="${isCollapsed ? 'hidden' : ''} divide-y divide-fuji-light">`;
 
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
+
+                    // 比照準備清單的文字樣式
+                    const textClass = isChecked 
+                        ? 'line-through text-fuji-secondary font-normal' 
+                        : 'font-bold text-fuji-dark';
+
+                    // 勾選完成時，將連結與圖片完全隱藏不渲染
+                    let mediaHtml = '';
+                    if (!isChecked) {
+                        if (item.link) {
+                            mediaHtml += `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結</a></div>`;
+                        }
+                        if (item.image) {
+                            mediaHtml += `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>`;
+                        }
+                    }
+
+                    // 🔄【修改點】：在下方 div class 中加入 ${isChecked ? 'bg-gray-100/70' : ''}。當刪除勾選時，整行背景會變為舒服的淡灰色。
                     groupHtml += `
-                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-fuji-bg/30' : ''}">
+                        <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-gray-100/70' : ''}">
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="font-bold text-[15px] select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
+                                        <span class="text-[15px] select-none break-all ${textClass}">${item.name}</span>
                                         ${!item.isCloud ? `<span class="text-[13px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
@@ -724,13 +788,47 @@
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all">${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結</a></div>` : ''}
-                                ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
+                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked ? 'text-fuji-secondary font-normal' : 'text-fuji-secondary'}">${item.note}</div>` : ''}
+                                ${mediaHtml}
                             </div>
                         </div>`;
                 });
-                groupHtml += `</div></div>`; container.innerHTML += groupHtml;
+                groupHtml += `</div></div>`; 
+                container.innerHTML += groupHtml;
+            }
+
+            // 動態將目前的 storeGroups 鍵值同步到 datalist 下拉選單中
+            const storeDatalist = document.getElementById('existing-stores-list');
+            if (storeDatalist) {
+                // 過濾掉預設的‘其他待辦購買’分類
+                const activeStores = Object.keys(storeGroups).filter(name => name !== '其他待辦購買');
+                storeDatalist.innerHTML = activeStores.map(store => `<option value="${store}"></option>`).join('');
+            }
+        }
+
+        // 🔄【新增功能】：控制店家欄位叉叉按鈕的顯示或隱藏
+        function toggleShopStoreClearBtn() {
+            const input = document.getElementById('shop-item-store');
+            const clearBtn = document.getElementById('clear-shop-store-btn');
+            if (input && clearBtn) {
+                if (input.value.trim() !== "") {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        // 🔄【新增功能】：點擊叉叉時清空輸入框，並將按鈕自己隱藏
+        function clearShopStoreInput() {
+            const input = document.getElementById('shop-item-store');
+            const clearBtn = document.getElementById('clear-shop-store-btn');
+            if (input) {
+                input.value = "";
+                input.focus(); // 清空後讓游標自動點回輸入框，方便重新輸入
+            }
+            if (clearBtn) {
+                clearBtn.classList.add('hidden');
             }
         }
 
@@ -1040,15 +1138,17 @@
 
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
                 const isCollapsed = checklistCollapsedCategories[categoryName] === true;
-                const arrowIcon = isCollapsed ? 'fa-caret-down rotate-180' : 'fa-caret-up';
+                
+                // 🔄【需求 2 修改】：修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
+                const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
                 const doneCount = catItems.filter(i => i.checked).length;
 
                 let catHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
-                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-3 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
+                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-2 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
                             <div class="flex items-center gap-2 min-w-0">
                                 <div class="w-7 h-7 bg-white/10 rounded-md flex items-center justify-center text-white overflow-hidden font-bold text-sm flex-shrink-0">
-                                    <i class="fa-solid fa-tags text-fuji-light"></i>
+                                    <i class="fa-solid fa-briefcase text-fuji-light"></i>
                                 </div>
                                 <div class="flex flex-col text-left">
                                     <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
@@ -1056,7 +1156,7 @@
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[10px]">
-                                <i class="fa-solid ${arrowIcon} text-sm text-white transition-transform"></i>
+                                <i class="fa-solid ${arrowIcon} text-sm text-white"></i>
                             </div>
                         </div>
                         <div class="${isCollapsed ? 'hidden' : ''} p-3.5 space-y-4">`;
@@ -1081,6 +1181,13 @@
 
                     subItems.forEach(item => {
                         const isChecked = item.checked === true;
+                        
+                        // 🔄【需求 3 修改】：清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
+                        let noteHtml = '';
+                        if (item.note && !isChecked) {
+                            noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
+                        }
+
                         catHtml += `
                             <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
                                 <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
@@ -1089,7 +1196,7 @@
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
                                         <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
+                                    ${noteHtml}
                                 </div>
                             </label>`;
                     });
@@ -1117,33 +1224,36 @@
 
         // 渲染依據「區域（大分類）」與「分類（次類型）」雙層排版的大字體行李檢查清單
         function renderChecklist(items) {
-            const container = document.getElementById('checklist-container'); if(!container) return; container.innerHTML = '';
+            const container = document.getElementById('checklist-container'); 
+            if (!container) return; 
+            container.innerHTML = '';
+            
             if (!items || items.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 text-sm text-fuji-secondary font-medium">✨ 雲端清單中尚無任何準備項目。</div>`;
                 return;
             }
 
-            // 第一層分組：大分類 (區域 category)
+            // 第一層分組：依 B 欄大分類(區域) 分組
             const categoryGroups = {};
             items.forEach(item => {
-                const cat = item.category || "未分類項目";
+                const cat = item.category;
                 if (!categoryGroups[cat]) categoryGroups[cat] = [];
                 categoryGroups[cat].push(item);
             });
 
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
                 const isCollapsed = checklistCollapsedCategories[categoryName] === true;
-                const arrowIcon = isCollapsed ? 'fa-caret-down rotate-180' : 'fa-caret-up';
-
-                // 計算該大分類下總共打勾的進度數
+                
+                // 🔄【需求 2 修改】：修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
+                const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
                 const doneCount = catItems.filter(i => i.checked).length;
 
                 let catHtml = `
                     <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
-                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-3 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
+                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-2 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
                             <div class="flex items-center gap-2 min-w-0">
                                 <div class="w-7 h-7 bg-white/10 rounded-md flex items-center justify-center text-white overflow-hidden font-bold text-sm flex-shrink-0">
-                                    <i class="fa-solid fa-tags text-fuji-light"></i>
+                                    <i class="fa-solid fa-briefcase text-fuji-light"></i>
                                 </div>
                                 <div class="flex flex-col text-left">
                                     <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
@@ -1151,12 +1261,12 @@
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[10px]">
-                                <i class="fa-solid ${arrowIcon} text-sm text-white transition-transform"></i>
+                                <i class="fa-solid ${arrowIcon} text-sm text-white"></i>
                             </div>
                         </div>
                         <div class="${isCollapsed ? 'hidden' : ''} p-3.5 space-y-4">`;
 
-                // 第二層分組：次類型 (分類 type)
+                // 第二層分組：依 C 欄次分類(類型) 分組
                 const typeGroups = {};
                 catItems.forEach(item => {
                     const t = item.type ? item.type.trim() : "";
@@ -1164,44 +1274,34 @@
                     typeGroups[t].push(item);
                 });
 
-                // 需求修正：將次分類鍵名取出排序，確保空字串 (一般準備項目) 自動排序到最後
-                const sortedTypeKeys = Object.keys(typeGroups).sort((a, b) => {
-                    if (a === "") return 1;  // a 是空的，往後排
-                    if (b === "") return -1; // b 是空的，往前排
-                    return a.localeCompare(b, 'zh-Hans-CN'); // 有填寫的正常比對排序
-                });
-
-                for (const typeName of sortedTypeKeys) {
-                    const subItems = typeGroups[typeName];
+                for (const [typeName, subItems] of Object.entries(typeGroups)) {
                     const isDefaultGroup = (typeName === "");
-
-                    // 需求修正：一般準備項目比照自訂項目改為外框標題，並將顏色更換為富士藍底+深藍字做區別
-                    const titleClass = isDefaultGroup 
-                        ? 'text-fuji-primary bg-fuji-light px-2 py-0.5 rounded w-fit text-[14px]' 
-                        : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]';
-                    
-                    const iconClass = isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open';
-                    
                     catHtml += `
                         <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-sm font-bold ${titleClass}" style="letter-spacing: 0.02em;">
-                                <i class="fa-solid ${iconClass}"></i>
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}">
+                                <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
                             <div class="pl-1 space-y-3">`;
 
                     subItems.forEach(item => {
                         const isChecked = item.checked === true;
-                        const itemQty = item.qty || 1;
+                        
+                        // 🔄【需求 3 修改】：清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
+                        let noteHtml = '';
+                        if (item.note && !isChecked) {
+                            noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
+                        }
+
                         catHtml += `
                             <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
                                 <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
-                                        <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
+                                        <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
+                                    ${noteHtml}
                                 </div>
                             </label>`;
                     });
