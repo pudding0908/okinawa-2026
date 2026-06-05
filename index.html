@@ -47,33 +47,29 @@
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
                 <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
                 <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
-                <div class="text-[13px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
-                <h1 class="font-cute text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-umbrella-beach text-fuji-accent"></i> 日本沖繩行
-                </h1>
-                <p class="text-[13px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
-                    <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 沖繩 2026 / 10 / 01 － 10 / 04
-                </p>
+                <div class="text-[11px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ 旅遊手帳 TRIP MEMO ✨</div>
+                <h1 id="main-title" class="font-cute text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2"></h1>
+                <p id="main-date" class="text-[13px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-2 py-0.5 rounded-full backdrop-blur-sm tracking-wide"></p>
             </header>
 
             <!--行程日期方塊區-->
             <div id="sticky-day-container" class="pt-3 px-4 block">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
-                        <span class="text-[17px] opacity-90 pointer-events-none">10/1</span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 1</span>
+                        <span class="text-[17px] opacity-90 pointer-events-none"><span id="text-date-d1">10/1</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d1">Day 1</span></span>
                     </button>
                     <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none">10/2</span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 2</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d2">10/2</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d2">Day 2</span></span>
                     </button>
                     <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none">10/3</span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 3</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d3">10/3</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d3">Day 3</span></span>
                     </button>
                     <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none">10/4</span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 4</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d4">10/4</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d4">Day 4</span></span>
                     </button>
                 </div>
             </div>
@@ -301,14 +297,15 @@
     </div>
 
     <script>
-        const SHEET_ID = '1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y';
-        const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;
+        const SHEET_ID = '1XAGAHo-T9l8SsG3wFu5rcXd4dIkZORlhcRZLblMvMJk';  // 更換google sheet來源需修改
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxETmqyNvOn0FJ-trP0DY75-FjQonkX3L4s4DSxoslxBV98Px2S2CtPYHqaS3KRj0nI/exec';  // 更換google sheet來源需修改 (Apps Script)
         
-        // 🚀 修正：精準鎖定「準備」頁籤的正確 gid=2017393849 雲端 CSV 匯出網址
-        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=2017393849`;
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgMLJsLB5NSEL3r0t4_ge0QA-mYjQ1_NBI_hntFYsTVWJco9zi7IJsBXzPwC6g5A7Jkg/exec';
+        const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
+        const SUMMARY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%91%98%E8%A6%81`;  //「摘要」資料來源
+        const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%A1%8C%E7%A8%8B`;  //「行程」資料來源
+        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;  //「購物」資料來源
+        const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%99`;  //「準備」資料來源
 
         let cloudShoppingItems = [];
         let currentPostType = 'local'; 
@@ -327,7 +324,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
-            fetchBotExchangeRate();
+            fetchCloudTheme();  // 抓取主題與時間
+            fetchCloudSummary(); // 🚀 抓天數按鈕的日期與 Day 數字
+            fetchBotExchangeRate();  // 抓取日幣即時匯率
             fetchTravelPlan();  // 行程時間軸卡片
             fetchCloudShopping();
             fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
@@ -336,6 +335,129 @@
             initCalc();
         });
 
+        // 抓取雲端「主題」頁籤資料並動態替換網頁標題與時間
+        async function fetchCloudTheme() {
+            try {
+                const response = await fetch(THEME_CSV_URL);
+                if (!response.ok) throw new Error();
+                const csvText = await response.text();
+                
+                const cleanCsvText = csvText.replace(/^\uFEFF/g, '');
+                const lines = cleanCsvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                if (lines.length > 0) {
+                    let titleText = '';
+                    let dateText = '';
+                    
+                    // 逐行巡檢，尋找 A 欄包含「旅遊主題」或「旅遊時間」的列
+                    lines.forEach(line => {
+                        let cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
+                        
+                        if (cols[0] === '旅遊主題' && cols[1]) {
+                            titleText = cols[1];
+                        }
+                        if (cols[0] === '旅遊時間' && cols[1]) {
+                            dateText = cols[1];
+                        }
+                    });
+                    
+                    // 🚀 精準替換網頁上的文字，並把 <i> 圖示加回來
+                    if (titleText) {
+                        // 1. 替換瀏覽器分頁標題（純文字，不加 HTML 標籤）
+                        document.title = `${titleText} (富士藍度假版)`;
+                        
+                        // 2. 替換網頁大標題
+                        const mainTitleEl = document.getElementById('main-title');
+                        if (mainTitleEl) {
+                            mainTitleEl.innerHTML = `<i class="fa-solid fa-umbrella-beach text-fuji-accent"></i>${titleText}`;
+                        }
+                    }
+                    
+                    if (dateText) {
+                        // 3. 替換網頁副標題時間
+                        const mainDateEl = document.getElementById('main-date');
+                        if (mainDateEl) {
+                            mainDateEl.innerHTML = `<i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i>${dateText}`;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("主題雲端讀取異常", error);
+            }
+        }
+
+        // 🔄 新增：抓取雲端「摘要」頁籤資料並動態更新 4 個天數按鈕的日期與標題
+        async function fetchCloudSummary() {
+            try {
+                const response = await fetch(SUMMARY_CSV_URL);
+                if (!response.ok) throw new Error();
+                const csvText = await response.text();
+                
+                const cleanCsvText = csvText.replace(/^\uFEFF/g, '');
+                const lines = cleanCsvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                if (lines.length > 1) {
+                    // 1. 解析第一列標題，找出「Day」和「日期」所在的欄位位置
+                    const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+                    const idxDay  = headers.indexOf('Day');
+                    const idxDate = headers.indexOf('日期');
+                    
+                    if (idxDay === -1 || idxDate === -1) {
+                        console.error("摘要試算表中找不到『Day』或『日期』欄位！");
+                        return;
+                    }
+                    
+                    // 2. 巡檢下方每一列（最多處理 4 天）
+                    for (let i = 1; i < lines.length; i++) {
+                        let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
+                        
+                        if (cols.length < headers.length) continue;
+                        
+                        // 取得 Day 資料 (例如: "1" 或 "Day 1")
+                        let rawDay = cols[idxDay];
+                        if (!rawDay) continue;
+                        
+                        // 取得日期資料 (例如: "2026/10/01" 或 "10/01")
+                        let rawDate = cols[idxDate] || '';
+                        
+                        // ⚡ 日期格式化邏輯：去除年份，只保留 月/日
+                        let cleanDate = rawDate;
+                        if (rawDate.includes('/')) {
+                            const parts = rawDate.split('/');
+                            // 如果是 "2026/10/01" (3碼)，取後兩碼變成 "10/01"
+                            if (parts.length === 3) {
+                                cleanDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+                            } else if (parts.length === 2) {
+                                cleanDate = `${parseInt(parts[0])}/${parseInt(parts[1])}`;
+                            }
+                        }
+                        
+                        // ⚡ 天數轉換邏輯：確保如果是純數字 "1" 會變成 "Day 1"
+                        let cleanDay = rawDay.toLowerCase();
+                        if (/^[0-9]+$/.test(cleanDay)) {
+                            cleanDay = 'Day ' + cleanDay;
+                        } else if (cleanDay.startsWith('d')) {
+                            cleanDay = 'Day ' + cleanDay.replace(/[^0-9]/g, '');
+                        } else {
+                            cleanDay = rawDay; // 其他格式保持原樣
+                        }
+                        
+                        // 🚀 將格式化後的資料，動態塞進對應的 HTML 元素中（依迴圈 i 的順序對應 d1, d2, d3, d4）
+                        const dateEl = document.getElementById(`text-date-d${i}`);
+                        const dayEl = document.getElementById(`text-day-d${i}`);
+                        
+                        if (dateEl) dateEl.textContent = cleanDate;
+                        if (dayEl) dayEl.textContent = cleanDay;
+                    }
+                }
+            } catch (error) {
+                console.error("摘要雲端讀取異常", error);
+            }
+        }
+
+        // 抓取日幣即時匯率
         async function fetchBotExchangeRate() {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -396,21 +518,33 @@
             } catch (error) { console.error(error); }
         }
 
-        // 行程時間軸
+        // 行程時間軸 (🔄 修正版：完美清除 gviz 加包的雙引號與首位隱形字元)
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if(lines.length <= 1) return;
-            const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
+            
+            // 修正：確實將第一列所有標題的外包引號徹底清除
+            const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+            
             document.getElementById('day-d1').innerHTML = '';
             document.getElementById('day-d2').innerHTML = '';
             document.getElementById('day-d3').innerHTML = '';
             document.getElementById('day-d4').innerHTML = '';
 
             for (let i = 1; i < lines.length; i++) {
-                const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
+                // 精準切分每行 CSV 欄位
+                let currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                // 清洗每個欄位開頭與結尾的引號
+                currentLine = currentLine.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
+                
                 if(currentLine.length < headers.length) continue;
+                
                 let row = {};
-                headers.forEach((header, index) => { row[header] = currentLine[index]; });
+                headers.forEach((header, index) => { 
+                    row[header] = currentLine[index]; 
+                });
+                
+                // 防呆修正：支援帶有引號或去引號後的標題欄位檢查
                 if(!row['標題'] && !row['時間起']) continue;
                 renderTimelineCard(row);
             }
@@ -419,6 +553,11 @@
         // 行程小卡內容配置
         function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
+            
+            // 🚀 【精準修正】：如果試算表填的是純數字（如 1, 2），自動幫它補上 'd' 變成 d1, d2
+            if (/^[0-9]+$/.test(dayValue)) { dayValue = 'd' + dayValue; }
+
+            // 以下完全保留您原本引以為傲的精美邏輯，一字不差
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
@@ -571,39 +710,69 @@
         }
 
         //購物清單
+        // 購物清單 (🔄 修正版：改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
                 if (!response.ok) throw new Error();
                 const csvText = await response.text();
-                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                // 清除 Google 導出可能帶有的隱形 BOM 字元
+                const cleanCsvText = csvText.replace(/^\uFEFF/g, '');
+                const lines = cleanCsvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 cloudShoppingItems = [];
-        
+                
                 if (lines.length > 1) {
-                    const headers = lines[0].split(',').map(h => h.replace(/["']/g, '').trim());
+                    // 1. 抓取第一列標題，並清洗外層雙引號
+                    const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+                    
+                    // 2. 自動找出各個欄位名稱對應的索引位置 (Index)
+                    const idxLogo  = headers.indexOf('店家 LOGO');
+                    const idxStore = headers.indexOf('店家');
+                    const idxName  = headers.indexOf('商品');
+                    const idxQty   = headers.indexOf('數量');
+                    const idxNote  = headers.indexOf('備註');
+                    const idxLink  = headers.indexOf('連結');
+                    const idxImg   = headers.indexOf('商品圖片');
+
+                    // 3. 安全防呆：如果最重要的「商品」欄位字眼都找不到，就無法解析
+                    if (idxName === -1) {
+                        console.error("購物試算表中找不到『商品』欄位名稱！");
+                        renderCombinedShoppingList();
+                        return;
+                    }
+
                     for (let i = 1; i < lines.length; i++) {
-                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        if (currentLine.length < 3 || !currentLine[2]) continue;
+                        let currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        currentLine = currentLine.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
                         
-                        const storeName = currentLine[1] || '其他待辦';
+                        if (currentLine.length < headers.length) continue;
+
+                        // 4. 利用動態索引安全抓取資料，若欄位不存在則回傳空字串
+                        const itemName = idxName !== -1 ? currentLine[idxName] : '';
+                        if (!itemName) continue; // 沒有品項名稱就跳過
+
+                        const storeName = (idxStore !== -1 && currentLine[idxStore]) ? currentLine[idxStore] : '其他待辦';
                         if (shoppingCollapsedStores[storeName] === undefined) {
                             shoppingCollapsedStores[storeName] = true;
                         }
 
                         cloudShoppingItems.push({
-                            id: 'cloud-' + i, 
-                            logo: parseImageUrl(currentLine[0]), 
-                            store: storeName, 
-                            name: currentLine[2], 
-                            qty: parseInt(currentLine[3]) || 1, 
-                            note: (currentLine[4] || '').substring(0, 40), 
-                            link: currentLine[5] || '', 
-                            image: parseImageUrl(currentLine[6]), 
+                            id: 'cloud-' + i,
+                            logo: (idxLogo !== -1 && currentLine[idxLogo]) ? parseImageUrl(currentLine[idxLogo]) : '',
+                            store: storeName,
+                            name: itemName,
+                            qty: idxQty !== -1 ? (parseInt(currentLine[idxQty]) || 1) : 1,
+                            note: idxNote !== -1 ? (currentLine[idxNote] || '').substring(0, 40) : '',
+                            link: (idxLink !== -1 && currentLine[idxLink]) ? currentLine[idxLink] : '',
+                            image: (idxImg !== -1 && currentLine[idxImg]) ? parseImageUrl(currentLine[idxImg]) : '',
                             isCloud: true
                         });
                     }
                 }
-            } catch (error) { console.error("雲端讀取異常"); }
+            } catch (error) {
+                console.error("雲端讀取異常", error);
+            }
             renderCombinedShoppingList();
         }
 
