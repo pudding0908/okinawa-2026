@@ -41,54 +41,48 @@
     </style>
 </head>
 <body class="font-sans min-h-screen pb-24 flex justify-center">
-
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
-        
         <div class="sticky top-0 z-50 bg-fuji-bg w-full">
-            
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
                 <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
                 <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
-                <div class="text-[10px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
+                <div class="text-[13px] tracking-widest text-fuji-light font-bold mb-0.5 font-cute">✨ OKINAWA TRIP MEMO ✨</div>
                 <h1 class="font-cute text-2xl font-bold text-white tracking-wide flex items-center justify-center gap-2">
                     <i class="fa-solid fa-umbrella-beach text-fuji-accent"></i> 日本沖繩行
                 </h1>
-                <p class="text-[11px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
-                    <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 2026 / 10 / 01 － 10 / 04
+                <p class="text-[13px] text-fuji-light/90 mt-1 bg-white/10 inline-block px-3 py-0.5 rounded-full backdrop-blur-sm tracking-wide">
+                    <i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i> 沖繩 2026 / 10 / 01 － 10 / 04
                 </p>
             </header>
 
-            <div id="sticky-day-container" class="pt-3 pb-2 mb-1 px-4 block">
+            <div id="sticky-day-container" class="pt-3 px-4 block">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
-                        <span class="text-[11px] opacity-90 pointer-events-none">10/1</span>
-                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 1</span>
+                        <span class="text-[17px] opacity-90 pointer-events-none">10/1</span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 1</span>
                     </button>
                     <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[11px] opacity-70 pointer-events-none">10/2</span>
-                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 2</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none">10/2</span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 2</span>
                     </button>
                     <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[11px] opacity-70 pointer-events-none">10/3</span>
-                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 3</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none">10/3</span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 3</span>
                     </button>
                     <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[11px] opacity-70 pointer-events-none">10/4</span>
-                        <span class="text-[11px] font-cute mt-0.5 pointer-events-none">Day 4</span>
+                        <span class="text-[17px] opacity-70 pointer-events-none">10/4</span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none">Day 4</span>
                     </button>
                 </div>
             </div>
-
         </div>
         
         <main class="flex-1 p-3 overflow-y-auto">
             <!-- tab1.行程 -->
-            <section id="page-plan" class="tab-content block mt-2">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
-                        <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
-                    </h2>
-                </div>
+            <section id="page-plan" class="tab-content block">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
+                </h2>
 
                 <div id="loading-status" class="text-center py-12 text-xs text-fuji-secondary font-medium">
                     <i class="fa-solid fa-water fa-bounce mr-2 text-fuji-primary"></i>輕輕划向雲端手帳中...
@@ -105,7 +99,9 @@
 
             <!-- tab2.地圖 -->
             <section id="page-guide" class="tab-content hidden">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳地圖導覽</h2>
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳地圖導覽
+                </h2>
                 <div class="space-y-4">
                     <article class="bg-fuji-paper p-4 rounded-xl shadow-sm border border-fuji-light">
                         <span class="text-[10px] bg-fuji-primary text-white px-2 py-0.5 rounded-full font-bold">🐋 深度文化</span>
@@ -120,11 +116,11 @@
 
             <!-- tab3.購物 -->
             <section id="page-shopping" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="font-cute text-base font-bold text-fuji-primary flex items-center gap-1">
-                        <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
-                    </h2>
-                </div>
+                <!-- <div class="flex justify-between items-center mb-2"> -->
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
+                </h2>
+                <!-- </div> -->
                 
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
                     <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
@@ -135,7 +131,7 @@
                     <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50 hidden">
                         <div class="flex justify-between items-center">
                             <div class="text-[13px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
-                            <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[12px] font-bold relative shadow-2xs">
+                            <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[13px] font-bold relative shadow-2xs">
                                 <button id="toggle-type-local" onclick="setPostType('local')" class="px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5">
                                     <i class="fa-solid fa-user-lock"></i>個人私人
                                 </button>
@@ -145,13 +141,13 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1">
+                            <input type="text" id="shop-item-store" placeholder="店家名稱" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                        </div>
+                        
                         <div class="grid grid-cols-3 gap-1.5">
                             <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
                             <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none text-center font-bold">
-                        </div>
-                        
-                        <div class="grid grid-cols-1">
-                            <input type="text" id="shop-item-store" placeholder="店家名稱" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
                         </div>
 
                         <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
@@ -161,8 +157,8 @@
 
                         <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
                             <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                            <input type="text" id="shop-item-image" placeholder="商品圖片網址 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                            <input type="text" id="shop-item-link" placeholder="參考網頁連結 (可空)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            <input type="text" id="shop-item-image" placeholder="商品圖片網址" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            <input type="text" id="shop-item-link" placeholder="參考網頁連結" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
                         </div>
 
                         <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all">
@@ -178,7 +174,7 @@
 
             <!-- tab4.錢包 -->
             <section id="page-wallet" class="tab-content hidden text-xs">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
                     <i class="fa-solid fa-coins text-fuji-accent"></i> 隨身小帳本
                 </h2>
                 
@@ -211,7 +207,7 @@
                     <div class="flex items-center justify-between">
                         <label class="font-bold text-fuji-primary">日幣匯率 (1 JPY = TWD)</label>
                         <div class="flex items-center gap-1">
-                            <span id="bot-rate-tag" class="text-[12px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1 py-0.5 rounded hidden">台銀即時</span>
+                            <span id="bot-rate-tag" class="text-[13px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1 py-0.5 rounded hidden">台銀即時</span>
                             <input type="number" id="exchange-rate" value="0.215" step="0.001" oninput="renderExpenses();" class="w-20 px-2 py-0.5 text-right border border-fuji-light rounded bg-fuji-bg font-bold text-fuji-primary">
                         </div>
                     </div>
@@ -222,7 +218,7 @@
                     </div>
                 </div>
 
-                <div id="sec-form-content" class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm p-3 mb-3 hidden space-y-2.5">
+                <div id="sec-form-content" class="text-[13px] bg-fuji-paper rounded-xl border border-fuji-light shadow-sm p-3 mb-3 hidden space-y-2.5">
                     <div class="grid grid-cols-2 gap-2">
                         <input type="text" id="expense-store" placeholder="店家" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
                         <input type="text" id="expense-title" placeholder="購買商品 (必填)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
@@ -276,7 +272,9 @@
 
             <!-- tab6.資訊 -->
             <section id="page-info" class="tab-content hidden">
-                <h2 class="font-cute text-base font-bold text-fuji-primary mb-3 flex items-center gap-1"><i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊</h2>
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊
+                </h2>
                 <div class="bg-fuji-paper p-5 rounded-xl border border-fuji-light shadow-sm text-center">
                     <div class="text-3xl text-fuji-primary/30 mb-1"><i class="fa-solid fa-file-signature"></i></div>
                     <p class="text-xs text-fuji-secondary font-medium mb-3">點擊下方直接開啟 Google 試算表App<br>大家可以一齊即時修改行程喔！</p>
@@ -319,7 +317,7 @@
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
             fetchBotExchangeRate();
-            fetchTravelPlan();
+            fetchTravelPlan();  // 行程時間軸卡片
             fetchCloudShopping();
             fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
             initWalletDateTime();
@@ -377,6 +375,7 @@
             renderChecklist(globalChecklistItems);
         }
 
+        // 行程時間軸卡片
         async function fetchTravelPlan() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
@@ -386,6 +385,7 @@
             } catch (error) { console.error(error); }
         }
 
+        // 行程時間軸
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
             if(lines.length <= 1) return;
@@ -405,6 +405,7 @@
             }
         }
 
+        // 行程小卡內容配置
         function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
@@ -421,13 +422,17 @@
 
             // 處理導航與網站按鈕
             let buttonHtml = '';
-            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
-            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs"><i class="fa-solid fa-earth-asia"></i>網站</a>`;
+            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
+                                                      <i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
+            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
+                                                <i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
             // 2. 建立「區間、費用」文字段落
             let metaHtml = '';
-            if (row['區間']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2 inline-flex items-center gap-0.5"><i class="fa-regular fa-clock text-[11px]"></i>${row['區間']}</span>`;
-            if (row['費用']) metaHtml += `<span class="text-fuji-secondary font-bold text-[11px] mr-2">💰 ${row['費用']}</span>`;
+            if (row['區間']) metaHtml += `<span class="text-fuji-secondary text-[13px] mr-2 inline-flex items-center gap-0.5">
+                                            <i class="fa-regular fa-clock text-[13px]"></i>${row['區間']}
+                                          </span>`;
+            if (row['費用']) metaHtml += `<span class="text-fuji-secondary text-[13px] mr-2">💴 ${row['費用']}</span>`;
             
             // 3. 檢查並建立「▶ 更多資訊」收合區塊
             let hasMoreInfo = !!(row['備註'] || row['Google Map'] || row['網頁']);
@@ -436,13 +441,14 @@
 
             if (hasMoreInfo) {
                 toggleBtnHtml = `
-                    <button onclick="document.getElementById('${uniqueId}').classList.toggle('hidden'); this.querySelector('.arrow-icon').classList.toggle('rotate-90');" class="text-[11px] text-fuji-primary/80 font-bold hover:text-fuji-primary inline-flex items-center gap-0.5 transition-all focus:outline-none ml-1">
+                    <button onclick="document.getElementById('${uniqueId}').classList.toggle('hidden'); this.querySelector('.arrow-icon').classList.toggle('rotate-90');" 
+                            class="text-[13px] text-fuji-primary/80 font-bold hover:text-fuji-primary inline-flex items-center gap-0.5 transition-all focus:outline-none ml-1">
                         <i class="fa-solid fa-caret-right arrow-icon transition-transform duration-200"></i>更多資訊
                     </button>
                 `;
                 expandableHtml = `
                     <div id="${uniqueId}" class="hidden mt-2 pt-2 border-t border-dashed border-fuji-light/60 bg-fuji-bg/40 p-2 rounded-lg">
-                        ${row['備註'] ? `<div class="text-[11px] text-fuji-dark font-medium mb-1.5">💬 ${row['備註']}</div>` : ''}
+                        ${row['備註'] ? `<div class="text-[13px] text-fuji-dark font-medium mb-1.5"> ${row['備註']}</div>` : ''}
                         ${buttonHtml ? `<div class="flex flex-wrap items-center mt-1">${buttonHtml}</div>` : ''}
                     </div>
                 `;
@@ -453,7 +459,8 @@
             let imgHtml = '';
             if (imgUrl && imgUrl.trim() !== '') {
                 let cleanImgUrl = parseImageUrl(imgUrl);
-                imgHtml = `<div class="mt-2.5 rounded-xl overflow-hidden border border-fuji-light/60 max-h-48 shadow-2xs bg-white"><img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
+                imgHtml = `<div class="mt-2.5 rounded-xl overflow-hidden border border-fuji-light/60 max-h-48 shadow-2xs bg-white">
+                               <img src="${cleanImgUrl}" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="行程圖片"></div>`;
             }
 
             // 判斷是否為重要行程
@@ -462,16 +469,16 @@
             // 處理分類標籤佈局
             let categoryHtml = '';
             if (row['分類']) {
-                categoryHtml = `<span class="${isImportant ? 'bg-fuji-accent text-white' : 'bg-fuji-bg text-fuji-primary border border-fuji-light'} px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ml-2">${row['分類']}</span>`;
+                categoryHtml = `<span class="${isImportant ? 'bg-fuji-accent text-white' : 'bg-fuji-bg text-fuji-primary border border-fuji-light'} px-1.5 py-0.5 rounded-full text-[13px] font-bold whitespace-nowrap ml-2">${row['分類']}</span>`;
             } else if (isImportant) {
-                categoryHtml = `<span class="text-fuji-accent text-[11px] whitespace-nowrap ml-2"><i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
+                categoryHtml = `<span class="text-fuji-accent text-[13px] whitespace-nowrap ml-2">
+                                    <i class="fa-solid fa-star fa-spin mr-0.5"></i>重要</span>`;
             }
 
             // 精準調整後的結構：資訊行移至說明下方
             let cardHtml = `
                 <div class="relative flex gap-2.5 pl-1 group">
-                    
-                    <div class="w-12 text-right flex-shrink-0 flex flex-col justify-between text-[11px] font-bold text-fuji-dark font-cute pr-1 pt-3 pb-4 leading-tight">
+                    <div class="w-12 text-right flex-shrink-0 flex flex-col justify-between text-[15px] text-fuji-secondary/50 font-cute pr-1 pt-3 pb-4 leading-tight">
                         <div>${timeStart}</div>
                         <div class="text-fuji-secondary/50 font-normal">${timeEnd}</div>
                     </div>
@@ -493,23 +500,21 @@
                         }">
                             
                             <div class="flex justify-between items-start w-full">
-                                <h4 class="font-bold text-fuji-dark text-sm tracking-wide leading-tight flex-1 min-w-0 break-all">${row['標題'] || '未命名行程'}</h4>
+                                <h4 class="font-bold text-fuji-dark text-[17px] tracking-wide leading-tight flex-1 min-w-0 break-all">${row['標題'] || '未命名行程'}</h4>
                                 ${categoryHtml}
                             </div>
                             
-                            ${row['說明'] ? `<p class="text-xs text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
+                            ${row['說明'] ? `<p class="text-[15px] text-fuji-secondary mt-1 text-justify leading-relaxed">${row['說明']}</p>` : ''}
                             
                             ${(metaHtml || toggleBtnHtml) ? `
-                                <div class="flex items-center text-[11px] mt-2 pt-1.5 border-t border-dashed border-fuji-light/40">
+                                <div class="flex items-center text-[13px] mt-1 border-t border-dashed border-fuji-light/40">
                                     <div class="flex items-center">${metaHtml}</div>
                                     ${toggleBtnHtml}
                                 </div>
                             ` : ''}
                             
                             ${expandableHtml}
-
                             ${imgHtml}
-
                         </div>
                     </div>
                 </div>
@@ -518,7 +523,8 @@
             targetContainer.innerHTML += cardHtml;
         }
 
-       function parseImageUrl(url) {
+        //圖片連結抓取
+        function parseImageUrl(url) {
             if (!url) return '';
             let cleanUrl = url.trim();
             if (cleanUrl.includes('drive.google.com')) {
@@ -528,6 +534,7 @@
             return cleanUrl;
         }
 
+        //購物清單
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
@@ -564,6 +571,7 @@
             renderCombinedShoppingList();
         }
 
+        // 購物清單 存入個人或雲端
         function setPostType(type) {
             const localBtn = document.getElementById('toggle-type-local');
             const cloudBtn = document.getElementById('toggle-type-cloud');
@@ -582,6 +590,7 @@
             }
         }
 
+        // 新增購物清單
         function handleShoppingSubmit() {
             const name = document.getElementById('shop-item-name').value.trim();
             const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
@@ -626,6 +635,7 @@
             }
         }
 
+        // 購物清單新增欄位預設
         function clearShoppingForm() {
             document.getElementById('shop-item-name').value = '';
             document.getElementById('shop-item-qty').value = '1';
@@ -637,11 +647,12 @@
             document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
         }
 
+        //購物清單
         function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
-            const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
+            const modifiedQty = JSON.parse(localStorage.getItem('ok_shopping_qty')) || {};
             const allItems = [...cloudShoppingItems, ...localItems];
 
             if (allItems.length === 0) {
@@ -657,7 +668,7 @@
                         logo: item.logo || '' 
                     };
                 }
-                if (modifiedQtys[item.id] !== undefined) item.qty = modifiedQtys[item.id];
+                if (modifiedQty[item.id] !== undefined) item.qty = modifiedQty[item.id];
                 storeGroups[storeName].items.push(item);
             });
 
@@ -667,9 +678,13 @@
                 }
                 const isCollapsed = shoppingCollapsedStores[storeName] === true;
 
-                let logoHtml = `<div class="w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light/20 flex-shrink-0"><i class="fa-solid fa-shop"></i></div>`;
+                let logoHtml = `<div class="w-10 h-10 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary overflow-hidden font-bold text-xs border border-fuji-light/20 flex-shrink-0">
+                                    <i class="fa-solid fa-shop"></i>
+                                </div>`;
                 if (group.logo) {
-                    logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-7 h-7 object-contain rounded-md border border-fuji-light/20 bg-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-7 h-7 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'><i class=\'fa-solid fa-shop\'></i></div>區域'">`;
+                    logoHtml = `<img src="${group.logo}" referrerpolicy="no-referrer" class="w-10 h-10 object-contain rounded-md border border-fuji-light/20 bg-white flex-shrink-0" 
+                                     onerror="this.outerHTML='<div class=\'w-10 h-10 bg-fuji-light rounded-md flex items-center justify-center text-fuji-primary font-bold text-xs flex-shrink-0\'>
+                                                                <i class=\'fa-solid fa-shop\'></i></div>區域'">`;
                 }
 
                 let groupHtml = `
@@ -678,11 +693,11 @@
                             <div class="flex items-center gap-2.5 min-w-0">
                                 ${logoHtml}
                                 <div class="flex flex-col text-left">
-                                    <span class="font-extrabold text-md text-white tracking-wide truncate">${storeName}</span>
+                                    <span class="font-extrabold text-[17px] text-white tracking-wide truncate">${storeName}</span>
                                     <span class="text-[12px] text-fuji-light/80 font-medium -mt-0.5">${group.items.length} 件商品</span>
                                 </div>
                             </div>
-                            <div class="text-white pr-1 text-[8px]">
+                            <div class="text-white pr-1 text-[10px]">
                                 <i class="fa-solid fa-caret-up ${isCollapsed ? 'rotate-180' : ''} text-xs text-white transition-transform"></i>
                             </div>
                         </div>
@@ -695,22 +710,22 @@
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="font-bold text-sm select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
-                                        ${!item.isCloud ? `<span class="text-[12px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
+                                        <span class="font-bold text-[15px] select-none break-all ${isChecked ? 'line-through text-fuji-secondary font-normal' : 'text-fuji-dark'}">${item.name}</span>
+                                        ${!item.isCloud ? `<span class="text-[13px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <div class="flex items-center border border-fuji-light rounded-md bg-fuji-bg overflow-hidden shadow-2xs">
-                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[12px]"></i></button>
-                                        <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[12px] text-center select-none">${item.qty}</span>
-                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[12px]"></i></button>
+                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[13px]"></i></button>
+                                        <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[11px] text-center select-none">${item.qty}</span>
+                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[13px]"></i></button>
                                     </div>
                                     ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs"><i class="fa-regular fa-trash-can text-[11px]"></i></button>` : '<div class="w-3"></div>'}
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[12px] text-fuji-secondary font-medium break-all"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
-                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[12px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>  連結</a></div>` : ''}
+                                ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all">${item.note}</div>` : ''}
+                                ${item.link ? `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結</a></div>` : ''}
                                 ${item.image ? `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>` : ''}
                             </div>
                         </div>`;
@@ -720,12 +735,12 @@
         }
 
         function adjustQty(id, change) {
-            const modifiedQtys = JSON.parse(localStorage.getItem('ok_shopping_qtys')) || {};
+            const modifiedQty = JSON.parse(localStorage.getItem('ok_shopping_qty')) || {};
             let currentQty = 1;
             const item = [...cloudShoppingItems, ...(JSON.parse(localStorage.getItem('ok_shopping_local')) || [])].find(i => i.id === id);
-            if (item) currentQty = modifiedQtys[id] !== undefined ? modifiedQtys[id] : item.qty;
+            if (item) currentQty = modifiedQty[id] !== undefined ? modifiedQty[id] : item.qty;
             let newQty = currentQty + change; if (newQty < 1) newQty = 1;
-            modifiedQtys[id] = newQty; localStorage.setItem('ok_shopping_qtys', JSON.stringify(modifiedQtys));
+            modifiedQty[id] = newQty; localStorage.setItem('ok_shopping_qty', JSON.stringify(modifiedQty));
             renderCombinedShoppingList();
         }
 
@@ -802,6 +817,7 @@
             }
         }
 
+        // 記帳明細清單
         function renderExpenses() {
             const container = document.getElementById('expense-list'); if (!container) return; container.innerHTML = '';
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
@@ -816,7 +832,8 @@
             document.getElementById('total-twd').innerHTML = `NT$ ${Math.round(totalTwd).toLocaleString()}`;
 
             if (expenses.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🪙 隨身小帳本尚無資料。<br>點擊上方快速記帳吧！</div>`; return;
+                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🪙 隨身小帳本尚無資料。<br>點擊上方快速記帳吧！</div>`; 
+                return;
             }
 
             expenses.sort((a, b) => {
@@ -862,23 +879,23 @@
                         <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
                             <div class="min-w-0 flex-1 space-y-1">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="text-[12px] bg-fuji-primary text-white px-1.5 py-0.5 rounded font-bold inline-flex items-center gap-0.5 flex-shrink-0">
+                                    <span class="text-[13px] bg-fuji-primary text-white px-1.5 py-0.5 rounded font-bold inline-flex items-center gap-0.5 flex-shrink-0">
                                         <i class="fa-solid fa-store text-[10px]"></i> ${item.store}
                                     </span>
-                                    <span class="font-bold text-sm text-fuji-dark break-all">${item.title}</span>
+                                    <span class="font-bold text-[15px] text-fuji-dark break-all">${item.title}</span>
                                 </div>
                                 
-                                <div class="text-[12px] text-fuji-secondary font-medium flex items-center gap-1.5 flex-wrap">
-                                    <span><i class="fa-regular fa-clock text-[12px]"></i> ${item.time}</span>
+                                <div class="text-[13px] text-fuji-secondary font-medium flex items-center gap-1.5 flex-wrap">
+                                    <span><i class="fa-regular fa-clock text-[13px]"></i> ${item.time}</span>
                                     <span>•</span>
                                     <span class="font-bold bg-fuji-light/70 px-2 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
                                 </div>
-                                ${item.note ? `<div class="text-[12px] text-fuji-secondary font-medium break-all pt-0.5"><i class="fa-regular fa-comment-dots mr-0.5"></i>${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all pt-0.5">${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
                                     <div class="font-cute font-extrabold text-sm text-fuji-dark">${displayAmt}</div>
-                                    <div class="text-[12px] text-fuji-secondary font-semibold">${subAmt}</div>
+                                    <div class="text-[13px] text-fuji-secondary font-semibold">${subAmt}</div>
                                 </div>
                                 <button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
                                     <i class="fa-regular fa-trash-can text-[13px]"></i>
@@ -1035,7 +1052,7 @@
                                 </div>
                                 <div class="flex flex-col text-left">
                                     <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
-                                    <span class="text-[12px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
+                                    <span class="text-[13px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[10px]">
@@ -1070,9 +1087,9 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
-                                        <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
+                                        <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
+                                    ${item.note ? `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
                                 </div>
                             </label>`;
                     });
@@ -1130,7 +1147,7 @@
                                 </div>
                                 <div class="flex flex-col text-left">
                                     <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
-                                    <span class="text-[12px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
+                                    <span class="text-[13px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
                                 </div>
                             </div>
                             <div class="text-white pr-1 text-[10px]">
@@ -1182,9 +1199,9 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
-                                        <span class="text-[12px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
+                                        <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${itemQty}</span>
                                     </div>
-                                    ${item.note ? `<p class="text-[12px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
+                                    ${item.note ? `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>` : ''}
                                 </div>
                             </label>`;
                     });
