@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本沖繩行 2026 (富士藍度假版)</title>
+    <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght=700&family=Noto+Sans+TC:wght=300;400;500;700&display=swap" rel="stylesheet">
@@ -40,10 +40,11 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
+
 <body class="font-sans min-h-screen flex justify-center">
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         <div class="sticky top-0 z-50 bg-fuji-bg w-full">
-            <!--大標題-->
+            <!--大標題(旅遊主題、旅遊時間)-->
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
                 <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
                 <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
@@ -324,18 +325,31 @@
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
-            fetchCloudTheme();  // 抓取主題與時間
-            fetchCloudSummary(); // 🚀 抓天數按鈕的日期與 Day 數字
-            fetchBotExchangeRate();  // 抓取日幣即時匯率
+            fetchCloudTheme();  // 1.「主題」抓取主題與時間
+            fetchCloudSummary(); // 2.「摘要」抓天數按鈕的日期與 Day 數字
+
+            // tab1.行程
             fetchTravelPlan();  // 行程時間軸卡片
-            fetchCloudShopping();
+
+            // tab2.地圖
+
+            // tab3.購物
+            fetchCloudShopping();  //購物清單
+            initCalc();  // 記帳 幣值轉換
+            
+            // tab4.錢包
+            fetchBotExchangeRate();  // 抓取日幣即時匯率
+            initWalletDateTime();  // 記帳 選擇日期與時間
+            renderExpenses();  // 讀取記帳明細
+
+            // tab5.準備
             fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
-            initWalletDateTime();
-            renderExpenses();
-            initCalc();
+            
+            // tab6.資訊
         });
 
-        // 抓取雲端「主題」頁籤資料並動態替換網頁標題與時間
+        // #region 全域--------------------------------------------------------------------------------------
+        // 1.抓取雲端「主題」頁籤資料並動態替換網頁標題與時間
         async function fetchCloudTheme() {
             try {
                 const response = await fetch(THEME_CSV_URL);
@@ -354,20 +368,16 @@
                         let cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                         cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
                         
-                        if (cols[0] === '旅遊主題' && cols[1]) {
-                            titleText = cols[1];
-                        }
-                        if (cols[0] === '旅遊時間' && cols[1]) {
-                            dateText = cols[1];
-                        }
+                        if (cols[0] === '旅遊主題' && cols[1]) { titleText = cols[1]; }
+                        if (cols[0] === '旅遊時間' && cols[1]) { dateText = cols[1]; }
                     });
                     
-                    // 🚀 精準替換網頁上的文字，並把 <i> 圖示加回來
+                    // 替換網頁上的文字
                     if (titleText) {
-                        // 1. 替換瀏覽器分頁標題（純文字，不加 HTML 標籤）
-                        document.title = `${titleText} (富士藍度假版)`;
+                         // 1. 瀏覽器分頁標題
+                        document.title = `${titleText}`; 
                         
-                        // 2. 替換網頁大標題
+                        // 2. 網頁大標題
                         const mainTitleEl = document.getElementById('main-title');
                         if (mainTitleEl) {
                             mainTitleEl.innerHTML = `<i class="fa-solid fa-umbrella-beach text-fuji-accent"></i>${titleText}`;
@@ -375,7 +385,7 @@
                     }
                     
                     if (dateText) {
-                        // 3. 替換網頁副標題時間
+                        // 3. 網頁副標題時間
                         const mainDateEl = document.getElementById('main-date');
                         if (mainDateEl) {
                             mainDateEl.innerHTML = `<i class="fa-regular fa-calendar-days mr-1 text-fuji-accent"></i>${dateText}`;
@@ -387,7 +397,7 @@
             }
         }
 
-        // 🔄 新增：抓取雲端「摘要」頁籤資料並動態更新 4 個天數按鈕的日期與標題
+        // 2.抓取雲端「摘要」頁籤資料並動態更新 4 個天數按鈕的日期與標題
         async function fetchCloudSummary() {
             try {
                 const response = await fetch(SUMMARY_CSV_URL);
@@ -457,28 +467,7 @@
             }
         }
 
-        // 抓取日幣即時匯率
-        async function fetchBotExchangeRate() {
-            try {
-                const res = await fetch('https://open.er-api.com/v6/latest/JPY');
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                const twdRate = data.rates.TWD;
-                if (twdRate) {
-                    const finalRate = parseFloat(twdRate).toFixed(4);
-                    const rateInput = document.getElementById('exchange-rate');
-                    if(rateInput) {
-                        rateInput.value = (parseFloat(finalRate)).toFixed(3);
-                        const tag = document.getElementById('bot-rate-tag');
-                        if (tag) tag.classList.remove('hidden');
-                        renderExpenses();
-                    }
-                }
-            } catch (e) {
-                console.log("無法取得即時匯率，啟用預設值 0.215");
-            }
-        }
-
+        //收合區塊
         function toggleSection(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
@@ -491,21 +480,81 @@
                 if (arrow) arrow.className = "fa-solid fa-chevron-right text-[10px] transition-transform";
             }
         }
+        
+        // 切換頁籤
+        function switchTab(tabName) {
+            // 在切換前，先記下「當前正在看的頁面」
+            const currentActiveEl = document.querySelector('.tab-content:not(.hidden)');
+            const prevTab = currentActiveEl ? currentActiveEl.id.replace('page-', '') : '';
 
-        function toggleDayCollapse(dateStr) {
-            walletCollapsedDays[dateStr] = !walletCollapsedDays[dateStr];
-            renderExpenses();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`page-${tabName}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => { 
+                btn.classList.remove('text-fuji-primary', 'text-fuji-accent'); 
+                btn.classList.add('text-fuji-secondary'); 
+            });
+
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-fuji-secondary'); 
+                activeNav.classList.add('text-fuji-accent');
+            }
+
+            // 控制天數方格容器的顯示與隱藏
+            const dayBox = document.getElementById('sticky-day-container');
+            if (dayBox) {
+                if (tabName === 'plan' || tabName === 'guide') {
+                    dayBox.style.display = ''; // 行程或地圖頁面顯示日期方格
+                    
+                    // 如果是從「其他頁籤（購物、錢包、準備、資訊）」點擊切換回「行程或地圖」強制回第一天！
+                    if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide') {
+                        if (typeof switchDay === 'function') {
+                            switchDay('day-d1');
+                        }
+                    }
+                } else {
+                    dayBox.style.display = 'none'; // 其餘頁面隱藏日期方格
+                }
+            }
+            
+            if(tabName === 'shopping') 
+                fetchCloudShopping();  // 讀取購物清單
+            if(tabName === 'wallet') 
+                renderExpenses();  // 讀取記帳清單
+            if(tabName === 'lists') 
+                fetchCloudChecklist(); // 讀取行李清單
+            
+            // 修正滾動問題
+            if (tabName === 'plan') {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
+        // #endregion 全域-----------------------------------------------------------------------------------
 
-        function toggleStoreCollapse(storeName) {
-            shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
-            renderCombinedShoppingList();
-        }
 
-        // 切換行李大分類區塊的折疊狀態
-        function toggleChecklistCategoryCollapse(catName) {
-            checklistCollapsedCategories[catName] = !checklistCollapsedCategories[catName];
-            renderChecklist(globalChecklistItems);
+        // #region tab1.行程---------------------------------------------------------------------------------
+        // 切換日期天數方塊
+        function switchDay(dayId) {
+            // 1. 隱藏所有行程的 Day 容器
+            document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
+            
+            // 2. 顯示點選的 Day 容器
+            const targetEl = document.getElementById(dayId);
+            if (targetEl) targetEl.classList.remove('hidden');
+
+            // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
+            });
+
+            // 4. 精準將當前點選的按鈕切換為「深藍色選取」樣式
+            const activeBtn = document.getElementById('btn-' + dayId);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
+            }
         }
 
         // 行程時間軸卡片
@@ -518,10 +567,11 @@
             } catch (error) { console.error(error); }
         }
 
-        // 行程時間軸 (🔄 修正版：完美清除 gviz 加包的雙引號與首位隱形字元)
+        // 行程時間軸
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-            if(lines.length <= 1) return;
+            if(lines.length <= 1) 
+                return;
             
             // 修正：確實將第一列所有標題的外包引號徹底清除
             const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
@@ -537,15 +587,15 @@
                 // 清洗每個欄位開頭與結尾的引號
                 currentLine = currentLine.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
                 
-                if(currentLine.length < headers.length) continue;
+                if(currentLine.length < headers.length) 
+                    continue;
                 
                 let row = {};
-                headers.forEach((header, index) => { 
-                    row[header] = currentLine[index]; 
-                });
+                headers.forEach((header, index) => { row[header] = currentLine[index]; });
                 
                 // 防呆修正：支援帶有引號或去引號後的標題欄位檢查
-                if(!row['標題'] && !row['時間起']) continue;
+                if(!row['標題'] && !row['時間起']) 
+                    continue;
                 renderTimelineCard(row);
             }
         }
@@ -554,14 +604,14 @@
         function renderTimelineCard(row) {
             let dayValue = (row['Day'] || '').trim().toLowerCase(); 
             
-            // 🚀 【精準修正】：如果試算表填的是純數字（如 1, 2），自動幫它補上 'd' 變成 d1, d2
+            // 如果試算表填的是純數字（如 1, 2），自動幫它補上 'd' 變成 d1, d2
             if (/^[0-9]+$/.test(dayValue)) { dayValue = 'd' + dayValue; }
 
-            // 以下完全保留您原本引以為傲的精美邏輯，一字不差
             if (dayValue.startsWith('d')) { dayValue = 'd' + dayValue.replace(/[^0-9]/g, ''); }
             const containerId = `day-${dayValue}`;
             const targetContainer = document.getElementById(containerId);
-            if (!targetContainer) return;
+            if (!targetContainer) 
+                return;
 
             // 隨機生成唯一 ID，供「更多資訊」收合功能使用
             const uniqueId = 'detail-' + Math.random().toString(36).substr(2, 9);
@@ -600,7 +650,7 @@
                     </button>
                 `;
                 
-                // 🔄 調整：重要分類展開區塊使用與卡片同色系的深橘設定，一般分類維持富士灰藍
+                // 重要分類展開區塊使用與卡片同色系的深橘設定，一般分類維持富士灰藍
                 let expandBgClass = isImportant ? 'bg-[rgb(255_225_175_/_70%)] border-amber-300/60' : 'bg-fuji-light/50 border-fuji-light';
                 
                 expandableHtml = `
@@ -649,8 +699,6 @@
             // 重要分類內部的資訊分隔線顏色調整
             let metaBorderClass = isImportant ? 'border-amber-300/50' : 'border-fuji-light/40';
 
-            // 精準調整後的結構：資訊行移至說明下方
-            // 🔄 換色重點：卡片外層底色換成您指定的 bg-[rgb(255_238_207_/_60%)]
             let cardHtml = `
                 <div class="relative flex gap-2.5 pl-1 group">
                     <div class="w-12 text-right flex-shrink-0 flex flex-col justify-between text-[15px] text-fuji-secondary/50 font-cute pr-1 pt-3 pb-4 leading-tight">
@@ -708,9 +756,131 @@
             }
             return cleanUrl;
         }
+        // #endregion tab1.行程------------------------------------------------------------------------------
+        
 
-        //購物清單
-        // 購物清單 (🔄 修正版：改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
+        // #region tab2.地圖---------------------------------------------------------------------------------
+        // #endregion tab2.地圖------------------------------------------------------------------------------
+        
+
+        // #region tab3.購物---------------------------------------------------------------------------------
+        // 店家欄位叉叉按鈕的顯示或隱藏
+        function toggleShopStoreClearBtn() {
+            const input = document.getElementById('shop-item-store');
+            const clearBtn = document.getElementById('clear-shop-store-btn');
+            if (input && clearBtn) {
+                if (input.value.trim() !== "") {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        // 點擊叉叉時清空輸入框，並將按鈕自己隱藏
+        function clearShopStoreInput() {
+            const input = document.getElementById('shop-item-store');
+            const clearBtn = document.getElementById('clear-shop-store-btn');
+            if (input) {
+                input.value = "";
+                input.focus(); // 清空後讓游標自動點回輸入框，方便重新輸入
+            }
+            if (clearBtn) {
+                clearBtn.classList.add('hidden');
+            }
+        }
+        
+        // 購物清單 店家收合
+        function toggleStoreCollapse(storeName) {
+            shoppingCollapsedStores[storeName] = !shoppingCollapsedStores[storeName];
+            renderCombinedShoppingList();
+        }
+        
+        // 1.新增購物清單 判別分類(個人私人/團隊共同)
+        function setPostType(type) {
+            currentPostType = type;
+            const btnLocal = document.getElementById('toggle-type-local');
+            const btnCloud = document.getElementById('toggle-type-cloud');
+            const addBtn = document.getElementById('add-shop-btn');
+            
+            if (type === 'local') {
+                // 個人私人選中狀態：橘色調
+                btnLocal.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
+                btnCloud.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
+                if(addBtn) {
+                    addBtn.className = "w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
+                    addBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
+                }
+            } else {
+                // 團隊共同選中狀態：富士藍底色與白字
+                btnLocal.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
+                btnCloud.className = "px-2 py-0.5 rounded-md bg-fuji-primary text-white shadow-2xs transition-all flex items-center gap-0.5";
+                if(addBtn) {
+                    addBtn.className = "w-full bg-fuji-primary text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
+                    addBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
+                }
+            }
+        }
+
+        // 2.新增購物清單 存入
+        function handleShoppingSubmit() {
+            const name = document.getElementById('shop-item-name').value.trim();
+            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
+            const store = document.getElementById('shop-item-store').value.trim() || (currentPostType === 'local' ? '個人私房購買' : '未分類商店');
+            const note = document.getElementById('shop-item-note').value.trim();
+            const imgUrl = document.getElementById('shop-item-image').value.trim();
+            const linkUrl = document.getElementById('shop-item-link').value.trim();
+
+            if (!name) { alert('請填寫商品名稱唷！'); return; }
+
+            if (shoppingCollapsedStores[store] === undefined) { shoppingCollapsedStores[store] = true; }
+
+            if (currentPostType === 'local') {
+                const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
+                localItems.push({ 
+                    id: 'local-' + Date.now(), 
+                    logo: '', 
+                    store, 
+                    name, 
+                    qty, 
+                    note, 
+                    image: parseImageUrl(imgUrl), 
+                    link: linkUrl, 
+                    isCloud: false 
+                });
+                localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
+                
+                clearShoppingForm(); // 購物清單新增欄位預設
+                renderCombinedShoppingList(); //購物清單 抓取雲端資料
+            } else {
+                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址。'); return; }
+                const submitBtn = document.getElementById('add-shop-btn');
+                submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
+
+                const payload = { store, name, qty, note, link: linkUrl, image: imgUrl };
+
+                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                .then(() => {
+                    alert(`🎉 【${name}】已成功同步至雲端！`);
+                    clearShoppingForm(); 
+                    setTimeout(fetchCloudShopping, 2000);
+                }).catch(err => alert('發送失敗')).finally(() => { submitBtn.disabled = false; setPostType('cloud'); });
+            }
+        }
+
+        // 新增購物清單 欄位預設
+        function clearShoppingForm() {
+            document.getElementById('shop-item-name').value = '';
+            document.getElementById('shop-item-qty').value = '1';
+            document.getElementById('shop-item-store').value = '';
+            document.getElementById('shop-item-note').value = '';
+            document.getElementById('shop-item-image').value = '';
+            document.getElementById('shop-item-link').value = '';
+            document.getElementById('sec-shop-detail').classList.add('hidden');
+            document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
+        }
+
+        // 購物清單 (改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
         async function fetchCloudShopping() {
             try {
                 const response = await fetch(SHOPPING_CSV_URL);
@@ -776,89 +946,7 @@
             renderCombinedShoppingList();
         }
 
-        function setPostType(type) {
-            currentPostType = type;
-            const btnLocal = document.getElementById('toggle-type-local');
-            const btnCloud = document.getElementById('toggle-type-cloud');
-            const addBtn = document.getElementById('add-shop-btn');
-            
-            if (type === 'local') {
-                // 個人私人選中狀態：維持原本的橘色調
-                btnLocal.className = "px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-2xs transition-all flex items-center gap-0.5";
-                btnCloud.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
-                if(addBtn) {
-                    addBtn.className = "w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all";
-                    addBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>存入個人清單`;
-                }
-            } else {
-                // 💡 修正後：團隊共同選中狀態，改為明顯的富士藍底色與白字
-                btnLocal.className = "px-2 py-0.5 text-fuji-secondary transition-all flex items-center gap-0.5";
-                btnCloud.className = "px-2 py-0.5 rounded-md bg-fuji-primary text-white shadow-2xs transition-all flex items-center gap-0.5";
-                if(addBtn) {
-                    addBtn.className = "w-full bg-fuji-primary text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all";
-                    addBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
-                }
-            }
-        }
-
-        // 新增購物清單
-        function handleShoppingSubmit() {
-            const name = document.getElementById('shop-item-name').value.trim();
-            const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
-            const store = document.getElementById('shop-item-store').value.trim() || (currentPostType === 'local' ? '個人私房購買' : '未分類商店');
-            const note = document.getElementById('shop-item-note').value.trim();
-            const imgUrl = document.getElementById('shop-item-image').value.trim();
-            const linkUrl = document.getElementById('shop-item-link').value.trim();
-
-            if (!name) { alert('請填寫商品名稱唷！'); return; }
-
-            if (shoppingCollapsedStores[store] === undefined) {
-                shoppingCollapsedStores[store] = true;
-            }
-
-            if (currentPostType === 'local') {
-                const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
-                localItems.push({ 
-                    id: 'local-' + Date.now(), 
-                    logo: '', 
-                    store, 
-                    name, 
-                    qty, 
-                    note, 
-                    image: parseImageUrl(imgUrl), 
-                    link: linkUrl, 
-                    isCloud: false 
-                });
-                localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
-                clearShoppingForm(); renderCombinedShoppingList();
-            } else {
-                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址。'); return; }
-                const submitBtn = document.getElementById('add-shop-btn');
-                submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
-
-                const payload = { store, name, qty, note, link: linkUrl, image: imgUrl };
-
-                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-                .then(() => {
-                    alert(`🎉 【${name}】已成功同步至雲端！`);
-                    clearShoppingForm(); setTimeout(fetchCloudShopping, 2000);
-                }).catch(err => alert('發送失敗')).finally(() => { submitBtn.disabled = false; setPostType('cloud'); });
-            }
-        }
-
-        // 購物清單新增欄位預設
-        function clearShoppingForm() {
-            document.getElementById('shop-item-name').value = '';
-            document.getElementById('shop-item-qty').value = '1';
-            document.getElementById('shop-item-store').value = '';
-            document.getElementById('shop-item-note').value = '';
-            document.getElementById('shop-item-image').value = '';
-            document.getElementById('shop-item-link').value = '';
-            document.getElementById('sec-shop-detail').classList.add('hidden');
-            document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
-        }
-
-        //購物清單
+        //購物清單 抓取雲端資料
        function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
@@ -922,7 +1010,6 @@
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
 
-                    // 比照準備清單的文字樣式
                     const textClass = isChecked 
                         ? 'line-through text-fuji-secondary font-normal' 
                         : 'font-bold text-fuji-dark';
@@ -931,14 +1018,20 @@
                     let mediaHtml = '';
                     if (!isChecked) {
                         if (item.link) {
-                            mediaHtml += `<div class="mt-1"><a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs"><i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結</a></div>`;
+                            mediaHtml += `<div class="mt-1">
+                                            <a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
+                                                <i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結
+                                            </a>
+                                        </div>`;
                         }
                         if (item.image) {
-                            mediaHtml += `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center"><img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';"></div>`;
+                            mediaHtml += `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center">
+                                            <img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';">
+                                          </div>`;
                         }
                     }
 
-                    // 🔄【修改點】：在下方 div class 中加入 ${isChecked ? 'bg-gray-100/70' : ''}。當刪除勾選時，整行背景會變為舒服的淡灰色。
+                    // 當刪除勾選時，整行背景會變為舒服的淡灰色
                     groupHtml += `
                         <div class="p-3 flex flex-col gap-1.5 transition-all relative ${isChecked ? 'bg-gray-100/70' : ''}">
                             <div class="flex justify-between items-start gap-2">
@@ -950,15 +1043,24 @@
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <div class="flex items-center border border-fuji-light rounded-md bg-fuji-bg overflow-hidden shadow-2xs">
-                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-minus text-[13px]"></i></button>
+                                        <button onclick="adjustQty('${item.id}', -1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold">
+                                            <i class="fa-solid fa-minus text-[13px]"></i>
+                                        </button>
                                         <span class="px-1 text-xs font-extrabold text-fuji-dark min-w-[11px] text-center select-none">${item.qty}</span>
-                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold"><i class="fa-solid fa-plus text-[13px]"></i></button>
+                                        <button onclick="adjustQty('${item.id}', 1)" class="px-1.5 py-0.5 text-fuji-primary text-xs font-bold">
+                                            <i class="fa-solid fa-plus text-[13px]"></i>
+                                        </button>
                                     </div>
-                                    ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs"><i class="fa-regular fa-trash-can text-[11px]"></i></button>` : '<div class="w-3"></div>'}
+                                    ${!item.isCloud ? `<button onclick="deleteLocalShoppingItem('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 text-xs">
+                                                            <i class="fa-regular fa-trash-can text-[11px]"></i></button>` 
+                                                    : '<div class="w-3"></div>'}
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked ? 'text-fuji-secondary font-normal' : 'text-fuji-secondary'}">${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked 
+                                                ? 'text-fuji-secondary font-normal' 
+                                                : 'text-fuji-secondary'}">${item.note}</div>` 
+                                            : ''}
                                 ${mediaHtml}
                             </div>
                         </div>`;
@@ -976,32 +1078,7 @@
             }
         }
 
-        // 🔄【新增功能】：控制店家欄位叉叉按鈕的顯示或隱藏
-        function toggleShopStoreClearBtn() {
-            const input = document.getElementById('shop-item-store');
-            const clearBtn = document.getElementById('clear-shop-store-btn');
-            if (input && clearBtn) {
-                if (input.value.trim() !== "") {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
-            }
-        }
-
-        // 🔄【新增功能】：點擊叉叉時清空輸入框，並將按鈕自己隱藏
-        function clearShopStoreInput() {
-            const input = document.getElementById('shop-item-store');
-            const clearBtn = document.getElementById('clear-shop-store-btn');
-            if (input) {
-                input.value = "";
-                input.focus(); // 清空後讓游標自動點回輸入框，方便重新輸入
-            }
-            if (clearBtn) {
-                clearBtn.classList.add('hidden');
-            }
-        }
-
+        // 購物清單 數量增減
         function adjustQty(id, change) {
             const modifiedQty = JSON.parse(localStorage.getItem('ok_shopping_qty')) || {};
             let currentQty = 1;
@@ -1012,6 +1089,7 @@
             renderCombinedShoppingList();
         }
 
+        // 購物清單 切換勾選狀態
         function toggleShoppingCheck(id) {
             let checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
             if (checkedIds.includes(id)) checkedIds = checkedIds.filter(i => i !== id);
@@ -1020,33 +1098,50 @@
             renderCombinedShoppingList();
         }
 
+        // 刪除 購物清單
         function deleteLocalShoppingItem(id) {
             let localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             localItems = localItems.filter(item => item.id !== id);
             localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
             renderCombinedShoppingList();
         }
+        // #endregion tab3.購物------------------------------------------------------------------------------
+        
 
-        function initWalletDateTime() {
-            const now = new Date();
-            const localDate = now.toISOString().split('T')[0];
-            const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
-            document.getElementById('expense-date').value = localDate;
-            document.getElementById('expense-time').value = localTime;
-        }
-
-        function toggleCardSelect() {
-            const method = document.getElementById('expense-method').value;
-            const cardSelect = document.getElementById('expense-card');
-            if (method === '信用卡') {
-                cardSelect.disabled = false;
-                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-fuji-dark opacity-100";
-            } else {
-                cardSelect.disabled = true; cardSelect.value = "";
-                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-fuji-secondary opacity-50";
+        // #region tab4.錢包---------------------------------------------------------------------------------
+        // 抓取日幣即時匯率
+        async function fetchBotExchangeRate() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/JPY');
+                
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const twdRate = data.rates.TWD;
+                
+                if (twdRate) {
+                    const finalRate = parseFloat(twdRate).toFixed(4);
+                    const rateInput = document.getElementById('exchange-rate');
+                    
+                    if(rateInput) {
+                        rateInput.value = (parseFloat(finalRate)).toFixed(3);
+                        const tag = document.getElementById('bot-rate-tag');
+                        
+                        if (tag) tag.classList.remove('hidden');
+                        renderExpenses();  // 讀取記帳明細
+                    }
+                }
+            } catch (e) {
+                console.log("無法取得即時匯率，啟用預設值 0.215");
             }
         }
 
+        // 記帳明細 日期收合
+        function toggleDayCollapse(dateStr) {
+            walletCollapsedDays[dateStr] = !walletCollapsedDays[dateStr];
+            renderExpenses();  // 讀取記帳明細
+        }
+
+        // 新增 記帳明細
         function addExpense() {
             const store = document.getElementById('expense-store').value.trim() || '未分類店家';
             const title = document.getElementById('expense-title').value.trim();
@@ -1070,22 +1165,36 @@
             document.getElementById('expense-title').value = '';
             document.getElementById('expense-amount').value = '';
             document.getElementById('expense-note').value = '';
-            initWalletDateTime();
             document.getElementById('expense-method').value = '日幣現金';
-            toggleCardSelect();
-            renderExpenses();
+            
+            initWalletDateTime();  // 記帳 選擇日期與時間
+            toggleCardSelect();  // 記帳 選擇支付方式
+            renderExpenses();  // 讀取記帳明細
         }
 
-        function deleteExpense(id) {
-            if (confirm('確定要移除此筆開銷紀錄嗎？')) {
-                let expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
-                expenses = expenses.filter(exp => exp.id !== id);
-                localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(expenses));
-                renderExpenses();
+        // 記帳 選擇日期與時間
+        function initWalletDateTime() {
+            const now = new Date();
+            const localDate = now.toISOString().split('T')[0];
+            const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
+            document.getElementById('expense-date').value = localDate;
+            document.getElementById('expense-time').value = localTime;
+        }
+
+        // 記帳 選擇支付方式
+        function toggleCardSelect() {
+            const method = document.getElementById('expense-method').value;
+            const cardSelect = document.getElementById('expense-card');
+            if (method === '信用卡') {
+                cardSelect.disabled = false;
+                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-fuji-dark opacity-100";
+            } else {
+                cardSelect.disabled = true; cardSelect.value = "";
+                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg text-xs bg-fuji-bg focus:outline-none text-fuji-secondary opacity-50";
             }
         }
 
-        // 記帳明細清單
+        // 讀取記帳明細
         function renderExpenses() {
             const container = document.getElementById('expense-list'); if (!container) return; container.innerHTML = '';
             const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
@@ -1174,78 +1283,42 @@
                 groupHtml += `</div></div>`; container.innerHTML += groupHtml;
             }
         }
-    
-        function switchTab(tabName) {
-            // 🔄 紀錄：在切換前，先記下「當前正在看的頁面」
-            const currentActiveEl = document.querySelector('.tab-content:not(.hidden)');
-            const prevTab = currentActiveEl ? currentActiveEl.id.replace('page-', '') : '';
 
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`page-${tabName}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => { 
-                btn.classList.remove('text-fuji-primary', 'text-fuji-accent'); 
-                btn.classList.add('text-fuji-secondary'); 
-            });
-            const activeNav = document.getElementById(`nav-${tabName}`);
-            if (activeNav) {
-                activeNav.classList.remove('text-fuji-secondary'); 
-                activeNav.classList.add('text-fuji-accent');
-            }
-
-            // 🚀 控制天數方格容器的顯示與隱藏
-            const dayBox = document.getElementById('sticky-day-container');
-            if (dayBox) {
-                if (tabName === 'plan' || tabName === 'guide') {
-                    dayBox.style.display = ''; // 行程或地圖頁面顯示日期方格
-                    
-                    // 🔄【終極修正】：如果是從「其他頁籤（購物、錢包、準備、資訊）」點擊切換回「行程或地圖」
-                    // 此時立刻執行您既有的 switchDay('day-d1')，將上方方格與時間軸內容通通強制刷新洗回第一天！
-                    if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide') {
-                        if (typeof switchDay === 'function') {
-                            switchDay('day-d1');
-                        }
-                    }
-                } else {
-                    dayBox.style.display = 'none'; // 其餘頁面隱藏日期方格
-                }
-            }
-            
-            if(tabName === 'shopping') fetchCloudShopping();
-            if(tabName === 'wallet') renderExpenses();
-            if(tabName === 'lists') fetchCloudChecklist(); 
-            
-            // 修正滾動問題
-            if (tabName === 'plan') {
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 刪除單筆記帳明細
+        function deleteExpense(id) {
+            if (confirm('確定要移除此筆開銷紀錄嗎？')) {
+                let expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
+                expenses = expenses.filter(exp => exp.id !== id);
+                localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(expenses));
+                renderExpenses();  // 讀取記帳明細
             }
         }
 
-        function switchDay(dayId) {
-            // 1. 隱藏所有行程的 Day 容器
-            document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
-            
-            // 2. 顯示點選的 Day 容器
-            const targetEl = document.getElementById(dayId);
-            if (targetEl) targetEl.classList.remove('hidden');
-
-            // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
+        // 記帳 幣值轉換
+        function initCalc() {
+            const input = document.getElementById('calc-input'); if(!input) return;
+            input.addEventListener('input', function() {
+                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+                try {
+                    let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
+                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
+                    let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
+                    jpy = Math.round(jpy); document.getElementById('calc-jpy').innerText = jpy;
+                    document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
+                } catch(e) {}
             });
+        }
+        // #endregion tab4.錢包------------------------------------------------------------------------------
+        
 
-            // 4. 精準將當前點選的按鈕切換為「深藍色選取」樣式
-            const activeBtn = document.getElementById('btn-' + dayId);
-            if (activeBtn) {
-                activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
-            }
+        // #region tab5.準備---------------------------------------------------------------------------------
+        // 準備清單 大分類區塊收合
+        function toggleChecklistCategoryCollapse(catName) {
+            checklistCollapsedCategories[catName] = !checklistCollapsedCategories[catName];
+            renderChecklist(globalChecklistItems);
         }
 
-        // =========================================================================
-        // 🚀 【全新防錯版】行前準備清單拉取功能 (完全依據 A,B,C,D,E,F 欄位絕對順序，不看名稱)
-        // =========================================================================
+        // 初始化時同步抓取雲端「行李」清單
         async function fetchCloudChecklist() {
             try {
                 // 強制加上時間戳記防止瀏覽器快取舊資料
@@ -1265,10 +1338,10 @@
                         // 使用安全 CSV 逗號切割法
                         const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
                         
-                        // 🚀 核心修改：防禦機制，如果切出來的欄位少於 4 個，或是關鍵的 D 欄（項目名稱）是空的就跳過
+                        // 如果切出來的欄位少於 4 個，或是關鍵的 D 欄（項目名稱）是空的就跳過
                         if (currentLine.length < 4 || !currentLine[3]) continue; 
                         
-                        // 🚀 核心優化：完全不管欄位名稱，直接用 [欄位索引] 抓取資料
+                        // 不管欄位名稱，直接用 [欄位索引] 抓取資料
                         const itemId = currentLine[0] || 'chk-' + i;       // A 欄 (ID)
                         const catName = currentLine[1] || '其他未分類';     // B 欄 (區域/大分類)
                         const typeName = currentLine[2] || '';             // C 欄 (分類/次類型)
@@ -1276,7 +1349,7 @@
                         const itemQty = parseInt(currentLine[4]) || 1;     // E 欄 (數量)
                         const itemNote = currentLine[5] || '';             // F 欄 (備註)
 
-                        // 需求修正：行前行李各項大清單預設為 true (收合)
+                        // 行前行李各項大清單預設為 true (收合)
                         if (checklistCollapsedCategories[catName] === undefined) {
                             checklistCollapsedCategories[catName] = true;
                         }
@@ -1292,7 +1365,6 @@
                         });
                     }
                 }
-                // 呼叫專屬的渲染器
                 renderChecklist(globalChecklistItems);
             } catch (error) {
                 console.error("行前準備清單拉取異常:", error);
@@ -1303,9 +1375,24 @@
             }
         }
 
-        // =========================================================================
-        // 🚀 【全新防錯版】行前準備清單渲染器 (徹底與行程表解綁，放大字體雙層排版)
-        // =========================================================================
+        // 行李打勾狀態切換處理
+        function toggleCheck(id) {
+            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
+            
+            globalChecklistItems = globalChecklistItems.map(item => {
+                if (item.id === id) {
+                    const nextState = !item.checked;
+                    userCheckedStates[id] = nextState; 
+                    return { ...item, checked: nextState };
+                }
+                return item;
+            });
+            
+            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
+            renderChecklist(globalChecklistItems);
+        }
+
+        // 抓取「準備」清單資料
         function renderChecklist(items) {
             const container = document.getElementById('checklist-container'); 
             if (!container) return; 
@@ -1327,7 +1414,7 @@
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
                 const isCollapsed = checklistCollapsedCategories[categoryName] === true;
                 
-                // 🔄【需求 2 修改】：修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
+                // 箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
                 const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
                 const doneCount = catItems.filter(i => i.checked).length;
 
@@ -1370,7 +1457,7 @@
                     subItems.forEach(item => {
                         const isChecked = item.checked === true;
                         
-                        // 🔄【需求 3 修改】：清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
+                        // 清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
                         let noteHtml = '';
                         if (item.note && !isChecked) {
                             noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
@@ -1395,7 +1482,7 @@
             }
         }
 
-        // 打勾互動切換
+        // 準備清單 打勾互動切換
         function toggleCheck(id) {
             const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
             globalChecklistItems = globalChecklistItems.map(item => {
@@ -1432,7 +1519,7 @@
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
                 const isCollapsed = checklistCollapsedCategories[categoryName] === true;
                 
-                // 🔄【需求 2 修改】：修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
+                // 修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
                 const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
                 const doneCount = catItems.filter(i => i.checked).length;
 
@@ -1466,7 +1553,8 @@
                     const isDefaultGroup = (typeName === "");
                     catHtml += `
                         <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}">
+                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-primary bg-fuji-light px-2 py-0.5 rounded w-fit text-[14px]' 
+                                                                                                     : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}">
                                 <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
                                 <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
                             </div>
@@ -1475,7 +1563,7 @@
                     subItems.forEach(item => {
                         const isChecked = item.checked === true;
                         
-                        // 🔄【需求 3 修改】：清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
+                        // 清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
                         let noteHtml = '';
                         if (item.note && !isChecked) {
                             noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
@@ -1499,37 +1587,11 @@
                 container.innerHTML += catHtml;
             }
         }
+        // #endregion tab5.準備------------------------------------------------------------------------------
+        
 
-        // 行李打勾狀態切換處理
-        function toggleCheck(id) {
-            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
-            
-            globalChecklistItems = globalChecklistItems.map(item => {
-                if (item.id === id) {
-                    const nextState = !item.checked;
-                    userCheckedStates[id] = nextState; 
-                    return { ...item, checked: nextState };
-                }
-                return item;
-            });
-            
-            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
-            renderChecklist(globalChecklistItems);
-        }
-
-        function initCalc() {
-            const input = document.getElementById('calc-input'); if(!input) return;
-            input.addEventListener('input', function() {
-                const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
-                try {
-                    let sanitized = this.value.replace(/[^0-9+\-*/().]/g, '');
-                    if(!sanitized) { document.getElementById('calc-jpy').innerText = '0'; document.getElementById('calc-twd').innerText = 'NT$ 0'; return; }
-                    let jpy = Function('"use strict";return (' + sanitized + ')')() || 0;
-                    jpy = Math.round(jpy); document.getElementById('calc-jpy').innerText = jpy;
-                    document.getElementById('calc-twd').innerText = 'NT$ ' + Math.round(jpy * rate).toLocaleString();
-                } catch(e) {}
-            });
-        }
+        // #region tab6.資訊---------------------------------------------------------------------------------
+        // #endregion tab6.資訊------------------------------------------------------------------------------
     </script>
 </body>
 </html>
