@@ -40,9 +40,10 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="font-sans min-h-screen pb-24 flex justify-center">
+<body class="font-sans min-h-screen flex justify-center">
     <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
         <div class="sticky top-0 z-50 bg-fuji-bg w-full">
+            <!--大標題-->
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
                 <div class="absolute -right-6 -top-6 text-fuji-secondary/20 text-7xl"><i class="fa-solid fa-cloud"></i></div>
                 <div class="absolute -left-4 top-12 text-fuji-secondary/20 text-5xl"><i class="fa-solid fa-sun"></i></div>
@@ -55,6 +56,7 @@
                 </p>
             </header>
 
+            <!--行程日期方塊區-->
             <div id="sticky-day-container" class="pt-3 px-4 block">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
@@ -77,7 +79,7 @@
             </div>
         </div>
         
-        <main class="flex-1 p-3 overflow-y-auto">
+        <main class="flex-1 p-3 pb-20 overflow-y-auto">
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
@@ -116,11 +118,9 @@
 
             <!-- tab3.購物 -->
             <section id="page-shopping" class="tab-content hidden">
-                <!-- <div class="flex justify-between items-center mb-2"> -->
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
                     <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
                 </h2>
-                <!-- </div> -->
                 
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
                     <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
@@ -141,9 +141,6 @@
                             </div>
                         </div>
 
-                        <!-- <div class="grid grid-cols-1">
-                            <input type="text" id="shop-item-store" placeholder="店家名稱" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                        </div> -->
                         <div class="grid grid-cols-1">
                             <div class="relative w-full">
                                 <input type="text" id="shop-item-store" list="existing-stores-list" oninput="toggleShopStoreClearBtn()" placeholder="點擊選取現有店家，或直接輸入新店家" class="w-full pr-7 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
@@ -151,8 +148,7 @@
                                     <i class="fa-solid fa-circle-xmark text-sm"></i>
                                 </button>
                             </div>
-                            <datalist id="existing-stores-list">
-                                </datalist>
+                            <datalist id="existing-stores-list"></datalist>
                         </div>
                         
                         <div class="grid grid-cols-3 gap-1.5">
@@ -323,6 +319,11 @@
         // 全域儲存從雲端下載並轉化後的準備清單陣列
         let globalChecklistItems = [];
 
+        // 🔄 關閉瀏覽器自動滾動恢復記憶，確保重新載入時完全聽從 JS 的置頂指令
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
@@ -432,9 +433,9 @@
 
             // 處理導航與網站按鈕
             let buttonHtml = '';
-            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
+            if (row['Google Map']) buttonHtml += `<a href="${row['Google Map']}" target="_blank" class="text-[13px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
                                                       <i class="fa-solid fa-location-dot text-fuji-accent"></i>導航</a>`;
-            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[10px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
+            if (row['網頁']) buttonHtml += `<a href="${row['網頁']}" target="_blank" class="text-[13px] bg-white font-bold px-2 py-0.5 rounded-full text-fuji-primary border border-fuji-light mr-1 inline-flex items-center gap-0.5 shadow-3xs">
                                                 <i class="fa-solid fa-earth-asia"></i>網站</a>`;
 
             // 2. 建立「區間、費用」文字段落
@@ -1006,6 +1007,10 @@
         }
     
         function switchTab(tabName) {
+            // 🔄 紀錄：在切換前，先記下「當前正在看的頁面」
+            const currentActiveEl = document.querySelector('.tab-content:not(.hidden)');
+            const prevTab = currentActiveEl ? currentActiveEl.id.replace('page-', '') : '';
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
             
@@ -1019,20 +1024,34 @@
                 activeNav.classList.add('text-fuji-accent');
             }
 
-            // 🚀 【純加法控制】：利用 style.display 控制日期方格的隱現，絕不改動或破壞原本的 class 與既有功能
+            // 🚀 控制天數方格容器的顯示與隱藏
             const dayBox = document.getElementById('sticky-day-container');
             if (dayBox) {
                 if (tabName === 'plan' || tabName === 'guide') {
-                    dayBox.style.display = ''; // 當切換到行程 (plan) 或 地圖 (guide) 時顯示
+                    dayBox.style.display = ''; // 行程或地圖頁面顯示日期方格
+                    
+                    // 🔄【終極修正】：如果是從「其他頁籤（購物、錢包、準備、資訊）」點擊切換回「行程或地圖」
+                    // 此時立刻執行您既有的 switchDay('day-d1')，將上方方格與時間軸內容通通強制刷新洗回第一天！
+                    if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide') {
+                        if (typeof switchDay === 'function') {
+                            switchDay('day-d1');
+                        }
+                    }
                 } else {
-                    dayBox.style.display = 'none'; // 其餘頁面直接無感隱藏
+                    dayBox.style.display = 'none'; // 其餘頁面隱藏日期方格
                 }
             }
             
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
-            if(tabName === 'lists') fetchCloudChecklist(); // 切換到準備頁籤時即時重新拉取雲端
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if(tabName === 'lists') fetchCloudChecklist(); 
+            
+            // 修正滾動問題
+            if (tabName === 'plan') {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function switchDay(dayId) {
