@@ -58,26 +58,6 @@
                 <div id="dynamic-tabs" class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     </div>
             </div>
-            <!-- <div id="sticky-day-container" class="pt-3 px-4 block">
-                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
-                    <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
-                        <span class="text-[17px] opacity-90 pointer-events-none"><span id="text-date-d1">10/1</span></span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d1">Day 1</span></span>
-                    </button>
-                    <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d2">10/2</span></span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d2">Day 2</span></span>
-                    </button>
-                    <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d3">10/3</span></span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d3">Day 3</span></span>
-                    </button>
-                    <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
-                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d4">10/4</span></span>
-                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d4">Day 4</span></span>
-                    </button>
-                </div>
-            </div> -->
         </div>
         
         <main class="flex-1 p-3 pb-20 overflow-y-auto">
@@ -93,29 +73,17 @@
                 
                 <!-- 行程時間軸卡片容器 -->
                 <div id="timeline-container" class="space-y-1"></div>
-                <!-- <div id="timeline-container" class="space-y-1">
-                    <div id="day-d1" class="day-timeline space-y-1"></div>
-                    <div id="day-d2" class="day-timeline space-y-1 hidden"></div>
-                    <div id="day-d3" class="day-timeline space-y-1 hidden"></div>
-                    <div id="day-d4" class="day-timeline space-y-1 hidden"></div>
-                </div> -->
             </section>
 
-            <!-- tab2.地圖 -->
+            <!-- tab2.交通 -->
             <section id="page-guide" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
-                    <i class="fa-solid fa-map-marked-alt text-fuji-accent"></i> 手帳地圖導覽
+                    <i class="fa-solid fa-train text-fuji-accent"></i> 交通時刻表
                 </h2>
-                <div class="space-y-4">
-                    <article class="bg-fuji-paper p-4 rounded-xl shadow-sm border border-fuji-light">
-                        <span class="text-[10px] bg-fuji-primary text-white px-2 py-0.5 rounded-full font-bold">🐋 深度文化</span>
-                        <h3 class="text-base font-bold text-fuji-dark mt-1.5 mb-1">美麗海水族館：黑潮之海</h3>
-                        <p class="text-xs text-fuji-dark/90 leading-relaxed mb-3 text-justify">這裡擁有世界第三大的巨大水槽「黑潮之海」。水槽的壓克力觀景窗厚度高達 60 公分！</p>
-                        <div class="w-full h-40 rounded-xl overflow-hidden border border-fuji-light shadow-inner">
-                            <iframe width="100%" height="100%" frameborder="0" src="https://www.openstreetmap.org/export/embed.html?bbox=127.8752%2C26.6923%2C127.8812%2C26.6963&layer=mapnik&marker=26.6943%2C127.8782"></iframe>
-                        </div>
-                    </article>
+                <div id="transport-loading" class="text-center py-12 text-xs text-fuji-secondary font-medium">
+                    <i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>載入交通資訊中...
                 </div>
+                <div id="transport-container" class="space-y-0"></div>
             </section>
 
             <!-- tab3.購物 -->
@@ -294,7 +262,7 @@
         <!-- tab總覽 -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-1.5 z-50 shadow-lg rounded-t-xl px-1">
             <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[13px] font-bold mt-0.5">行程</span></button>
-            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[13px] font-bold mt-0.5">地圖</span></button>
+            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[13px] font-bold mt-0.5">交通</span></button>
             <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[13px] font-bold mt-0.5">購物</span></button>
             <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[13px] font-bold mt-0.5">錢包</span></button>
             <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[13px] font-bold mt-0.5">準備</span></button>
@@ -336,7 +304,8 @@
             // tab1.行程
             fetchTravelPlan();  // 行程時間軸卡片
 
-            // tab2.地圖
+            // tab2.交通
+            fetchTransportPlan();  // 交通時刻表
 
             // tab3.購物
             fetchCloudShopping();  //購物清單
@@ -488,6 +457,13 @@
                         const displayClass = isFirst ? "day-timeline space-y-1" : "day-timeline space-y-1 hidden";
                         const containerHtml = `<div id="${dId}" class="${displayClass}"></div>`;
                         timelineContainer.insertAdjacentHTML('beforeend', containerHtml);
+
+                        // 同步生成交通頁面的日期容器
+                        const transContainer = document.getElementById('transport-container');
+                        if (transContainer) {
+                            const transClass = isFirst ? "day-transport space-y-3" : "day-transport space-y-3 hidden";
+                            transContainer.insertAdjacentHTML('beforeend', `<div id="trans-d${pureNum}" class="${transClass}"></div>`);
+                        }
                     }
                 }
                 
@@ -563,11 +539,17 @@
         function switchDay(dayId) {
             // 1. 隱藏所有行程的 Day 容器
             document.querySelectorAll('.day-timeline').forEach(el => el.classList.add('hidden'));
-            
+
             // 2. 顯示點選的 Day 容器
             const targetEl = document.getElementById(dayId);
             if (targetEl) targetEl.classList.remove('hidden');
-            
+
+            // 2b. 同步切換交通頁面的日期容器
+            const pureNum = dayId.replace(/[^0-9]/g, '');
+            document.querySelectorAll('.day-transport').forEach(el => el.classList.add('hidden'));
+            const transEl = document.getElementById('trans-d' + pureNum);
+            if (transEl) transEl.classList.remove('hidden');
+
             // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
@@ -785,8 +767,154 @@
         // #endregion tab1.行程------------------------------------------------------------------------------
         
 
-        // #region tab2.地圖---------------------------------------------------------------------------------
-        // #endregion tab2.地圖------------------------------------------------------------------------------
+        // #region tab2.交通---------------------------------------------------------------------------------
+        // 依說明文字判斷交通工具圖示
+        function getTransportIcon(text) {
+            if (!text) return 'fa-route';
+            const t = text.toLowerCase();
+            if (t.includes('航空') || t.includes('航班') || t.includes('機場') || /[a-z]{2}\d{3,}/i.test(text)) return 'fa-plane';
+            if (t.includes('新幹線') || t.includes('特急') || t.includes('急行') || t.includes('電車') || t.includes('jr') || t.includes('捷運') || t.includes('地鐵') || t.includes('mrt') || t.includes('鉄道')) return 'fa-train-subway';
+            if (t.includes('巴士') || t.includes('バス') || t.includes('bus')) return 'fa-bus';
+            if (t.includes('計程') || t.includes('タクシー') || t.includes('taxi')) return 'fa-taxi';
+            if (t.includes('自駕') || t.includes('開車') || t.includes('租車')) return 'fa-car';
+            if (t.includes('船') || t.includes('フェリー') || t.includes('ferry')) return 'fa-ferry';
+            return 'fa-route';
+        }
+
+        // 渲染單筆交通卡片
+        function renderTransportCard(row, container) {
+            const title    = (row['標題'] || '').trim();
+            const timeStart = (row['時間起'] || '').trim();
+            const timeEnd   = (row['時間迄'] || '').trim();
+            const desc      = (row['說明'] || '').trim();
+            const duration  = (row['區間'] || '').trim();
+            const notes     = (row['備註'] || '').trim();
+            const rawImg    = (row['交通圖'] || row['交'] || '').trim();
+            const cleanImg  = rawImg ? parseImageUrl(rawImg) : '';
+
+            const icon = getTransportIcon(desc || title);
+            const hasTime = timeStart || timeEnd;
+
+            // 時間 + 路線區塊
+            let timeHtml = '';
+            if (hasTime) {
+                timeHtml = `
+                    <div class="px-4 pt-3 pb-2.5">
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col items-center flex-shrink-0 w-14 text-center">
+                                <span class="font-cute font-extrabold text-[22px] text-sky-600 leading-none">${timeStart || '--'}</span>
+                                <span class="text-[10px] text-fuji-secondary/70 mt-0.5 font-medium">出發</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-0.5 min-w-0 px-1">
+                                ${desc ? `<span class="text-[12px] text-fuji-dark font-medium text-center leading-snug w-full break-words">${desc}</span>` : ''}
+                                <div class="flex items-center w-full gap-1 my-0.5">
+                                    <div class="flex-1 h-px bg-sky-300/70 rounded"></div>
+                                    <i class="fa-solid fa-angle-right text-sky-400 text-[11px]"></i>
+                                </div>
+                                ${duration ? `<span class="text-[11px] text-fuji-secondary font-medium">${duration}</span>` : ''}
+                            </div>
+                            <div class="flex flex-col items-center flex-shrink-0 w-14 text-center">
+                                <span class="font-cute font-extrabold text-[22px] text-fuji-dark leading-none">${timeEnd || '--'}</span>
+                                <span class="text-[10px] text-fuji-secondary/70 mt-0.5 font-medium">抵達</span>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (desc || duration) {
+                timeHtml = `
+                    <div class="px-4 pt-3 pb-2.5">
+                        ${desc ? `<div class="text-[13px] text-fuji-dark font-medium">${desc}</div>` : ''}
+                        ${duration ? `<div class="text-[12px] text-fuji-secondary mt-0.5">${duration}</div>` : ''}
+                    </div>`;
+            }
+
+            // 備註區塊
+            const notesHtml = notes ? `
+                    <div class="px-4 pb-3">
+                        <div class="bg-fuji-bg rounded-lg px-2.5 py-2 text-[12px] text-fuji-secondary leading-relaxed border border-fuji-light/60">
+                            <i class="fa-solid fa-circle-info text-fuji-primary/50 mr-1 flex-shrink-0"></i>${notes}
+                        </div>
+                    </div>` : '';
+
+            // 交通路線圖
+            const imgHtml = cleanImg ? `
+                    <div class="px-3 pb-3">
+                        <div class="rounded-xl overflow-hidden border border-sky-100 shadow-inner bg-white">
+                            <img src="${cleanImg}" referrerpolicy="no-referrer" class="w-full" alt="交通路線圖" onerror="this.parentElement.style.display='none'">
+                        </div>
+                    </div>` : '';
+
+            container.insertAdjacentHTML('beforeend', `
+                <div class="bg-fuji-paper rounded-xl border border-sky-200/70 shadow-sm overflow-hidden">
+                    <div class="bg-sky-600 px-3 py-2.5 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i class="fa-solid ${icon} text-white/80 flex-shrink-0 text-sm"></i>
+                            <span class="font-bold text-white text-[15px] tracking-wide leading-tight">${title || '交通'}</span>
+                        </div>
+                        <span class="text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold whitespace-nowrap flex-shrink-0">交通</span>
+                    </div>
+                    ${timeHtml}
+                    ${notesHtml}
+                    ${imgHtml}
+                </div>`);
+        }
+
+        // 抓取並渲染交通時刻表（從行程 CSV 篩選分類=交通）
+        async function fetchTransportPlan() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) throw new Error();
+                const csvText = await response.text();
+
+                const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length <= 1) return;
+
+                const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+
+                // 清空各日期的交通容器
+                document.querySelectorAll('.day-transport').forEach(el => { el.innerHTML = ''; });
+
+                let hasAny = false;
+                for (let i = 1; i < lines.length; i++) {
+                    let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
+                    if (cols.length < headers.length) continue;
+
+                    const row = {};
+                    headers.forEach((h, idx) => { row[h] = cols[idx]; });
+
+                    if (!(row['分類'] || '').includes('交通')) continue;
+
+                    let dayVal = (row['Day'] || '').trim().toLowerCase();
+                    if (/^[0-9]+$/.test(dayVal)) dayVal = 'd' + dayVal;
+                    if (dayVal.startsWith('d')) dayVal = 'd' + dayVal.replace(/[^0-9]/g, '');
+                    const pureNum = dayVal.replace(/[^0-9]/g, '');
+
+                    const target = document.getElementById('trans-d' + pureNum);
+                    if (!target) continue;
+
+                    renderTransportCard(row, target);
+                    hasAny = true;
+                }
+
+                // 有資料的日期容器→隱藏 loading；空的日期容器→顯示空白提示
+                document.querySelectorAll('.day-transport').forEach(el => {
+                    if (!el.innerHTML.trim()) {
+                        el.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">
+                            <i class="fa-solid fa-train opacity-20 text-3xl block mb-2"></i>本日無交通行程</div>`;
+                    }
+                });
+
+                const loader = document.getElementById('transport-loading');
+                if (loader) loader.classList.add('hidden');
+
+            } catch (error) {
+                console.error("交通資料讀取失敗", error);
+                const loader = document.getElementById('transport-loading');
+                if (loader) loader.innerHTML = `<div class="text-center py-8 text-xs text-fuji-accent font-medium">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>無法載入交通資料，請確認雲端行程分頁。</div>`;
+            }
+        }
+        // #endregion tab2.交通------------------------------------------------------------------------------
         
 
         // #region tab3.購物---------------------------------------------------------------------------------
