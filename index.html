@@ -55,6 +55,10 @@
 
             <!--行程日期方塊區-->
             <div id="sticky-day-container" class="pt-3 px-4 block">
+                <div id="dynamic-tabs" class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
+                    </div>
+            </div>
+            <!-- <div id="sticky-day-container" class="pt-3 px-4 block">
                 <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
                         <span class="text-[17px] opacity-90 pointer-events-none"><span id="text-date-d1">10/1</span></span>
@@ -73,7 +77,7 @@
                         <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d4">Day 4</span></span>
                     </button>
                 </div>
-            </div>
+            </div> -->
         </div>
         
         <main class="flex-1 p-3 pb-20 overflow-y-auto">
@@ -88,12 +92,13 @@
                 </div>
                 
                 <!-- 行程時間軸卡片容器 -->
-                <div id="timeline-container" class="space-y-1">
+                <div id="timeline-container" class="space-y-1"></div>
+                <!-- <div id="timeline-container" class="space-y-1">
                     <div id="day-d1" class="day-timeline space-y-1"></div>
                     <div id="day-d2" class="day-timeline space-y-1 hidden"></div>
                     <div id="day-d3" class="day-timeline space-y-1 hidden"></div>
                     <div id="day-d4" class="day-timeline space-y-1 hidden"></div>
-                </div>
+                </div> -->
             </section>
 
             <!-- tab2.地圖 -->
@@ -397,7 +402,10 @@
             }
         }
 
-        // 2.抓取雲端「摘要」頁籤資料並動態更新 4 個天數按鈕的日期與標題
+        // 1. 全域變數：記錄當前存在的所有天數 ID 列表，供切換與預設置頂使用
+        let dynamicDayIdList = [];
+
+        // 🔄 2.抓取雲端「摘要」頁籤資料並【完全動態生成】所有天數方塊按鈕與行程容器
         async function fetchCloudSummary() {
             try {
                 const response = await fetch(SUMMARY_CSV_URL);
@@ -408,62 +416,85 @@
                 const lines = cleanCsvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 
                 if (lines.length > 1) {
-                    // 1. 解析第一列標題，找出「Day」和「日期」所在的欄位位置
                     const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
                     const idxDay  = headers.indexOf('Day');
                     const idxDate = headers.indexOf('日期');
                     
-                    if (idxDay === -1 || idxDate === -1) {
-                        console.error("摘要試算表中找不到『Day』或『日期』欄位！");
-                        return;
-                    }
+                    if (idxDay === -1 || idxDate === -1) return;
                     
-                    // 2. 巡檢下方每一列（最多處理 4 天）
+                    const tabsContainer = document.getElementById('dynamic-tabs');
+                    const timelineContainer = document.getElementById('timeline-container');
+                    if (!tabsContainer || !timelineContainer) return;
+                    
+                    // 清空原有內容，準備重新生成
+                    tabsContainer.innerHTML = '';
+                    timelineContainer.innerHTML = '';
+                    dynamicDayIdList = []; // 重置天數列表
+                    
                     for (let i = 1; i < lines.length; i++) {
                         let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                         cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
                         
                         if (cols.length < headers.length) continue;
                         
-                        // 取得 Day 資料 (例如: "1" 或 "Day 1")
                         let rawDay = cols[idxDay];
+                        let rawDate = cols[idxDate] || '';
                         if (!rawDay) continue;
                         
-                        // 取得日期資料 (例如: "2026/10/01" 或 "10/01")
-                        let rawDate = cols[idxDate] || '';
-                        
-                        // ⚡ 日期格式化邏輯：去除年份，只保留 月/日
+                        // ⚡ 日期格式化 (2026/10/01 -> 10/1)
                         let cleanDate = rawDate;
                         if (rawDate.includes('/')) {
                             const parts = rawDate.split('/');
-                            // 如果是 "2026/10/01" (3碼)，取後兩碼變成 "10/01"
-                            if (parts.length === 3) {
-                                cleanDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
-                            } else if (parts.length === 2) {
-                                cleanDate = `${parseInt(parts[0])}/${parseInt(parts[1])}`;
-                            }
+                            if (parts.length === 3) cleanDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+                            else if (parts.length === 2) cleanDate = `${parseInt(parts[0])}/${parseInt(parts[1])}`;
                         }
                         
-                        // ⚡ 天數轉換邏輯：確保如果是純數字 "1" 會變成 "Day 1"
+                        // ⚡ 天數格式化
                         let cleanDay = rawDay.toLowerCase();
+                        let pureNum = cleanDay.replace(/[^0-9]/g, '');
                         if (/^[0-9]+$/.test(cleanDay)) {
                             cleanDay = 'Day ' + cleanDay;
                         } else if (cleanDay.startsWith('d')) {
-                            cleanDay = 'Day ' + cleanDay.replace(/[^0-9]/g, '');
+                            cleanDay = 'Day ' + pureNum;
                         } else {
-                            cleanDay = rawDay; // 其他格式保持原樣
+                            cleanDay = rawDay;
                         }
                         
-                        // 🚀 將格式化後的資料，動態塞進對應的 HTML 元素中（依迴圈 i 的順序對應 d1, d2, d3, d4）
-                        const dateEl = document.getElementById(`text-date-d${i}`);
-                        const dayEl = document.getElementById(`text-day-d${i}`);
+                        // 生成完美匹配的目標 ID (例如: day-d1, day-d2)
+                        const dId = `day-d${pureNum}`;
+                        dynamicDayIdList.push(dId);
+                        const isFirst = (dynamicDayIdList.length === 1);
                         
-                        if (dateEl) dateEl.textContent = cleanDate;
-                        if (dayEl) dayEl.textContent = cleanDay;
+                        // 生成動態按鈕樣式
+                        let buttonHtml = '';
+                        if (isFirst) {
+                            buttonHtml = `
+                                <button onclick="switchDay('${dId}')" id="btn-${dId}" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
+                                    <span class="text-[17px] opacity-90 pointer-events-none">${cleanDate}</span>
+                                    <span class="text-[10px] font-cute mt-0.5 pointer-events-none">${cleanDay}</span>
+                                </button>
+                            `;
+                        } else {
+                            buttonHtml = `
+                                <button onclick="switchDay('${dId}')" id="btn-${dId}" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                                    <span class="text-[17px] opacity-70 pointer-events-none">${cleanDate}</span>
+                                    <span class="text-[10px] font-cute mt-0.5 pointer-events-none">${cleanDay}</span>
+                                </button>
+                            `;
+                        }
+                        tabsContainer.insertAdjacentHTML('beforeend', buttonHtml);
+                        
+                        // 同步生成行程放置的大盒子，第一天預設顯示，其他預設 hidden 隱藏
+                        const displayClass = isFirst ? "day-timeline space-y-1" : "day-timeline space-y-1 hidden";
+                        const containerHtml = `<div id="${dId}" class="${displayClass}"></div>`;
+                        timelineContainer.insertAdjacentHTML('beforeend', containerHtml);
                     }
                 }
+                
+                // 渲染原本摘要的其他純文字
+                renderSummary(csvText);
             } catch (error) {
-                console.error("摘要雲端讀取異常", error);
+                console.error("摘要動態生成異常", error);
             }
         }
 
@@ -482,50 +513,44 @@
         }
         
         // 切換頁籤
+        // 修改後的動態相容版頁籤切換
         function switchTab(tabName) {
-            // 在切換前，先記下「當前正在看的頁面」
             const currentActiveEl = document.querySelector('.tab-content:not(.hidden)');
             const prevTab = currentActiveEl ? currentActiveEl.id.replace('page-', '') : '';
-
+            
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`page-${tabName}`).classList.remove('hidden');
             
-            document.querySelectorAll('.nav-btn').forEach(btn => { 
-                btn.classList.remove('text-fuji-primary', 'text-fuji-accent'); 
-                btn.classList.add('text-fuji-secondary'); 
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-fuji-primary', 'text-fuji-accent');
+                btn.classList.add('text-fuji-secondary');
             });
-
+            
             const activeNav = document.getElementById(`nav-${tabName}`);
             if (activeNav) {
-                activeNav.classList.remove('text-fuji-secondary'); 
+                activeNav.classList.remove('text-fuji-secondary');
                 activeNav.classList.add('text-fuji-accent');
             }
-
-            // 控制天數方格容器的顯示與隱藏
+            
             const dayBox = document.getElementById('sticky-day-container');
             if (dayBox) {
                 if (tabName === 'plan' || tabName === 'guide') {
-                    dayBox.style.display = ''; // 行程或地圖頁面顯示日期方格
-                    
-                    // 如果是從「其他頁籤（購物、錢包、準備、資訊）」點擊切換回「行程或地圖」強制回第一天！
+                    dayBox.style.display = ''; 
+                    // 切換回來時，防呆回到動態抓到的第一天
                     if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide') {
-                        if (typeof switchDay === 'function') {
-                            switchDay('day-d1');
+                        if (dynamicDayIdList.length > 0) {
+                            switchDay(dynamicDayIdList[0]);
                         }
                     }
                 } else {
-                    dayBox.style.display = 'none'; // 其餘頁面隱藏日期方格
+                    dayBox.style.display = 'none'; 
                 }
             }
             
-            if(tabName === 'shopping') 
-                fetchCloudShopping();  // 讀取購物清單
-            if(tabName === 'wallet') 
-                renderExpenses();  // 讀取記帳清單
-            if(tabName === 'lists') 
-                fetchCloudChecklist(); // 讀取行李清單
+            if(tabName === 'shopping') fetchCloudShopping();
+            if(tabName === 'wallet') renderExpenses();
+            if(tabName === 'lists') fetchCloudChecklist();
             
-            // 修正滾動問題
             if (tabName === 'plan') {
                 window.scrollTo({ top: 0, behavior: 'instant' });
             } else {
@@ -544,17 +569,23 @@
             // 2. 顯示點選的 Day 容器
             const targetEl = document.getElementById(dayId);
             if (targetEl) targetEl.classList.remove('hidden');
-
+            
             // 3. 還原所有頁籤按鈕為「未選取」的淡色正方形樣式
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight";
             });
-
+            
             // 4. 精準將當前點選的按鈕切換為「深藍色選取」樣式
             const activeBtn = document.getElementById('btn-' + dayId);
             if (activeBtn) {
                 activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
             }
+
+            // 🎯 需求新增：切換天數時，頁面立刻強制回到最上方
+            window.scrollTo({
+                top: 0,
+                behavior: 'instant'
+            });
         }
 
         // 行程時間軸卡片
@@ -562,40 +593,42 @@
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
-                parseAndRenderCSV(csvText);
-                document.getElementById('loading-status').classList.add('hidden');
-            } catch (error) { console.error(error); }
+                
+                // 延遲一下下確保 fetchCloudSummary 的容器都已經動態生出來了
+                setTimeout(() => {
+                    parseAndRenderCSV(csvText);
+                    const loader = document.getElementById('loading-status');
+                    if (loader) loader.classList.add('hidden');
+                }, 100);
+                
+            } catch (error) {
+                console.error("行程讀取失敗", error);
+            }
         }
 
         // 行程時間軸
         function parseAndRenderCSV(csvText) {
             const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-            if(lines.length <= 1) 
-                return;
+            if(lines.length <= 1) return;
             
-            // 修正：確實將第一列所有標題的外包引號徹底清除
             const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
             
-            document.getElementById('day-d1').innerHTML = '';
-            document.getElementById('day-d2').innerHTML = '';
-            document.getElementById('day-d3').innerHTML = '';
-            document.getElementById('day-d4').innerHTML = '';
+            // 🔥 動態清洗：自動抓出畫面上所有生出來的天數大盒子，並將裡面的內容清空
+            document.querySelectorAll('.day-timeline').forEach(el => {
+                el.innerHTML = '';
+            });
 
             for (let i = 1; i < lines.length; i++) {
-                // 精準切分每行 CSV 欄位
                 let currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                // 清洗每個欄位開頭與結尾的引號
                 currentLine = currentLine.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
-                
-                if(currentLine.length < headers.length) 
-                    continue;
+                if(currentLine.length < headers.length) continue;
                 
                 let row = {};
-                headers.forEach((header, index) => { row[header] = currentLine[index]; });
-                
-                // 防呆修正：支援帶有引號或去引號後的標題欄位檢查
-                if(!row['標題'] && !row['時間起']) 
-                    continue;
+                headers.forEach((header, index) => {
+                    row[header] = currentLine[index];
+                });
+
+                if(!row['標題'] && !row['時間起']) continue;
                 renderTimelineCard(row);
             }
         }
