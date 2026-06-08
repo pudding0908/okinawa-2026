@@ -327,11 +327,11 @@
             history.scrollRestoration = 'manual';
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const editBtn = document.getElementById('edit-sheet-btn');
             if (editBtn) editBtn.href = SHEET_EDIT_URL;
             fetchCloudTheme();  // 1.「主題」抓取主題與時間
-            fetchCloudSummary(); // 2.「摘要」抓天數按鈕的日期與 Day 數字
+            await fetchCloudSummary(); // 2.「摘要」抓天數按鈕的日期與 Day 數字（需先完成再放行程）
 
             // tab1.行程
             fetchTravelPlan();  // 行程時間軸卡片
@@ -491,8 +491,6 @@
                     }
                 }
                 
-                // 渲染原本摘要的其他純文字
-                renderSummary(csvText);
             } catch (error) {
                 console.error("摘要動態生成異常", error);
             }
@@ -593,14 +591,9 @@
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const csvText = await response.text();
-                
-                // 延遲一下下確保 fetchCloudSummary 的容器都已經動態生出來了
-                setTimeout(() => {
-                    parseAndRenderCSV(csvText);
-                    const loader = document.getElementById('loading-status');
-                    if (loader) loader.classList.add('hidden');
-                }, 100);
-                
+                parseAndRenderCSV(csvText);
+                const loader = document.getElementById('loading-status');
+                if (loader) loader.classList.add('hidden');
             } catch (error) {
                 console.error("行程讀取失敗", error);
             }
@@ -1405,113 +1398,6 @@
                     <div class="text-center py-8 text-sm text-fuji-accent font-medium">
                         <i class="fa-solid fa-triangle-exclamation mr-1"></i> 無法從雲端同步「準備」分頁資料，請確認雲端分頁名稱確實為「準備」。
                     </div>`;
-            }
-        }
-
-        // 行李打勾狀態切換處理
-        function toggleCheck(id) {
-            const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
-            
-            globalChecklistItems = globalChecklistItems.map(item => {
-                if (item.id === id) {
-                    const nextState = !item.checked;
-                    userCheckedStates[id] = nextState; 
-                    return { ...item, checked: nextState };
-                }
-                return item;
-            });
-            
-            localStorage.setItem('ok_checklist_user_checked', JSON.stringify(userCheckedStates));
-            renderChecklist(globalChecklistItems);
-        }
-
-        // 抓取「準備」清單資料
-        function renderChecklist(items) {
-            const container = document.getElementById('checklist-container'); 
-            if (!container) return; 
-            container.innerHTML = '';
-            
-            if (!items || items.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-sm text-fuji-secondary font-medium">✨ 雲端清單中尚無任何準備項目。</div>`;
-                return;
-            }
-
-            // 第一層分組：依 B 欄大分類(區域) 分組
-            const categoryGroups = {};
-            items.forEach(item => {
-                const cat = item.category;
-                if (!categoryGroups[cat]) categoryGroups[cat] = [];
-                categoryGroups[cat].push(item);
-            });
-
-            for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
-                const isCollapsed = checklistCollapsedCategories[categoryName] === true;
-                
-                // 箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
-                const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
-                const doneCount = catItems.filter(i => i.checked).length;
-
-                let catHtml = `
-                    <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden bg-white">
-                        <div onclick="toggleChecklistCategoryCollapse('${categoryName}')" class="bg-fuji-primary px-3.5 py-2 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <div class="w-7 h-7 bg-white/10 rounded-md flex items-center justify-center text-white overflow-hidden font-bold text-sm flex-shrink-0">
-                                    <i class="fa-solid fa-briefcase text-fuji-light"></i>
-                                </div>
-                                <div class="flex flex-col text-left">
-                                    <span class="font-extrabold text-base text-white tracking-wide truncate">${categoryName}</span>
-                                    <span class="text-[13px] text-fuji-light/90 font-medium -mt-0.5">已完成 ${doneCount} / ${catItems.length} 件項目</span>
-                                </div>
-                            </div>
-                            <div class="text-white pr-1 text-[10px]">
-                                <i class="fa-solid ${arrowIcon} text-sm text-white"></i>
-                            </div>
-                        </div>
-                        <div class="${isCollapsed ? 'hidden' : ''} p-3.5 space-y-4">`;
-
-                // 第二層分組：依 C 欄次分類(類型) 分組
-                const typeGroups = {};
-                catItems.forEach(item => {
-                    const t = item.type ? item.type.trim() : "";
-                    if (!typeGroups[t]) typeGroups[t] = [];
-                    typeGroups[t].push(item);
-                });
-
-                for (const [typeName, subItems] of Object.entries(typeGroups)) {
-                    const isDefaultGroup = (typeName === "");
-                    catHtml += `
-                        <div class="space-y-2.5">
-                            <div class="flex items-center gap-1.5 text-sm font-bold ${isDefaultGroup ? 'text-fuji-secondary/60' : 'text-fuji-accent bg-amber-500/5 px-2 py-0.5 rounded w-fit text-[14px]'}">
-                                <i class="fa-solid ${isDefaultGroup ? 'fa-circle-notch text-[14px]' : 'fa-folder-open'}"></i>
-                                <span>${isDefaultGroup ? '一般準備項目' : typeName}</span>
-                            </div>
-                            <div class="pl-1 space-y-3">`;
-
-                    subItems.forEach(item => {
-                        const isChecked = item.checked === true;
-                        
-                        // 清單勾選完成（isChecked 為 true）時，將備註 (item.note) 一併隱藏不渲染
-                        let noteHtml = '';
-                        if (item.note && !isChecked) {
-                            noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
-                        }
-
-                        catHtml += `
-                            <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
-                                        <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
-                                    </div>
-                                    ${noteHtml}
-                                </div>
-                            </label>`;
-                    });
-                    catHtml += `</div></div>`;
-                }
-                catHtml += `</div></div>`;
-                container.innerHTML += catHtml;
             }
         }
 
