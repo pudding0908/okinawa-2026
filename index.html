@@ -94,8 +94,8 @@
     </style>
 </head>
 
-<body class="font-sans min-h-screen flex justify-center">
-    <div class="w-full max-w-md bg-fuji-bg min-h-screen shadow-xl relative flex flex-col">
+<body class="font-sans h-screen overflow-hidden flex justify-center">
+    <div class="w-full max-w-md bg-fuji-bg h-screen overflow-hidden shadow-xl relative flex flex-col">
         <div class="sticky top-0 z-50 bg-fuji-bg w-full">
             <!--大標題(旅遊主題、旅遊時間)-->
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
@@ -172,9 +172,9 @@
                 </h2>
                 
                 <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
-                    <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/40 hover:bg-fuji-light/70 px-3 py-2 flex justify-between items-center cursor-pointer select-none transition-all">
-                        <div class="text-[15px] font-bold text-fuji-primary"><i class="fa-solid fa-pen-nib mr-1"></i>新增商品品項</div>
-                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform text-fuji-primary"></i>
+                    <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-xl px-2 py-1.5 flex items-center justify-between cursor-pointer select-none transition-all shadow-2xs">
+                        <div class="text-[15px] font-bold text-fuji-dark"><i class="fa-solid fa-pen-nib mr-1 text-fuji-primary"></i>新增商品品項</div>
+                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] ml-1 transition-transform"></i>
                     </div>
                     
                     <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50 hidden">
@@ -380,14 +380,14 @@
         </main>
 
         <!-- tab總覽 -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-2.5 z-50 shadow-lg rounded-t-xl px-1">
-            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[11px] font-bold mt-0.5">行程</span></button>
-            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[11px] font-bold mt-0.5">交通</span></button>
-            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[11px] font-bold mt-0.5">購物</span></button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[11px] font-bold mt-0.5">錢包</span></button>
-            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[11px] font-bold mt-0.5">準備</span></button>
-            <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cloud-sun text-sm"></i><span class="text-[11px] font-bold mt-0.5">天氣</span></button>
-            <button onclick="switchTab('map')" id="nav-map" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[11px] font-bold mt-0.5">地圖</span></button>
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-4 z-50 shadow-lg rounded-t-xl px-1">
+            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[13px] font-bold mt-0.5">行程</span></button>
+            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[13px] font-bold mt-0.5">交通</span></button>
+            <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cloud-sun text-sm"></i><span class="text-[13px] font-bold mt-0.5">天氣</span></button>
+            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[13px] font-bold mt-0.5">購物</span></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[13px] font-bold mt-0.5">錢包</span></button>
+            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[13px] font-bold mt-0.5">準備</span></button>
+            <button onclick="switchTab('map')" id="nav-map" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[13px] font-bold mt-0.5">地圖</span></button>
         </nav>
     </div>
 
@@ -1698,8 +1698,7 @@
 
             for (const [categoryName, catItems] of Object.entries(categoryGroups)) {
                 const isCollapsed = checklistCollapsedCategories[categoryName] === true;
-                
-                // 修正箭頭 Icon 變化邏輯，收合時向右 (fa-caret-right)，展開時向下 (fa-caret-down)
+
                 const arrowIcon = isCollapsed ? 'fa-caret-right' : 'fa-caret-down';
                 const doneCount = catItems.filter(i => i.checked).length;
 
@@ -1895,12 +1894,20 @@
                 if (!resp.ok) throw new Error();
                 const rows = parseCSVToRows(await resp.text());
                 parseWeatherSheetRows(rows);
-                await Promise.allSettled(wxState.places.map(async p => {
-                    try { wxState.weatherData[p] = await fetchWxForPlace(p); } catch(e) {}
-                }));
+                // 立即標記可顯示，不等 API 回來
                 wxState.loaded = true;
                 const wxPage = document.getElementById('page-weather');
                 if (wxPage && !wxPage.classList.contains('hidden')) renderWeatherForCurrentDay();
+                // 各城市平行抓取，抓到就更新畫面
+                wxState.places.forEach(async p => {
+                    try {
+                        wxState.weatherData[p] = await fetchWxForPlace(p);
+                        const pg = document.getElementById('page-weather');
+                        if (pg && !pg.classList.contains('hidden')) {
+                            renderWeatherDisplay();
+                        }
+                    } catch(e) {}
+                });
             } catch(e) {
                 console.error('天氣載入失敗', e);
             }
@@ -1920,9 +1927,9 @@
             const num = parseInt(currentDayPureNum) || 1;
             const dayPlaces = [...new Set((wxState.weatherDays[num] || []).map(w => w.place).filter(Boolean))];
             const disp = dayPlaces.length > 0 ? dayPlaces : wxState.places;
-            buildWxCityTabs(disp);
             const firstIdx = wxState.places.indexOf(disp[0]);
             wxState.curCity = firstIdx >= 0 ? firstIdx : 0;
+            buildWxCityTabs(disp);
             renderWeatherDisplay();
         }
 
@@ -2093,12 +2100,12 @@
                 const name = fc(r,cName,0), logo = fc(r,cLogo,1), img = fc(r,cImg,2), url = fc(r,cUrl,-1);
                 if (!name) continue;
                 const logoHtml = logo
-                    ? `<div class="map-logo"><img src="${gdriveUrl(logo)}" alt="${name}" onerror="this.parentElement.textContent='🗺️'"></div>`
-                    : `<div class="map-logo">🗺️</div>`;
+                    ? `<div class="w-10 h-10 bg-white/15 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/20"><img src="${gdriveUrl(logo)}" alt="${name}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.textContent='🗺️'"></div>`
+                    : `<div class="w-10 h-10 bg-white/15 rounded-md flex items-center justify-center text-white text-xl flex-shrink-0">🗺️</div>`;
                 const imgHtml = img
                     ? `<div class="map-img-box" id="map-img-${i}"><img src="${gdriveUrl(img)}" alt="${name}" loading="lazy" onclick="event.stopPropagation();openLightbox('${img}')" onerror="this.parentElement.style.display='none'"></div>`
                     : '';
-                h += `<div class="map-card"><div class="map-card-hdr" onclick="toggleMap(${i})">${logoHtml}<div class="map-name">${name}</div><div class="map-chevron" id="map-chev-${i}">▼</div></div>${imgHtml}</div>`;
+                h += `<div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-md overflow-hidden mb-2.5"><div onclick="toggleMap(${i})" class="bg-fuji-primary px-3 py-2.5 flex justify-between items-center cursor-pointer hover:bg-fuji-dark select-none transition-all"><div class="flex items-center gap-2.5 min-w-0">${logoHtml}<span class="font-extrabold text-[17px] text-white tracking-wide truncate">${name}</span></div><i class="fa-solid fa-caret-right text-sm text-white" id="map-chev-${i}"></i></div>${imgHtml}</div>`;
             }
             if (!h) h = '<div class="text-center py-4 text-xs text-fuji-secondary">尚無地圖資料</div>';
             container.innerHTML = h;
@@ -2108,8 +2115,11 @@
             const box  = document.getElementById('map-img-' + i);
             const chev = document.getElementById('map-chev-' + i);
             if (!box) return;
+            const wasExpanded = box.classList.contains('show');
             box.classList.toggle('show');
-            if (chev) chev.classList.toggle('open');
+            if (chev) chev.className = wasExpanded
+                ? 'fa-solid fa-caret-right text-sm text-white'
+                : 'fa-solid fa-caret-down text-sm text-white';
         }
 
         function openLightbox(src) {
