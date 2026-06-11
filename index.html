@@ -133,17 +133,17 @@
             </div> -->
         </div>
         
-        <main class="flex-1 p-3 pb-20 overflow-y-auto">
+        <main class="flex-1 p-3 pb-28 overflow-y-auto">
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block">
-                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
-                    <i class="fa-solid fa-route text-fuji-accent"></i> 行程時光軸
+                <h2 id="plan-day-title" class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-route text-fuji-accent"></i> <span id="plan-title-text">行程時光軸</span>
                 </h2>
 
                 <div id="loading-status" class="text-center py-12 text-xs text-fuji-secondary font-medium">
                     <i class="fa-solid fa-water fa-bounce mr-2 text-fuji-primary"></i>輕輕划向雲端手帳中...
                 </div>
-                
+
                 <!-- 行程時間軸卡片容器 -->
                 <div id="timeline-container" class="space-y-1"></div>
                 <!-- <div id="timeline-container" class="space-y-1">
@@ -333,6 +333,11 @@
                 <div id="wx-loading" class="text-center py-12 text-xs text-fuji-secondary font-medium">
                     <i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>載入天氣資訊中...
                 </div>
+                <div id="wx-no-data" class="hidden text-center py-12 text-fuji-secondary">
+                    <i class="fa-solid fa-cloud-slash text-3xl mb-2 text-fuji-secondary/40"></i>
+                    <div class="text-sm font-bold mt-2">本日無天氣資訊</div>
+                    <div class="text-xs mt-1 text-fuji-secondary/60">此日期尚未在天氣表設定地點</div>
+                </div>
                 <div id="wx-content" class="hidden">
                     <div id="wx-city-tabs" class="city-tabs" style="display:none"></div>
                     <div class="wx-hero">
@@ -380,7 +385,7 @@
         </main>
 
         <!-- tab總覽 -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-4 z-50 shadow-lg rounded-t-xl px-1">
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-4 z-50 shadow-lg rounded-t-xl px-1" style="padding-bottom:max(1rem,env(safe-area-inset-bottom))">
             <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[13px] font-bold mt-0.5">行程</span></button>
             <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[13px] font-bold mt-0.5">交通</span></button>
             <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cloud-sun text-sm"></i><span class="text-[13px] font-bold mt-0.5">天氣</span></button>
@@ -518,9 +523,10 @@
                 
                 if (lines.length > 1) {
                     const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
-                    const idxDay  = headers.indexOf('Day');
-                    const idxDate = headers.indexOf('日期');
-                    
+                    const idxDay   = headers.indexOf('Day');
+                    const idxDate  = headers.indexOf('日期');
+                    const idxTitle = headers.indexOf('標題');
+
                     if (idxDay === -1 || idxDate === -1) return;
                     
                     const tabsContainer = document.getElementById('dynamic-tabs');
@@ -565,7 +571,8 @@
                         const dId = `day-d${pureNum}`;
                         dynamicDayIdList.push(dId);
                         const isFirst = (dynamicDayIdList.length === 1);
-                        dynamicDayDateMap[pureNum] = { date: rawDate, dateShort: cleanDate };
+                        const rawTitle = idxTitle >= 0 ? (cols[idxTitle] || '') : '';
+                        dynamicDayDateMap[pureNum] = { date: rawDate, dateShort: cleanDate, title: rawTitle };
                         if (isFirst) currentDayPureNum = pureNum;
                         
                         // 生成動態按鈕樣式
@@ -599,8 +606,17 @@
                             transContainer.insertAdjacentHTML('beforeend', `<div id="trans-d${pureNum}" class="${transClass}"></div>`);
                         }
                     }
+
+                    // 初始化第一天標題
+                    if (currentDayPureNum) {
+                        const planTitleText = document.getElementById('plan-title-text');
+                        if (planTitleText) {
+                            const t = dynamicDayDateMap[currentDayPureNum]?.title || '';
+                            planTitleText.textContent = t || '行程時光軸';
+                        }
+                    }
                 }
-                
+
             } catch (error) {
                 console.error("摘要動態生成異常", error);
             }
@@ -695,6 +711,12 @@
                 activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
             }
 
+            const planTitleText = document.getElementById('plan-title-text');
+            if (planTitleText) {
+                const t = dynamicDayDateMap[pureNum]?.title || '';
+                planTitleText.textContent = t || '行程時光軸';
+            }
+
             const mainEl = document.querySelector('main');
             if (mainEl) mainEl.scrollTop = 0;
             const wxPage = document.getElementById('page-weather');
@@ -739,6 +761,13 @@
                 if(!row['標題'] && !row['時間起']) continue;
                 renderTimelineCard(row);
             }
+
+            // 若某天容器仍為空，顯示「本日無行程安排」
+            document.querySelectorAll('.day-timeline').forEach(el => {
+                if (!el.innerHTML.trim()) {
+                    el.innerHTML = '<div class="text-center py-10 text-sm text-fuji-secondary/70"><i class="fa-regular fa-calendar-xmark text-2xl mb-2 block text-fuji-secondary/30"></i>本日無行程安排</div>';
+                }
+            });
         }
 
         // 行程小卡內容配置
@@ -850,8 +879,8 @@
                     <div class="flex flex-col items-center flex-shrink-0 w-3 relative">
                         <div class="absolute top-0 bottom-0 w-0.5 bg-fuji-primary/20 group-last:bottom-auto group-last:h-5"></div>
                         <div class="z-10 w-2.5 h-2.5 rounded-full mt-4 border-2 shadow-2xs transition-all ${
-                            isImportant 
-                            ? 'bg-fuji-accent border-fuji-accent ring-4 ring-fuji-accent/20 animate-pulse' 
+                            isImportant
+                            ? 'bg-fuji-accent border-fuji-accent ring-4 ring-fuji-accent/20 animate-pulse'
                             : 'bg-white border-fuji-primary'
                         }"></div>
                     </div>
@@ -1144,14 +1173,26 @@
                 const submitBtn = document.getElementById('add-shop-btn');
                 submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
 
-                const payload = { store, name, qty, note, link: linkUrl, image: imgUrl };
+                const payload = {
+                    sheetName: '購物',
+                    '店家 LOGO': '',
+                    '店家': store,
+                    '商品': name,
+                    '數量': qty,
+                    '備註': note,
+                    '連結': linkUrl,
+                    '商品圖片': imgUrl
+                };
 
-                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
                 .then(() => {
-                    alert(`🎉 【${name}】已成功同步至雲端！`);
-                    clearShoppingForm(); 
-                    setTimeout(fetchCloudShopping, 2000);
-                }).catch(err => alert('發送失敗')).finally(() => { submitBtn.disabled = false; setPostType('cloud'); });
+                    clearShoppingForm();
+                    alert(`【${name}】已送出，稍後重新整理即可看到。`);
+                    setTimeout(fetchCloudShopping, 3000);
+                }).catch(() => alert('網路發送失敗，請重試。')).finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
+                });
             }
         }
 
@@ -1170,20 +1211,28 @@
         // 購物清單 (改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
         async function fetchCloudShopping() {
             try {
-                const response = await fetch(SHOPPING_CSV_URL);
-                if (!response.ok) throw new Error();
+                const response = await fetch(SHOPPING_CSV_URL + '&nocache=' + Date.now());
+                if (!response.ok) throw new Error('http ' + response.status);
                 const csvText = await response.text();
-                
-                // 清除 Google 導出可能帶有的隱形 BOM 字元
-                const cleanCsvText = csvText.replace(/^\uFEFF/g, '');
-                const lines = cleanCsvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+
+                // 偵測 HTML 錯誤頁（非 CSV）
+                const trimmed = csvText.replace(/^﻿/, '').trim();
+                if (trimmed.startsWith('<')) {
+                    console.error('購物資料來源回傳非CSV');
+                    renderCombinedShoppingList();
+                    return;
+                }
+                const lines = trimmed.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
                 cloudShoppingItems = [];
-                
+
                 if (lines.length > 1) {
-                    // 1. 抓取第一列標題，並清洗外層雙引號
-                    const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
-                    
-                    // 2. 自動找出各個欄位名稱對應的索引位置 (Index)
+                    // 標題列偵測：往前3列找含「商品」欄位的列
+                    let hdrIdx = 0;
+                    for (let k = 0; k < Math.min(3, lines.length); k++) {
+                        if (lines[k].includes('商品')) { hdrIdx = k; break; }
+                    }
+                    const headers = lines[hdrIdx].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+
                     const idxLogo  = headers.indexOf('店家 LOGO');
                     const idxStore = headers.indexOf('店家');
                     const idxName  = headers.indexOf('商品');
@@ -1192,37 +1241,35 @@
                     const idxLink  = headers.indexOf('連結');
                     const idxImg   = headers.indexOf('商品圖片');
 
-                    // 3. 安全防呆：如果最重要的「商品」欄位字眼都找不到，就無法解析
                     if (idxName === -1) {
-                        console.error("購物試算表中找不到『商品』欄位名稱！");
+                        console.error("購物試算表中找不到商品欄位！");
                         renderCombinedShoppingList();
                         return;
                     }
 
-                    for (let i = 1; i < lines.length; i++) {
-                        let currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        currentLine = currentLine.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
-                        
-                        if (currentLine.length < headers.length) continue;
+                    const safeCol = (cols, idx) => idx >= 0 && idx < cols.length ? (cols[idx] || '') : '';
 
-                        // 4. 利用動態索引安全抓取資料，若欄位不存在則回傳空字串
-                        const itemName = idxName !== -1 ? currentLine[idxName] : '';
-                        if (!itemName) continue; // 沒有品項名稱就跳過
+                    for (let i = hdrIdx + 1; i < lines.length; i++) {
+                        let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
 
-                        const storeName = (idxStore !== -1 && currentLine[idxStore]) ? currentLine[idxStore] : '其他待辦';
-                        if (shoppingCollapsedStores[storeName] === undefined) {
-                            shoppingCollapsedStores[storeName] = true;
-                        }
+                        const itemName = safeCol(cols, idxName);
+                        if (!itemName) continue;
 
+                        const storeName = safeCol(cols, idxStore) || '其他待辦';
+                        if (shoppingCollapsedStores[storeName] === undefined) shoppingCollapsedStores[storeName] = true;
+
+                        const logoRaw = safeCol(cols, idxLogo);
+                        const imgRaw  = safeCol(cols, idxImg);
                         cloudShoppingItems.push({
                             id: 'cloud-' + i,
-                            logo: (idxLogo !== -1 && currentLine[idxLogo]) ? parseImageUrl(currentLine[idxLogo]) : '',
+                            logo: logoRaw ? parseImageUrl(logoRaw) : '',
                             store: storeName,
                             name: itemName,
-                            qty: idxQty !== -1 ? (parseInt(currentLine[idxQty]) || 1) : 1,
-                            note: idxNote !== -1 ? (currentLine[idxNote] || '').substring(0, 40) : '',
-                            link: (idxLink !== -1 && currentLine[idxLink]) ? currentLine[idxLink] : '',
-                            image: (idxImg !== -1 && currentLine[idxImg]) ? parseImageUrl(currentLine[idxImg]) : '',
+                            qty: parseInt(safeCol(cols, idxQty)) || 1,
+                            note: safeCol(cols, idxNote).substring(0, 40),
+                            link: safeCol(cols, idxLink),
+                            image: imgRaw ? parseImageUrl(imgRaw) : '',
                             isCloud: true
                         });
                     }
@@ -1882,10 +1929,20 @@
         }
 
         async function fetchWxForPlace(place) {
+            const cacheKey = 'wx_' + place;
+            try {
+                const hit = localStorage.getItem(cacheKey);
+                if (hit) {
+                    const { payload, ts } = JSON.parse(hit);
+                    if (Date.now() - ts < 1800000) return payload; // 30 分鐘快取
+                }
+            } catch(e) {}
             const c = resolveWxCoords(place);
             const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,relativehumidity_2m,uv_index&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&forecast_days=8`);
             if (!r.ok) throw new Error('wx');
-            return { coords: c, data: await r.json() };
+            const payload = { coords: c, data: await r.json() };
+            try { localStorage.setItem(cacheKey, JSON.stringify({ payload, ts: Date.now() })); } catch(e) {}
+            return payload;
         }
 
         async function fetchCloudWeather() {
@@ -1916,20 +1973,29 @@
         function renderWeatherForCurrentDay() {
             const loader  = document.getElementById('wx-loading');
             const content = document.getElementById('wx-content');
+            const noData  = document.getElementById('wx-no-data');
             if (!wxState.loaded) {
                 if (loader) loader.classList.remove('hidden');
                 if (content) content.classList.add('hidden');
+                if (noData) noData.classList.add('hidden');
                 return;
             }
             if (loader) loader.classList.add('hidden');
-            if (content) content.classList.remove('hidden');
 
             const num = parseInt(currentDayPureNum) || 1;
             const dayPlaces = [...new Set((wxState.weatherDays[num] || []).map(w => w.place).filter(Boolean))];
-            const disp = dayPlaces.length > 0 ? dayPlaces : wxState.places;
-            const firstIdx = wxState.places.indexOf(disp[0]);
+
+            if (dayPlaces.length === 0) {
+                if (noData) noData.classList.remove('hidden');
+                if (content) content.classList.add('hidden');
+                return;
+            }
+
+            if (noData) noData.classList.add('hidden');
+            if (content) content.classList.remove('hidden');
+            const firstIdx = wxState.places.indexOf(dayPlaces[0]);
             wxState.curCity = firstIdx >= 0 ? firstIdx : 0;
-            buildWxCityTabs(disp);
+            buildWxCityTabs(dayPlaces);
             renderWeatherDisplay();
         }
 
