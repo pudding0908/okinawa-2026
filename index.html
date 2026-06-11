@@ -38,6 +38,59 @@
         body { background-color: #F3F7FA; color: #2B4251; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* ─ weather & map ──────────────────────────────────────── */
+        .wx-hero{border-radius:9px;padding:17px;margin-bottom:13px;background:linear-gradient(135deg,#004e72,#006a96 55%,#004262);color:white}
+        .wxcity{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:2px}
+        .wxrow{display:flex;align-items:flex-end;gap:11px;margin-bottom:9px}
+        .wxtemp{font-size:62px;font-weight:700;line-height:1}
+        .wxcond{font-size:15px;color:rgba(255,255,255,.9)}
+        .wxhl{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
+        .wxsts{display:flex;gap:15px;padding-top:9px;border-top:1px solid rgba(255,255,255,.15);flex-wrap:wrap}
+        .wxst{font-size:13px;color:rgba(255,255,255,.6)}
+        .wxst strong{display:block;font-size:17px;font-weight:300;color:white;margin-top:2px}
+        .wxsrc{font-size:11px;color:#8898b0;text-align:right;margin:-5px 0 13px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
+        .wxsrc a{color:#0077a8;text-decoration:none;font-weight:600}
+        .hw{background:white;border:1px solid #dfd0ba;border-radius:9px;margin-bottom:13px;overflow:hidden}
+        .hwhdr{font-size:13px;font-weight:700;color:#3a5272;padding:11px 12px 9px;border-bottom:1px solid #dfd0ba}
+        .hscr{display:flex;overflow-x:auto;scrollbar-width:none;padding:9px 11px 11px}
+        .hscr::-webkit-scrollbar{display:none}
+        .hi{flex-shrink:0;text-align:center;min-width:48px;padding:0 3px}
+        .hitime{font-size:11px;color:#8898b0;margin-bottom:4px}
+        .hiic{font-size:17px;margin-bottom:3px}
+        .hibw{height:26px;display:flex;align-items:flex-end;justify-content:center;margin:3px 0}
+        .hib{width:5px;border-radius:3px 3px 0 0;background:linear-gradient(to top,#0077a8,#e06848);min-height:3px}
+        .hit{font-size:13px;font-weight:600;color:#1e2e48}
+        .hir{font-size:11px;color:#0077a8;margin-top:1px}
+        .wx-sec-ttl{font-size:18px;font-weight:700;color:#1e2e48;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+        .wx-sec-ttl::before{content:'';width:4px;height:15px;background:#c8352a;border-radius:2px;flex-shrink:0}
+        .wx-sec-ttl::after{content:'';flex:1;height:1px;background:#dfd0ba}
+        .fcscr{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-bottom:13px}
+        .fcscr::-webkit-scrollbar{display:none}
+        .fcc{flex-shrink:0;background:white;border:1px solid #dfd0ba;border-radius:7px;padding:10px 8px;text-align:center;min-width:64px}
+        .fcd{font-size:13px;color:#8898b0;margin-bottom:5px;font-weight:600}
+        .fcic{font-size:21px;margin-bottom:3px}
+        .fchi{font-size:13px;font-weight:700;color:#c8352a}
+        .fclo{font-size:13px;color:#0077a8;margin-top:1px}
+        .fcr{font-size:11px;color:#3898b8;margin-top:2px}
+        .adv-card{background:linear-gradient(135deg,#f0f8fd,#e4f2f8);border:1px solid #b8d8e8;border-radius:9px;padding:12px 14px;margin-bottom:13px}
+        .adv-txt{font-size:13px;color:#3a5272;line-height:1.75}
+        .city-tabs{display:flex;gap:0;border:1.5px solid #dfd0ba;border-radius:7px;overflow:hidden;background:#f2eadc;margin-bottom:13px}
+        .ctab{flex:1;padding:9px 3px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;color:#8898b0;transition:all .2s;text-align:center}
+        .ctab.on{background:#0077a8;color:white}
+        .map-card{background:white;border:1px solid #dfd0ba;border-radius:9px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 6px rgba(20,40,70,.1)}
+        .map-card-hdr{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer}
+        .map-logo{width:44px;height:44px;border-radius:8px;border:1px solid #dfd0ba;flex-shrink:0;background:#f2eadc;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+        .map-logo img{width:100%;height:100%;object-fit:cover}
+        .map-name{font-size:17px;font-weight:700;color:#1e2e48;flex:1}
+        .map-chevron{font-size:12px;color:#8898b0;transition:transform .25s;flex-shrink:0}
+        .map-chevron.open{transform:rotate(180deg)}
+        .map-img-box{display:none;border-top:1px solid #dfd0ba}
+        .map-img-box.show{display:block}
+        .map-img-box img{width:100%;height:auto;display:block;cursor:zoom-in}
+        .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;align-items:center;justify-content:center;padding:12px}
+        .lightbox.show{display:flex}
+        .lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
+        .lightbox-close{position:fixed;top:14px;right:16px;color:white;font-size:28px;cursor:pointer;z-index:1000;background:rgba(0,0,0,.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
     </style>
 </head>
 
@@ -58,6 +111,26 @@
                 <div id="dynamic-tabs" class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
                     </div>
             </div>
+            <!-- <div id="sticky-day-container" class="pt-3 px-4 block">
+                <div class="flex flex-nowrap gap-2.5 w-full overflow-x-auto no-scrollbar py-1 justify-start">
+                    <button onclick="switchDay('day-d1')" id="btn-day-d1" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight">
+                        <span class="text-[17px] opacity-90 pointer-events-none"><span id="text-date-d1">10/1</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d1">Day 1</span></span>
+                    </button>
+                    <button onclick="switchDay('day-d2')" id="btn-day-d2" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d2">10/2</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d2">Day 2</span></span>
+                    </button>
+                    <button onclick="switchDay('day-d3')" id="btn-day-d3" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d3">10/3</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d3">Day 3</span></span>
+                    </button>
+                    <button onclick="switchDay('day-d4')" id="btn-day-d4" class="tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-light bg-fuji-paper text-fuji-primary shadow-2xs hover:bg-fuji-light/40 leading-tight">
+                        <span class="text-[17px] opacity-70 pointer-events-none"><span id="text-date-d4">10/4</span></span>
+                        <span class="text-[10px] font-cute mt-0.5 pointer-events-none"><span id="text-day-d4">Day 4</span></span>
+                    </button>
+                </div>
+            </div> -->
         </div>
         
         <main class="flex-1 p-3 pb-20 overflow-y-auto">
@@ -73,6 +146,12 @@
                 
                 <!-- 行程時間軸卡片容器 -->
                 <div id="timeline-container" class="space-y-1"></div>
+                <!-- <div id="timeline-container" class="space-y-1">
+                    <div id="day-d1" class="day-timeline space-y-1"></div>
+                    <div id="day-d2" class="day-timeline space-y-1 hidden"></div>
+                    <div id="day-d3" class="day-timeline space-y-1 hidden"></div>
+                    <div id="day-d4" class="day-timeline space-y-1 hidden"></div>
+                </div> -->
             </section>
 
             <!-- tab2.交通 -->
@@ -246,27 +325,69 @@
                 </div>
             </section>
 
-            <!-- tab6.資訊 -->
-            <section id="page-info" class="tab-content hidden">
+            <!-- tab6.天氣 -->
+            <section id="page-weather" class="tab-content hidden">
                 <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
-                    <i class="fa-solid fa-info-circle text-fuji-accent"></i> 實用旅遊資訊
+                    <i class="fa-solid fa-cloud-sun text-fuji-accent"></i> 天氣預報
                 </h2>
-                <div class="bg-fuji-paper p-5 rounded-xl border border-fuji-light shadow-sm text-center">
-                    <div class="text-3xl text-fuji-primary/30 mb-1"><i class="fa-solid fa-file-signature"></i></div>
-                    <p class="text-xs text-fuji-secondary font-medium mb-3">點擊下方直接開啟 Google 試算表App<br>大家可以一齊即時修改行程喔！</p>
-                    <a id="edit-sheet-btn" href="https://docs.google.com/spreadsheets/d/1H0pLIy9Cg1cMI673vZprheKm-DB6DisVU3U-24Q4Z7Y/edit?gid=398563289#gid=398563289" target="_blank" class="inline-block w-full bg-fuji-accent text-white text-xs font-bold py-2.5 rounded-lg shadow-md hover:bg-opacity-90 transition-all"><i class="fa-solid fa-pen-to-square mr-1"></i>呼叫 Google 試算表線上編輯</a>
+                <div id="wx-loading" class="text-center py-12 text-xs text-fuji-secondary font-medium">
+                    <i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>載入天氣資訊中...
+                </div>
+                <div id="wx-content" class="hidden">
+                    <div id="wx-city-tabs" class="city-tabs" style="display:none"></div>
+                    <div class="wx-hero">
+                        <div class="wxcity" id="wx-city">—</div>
+                        <div class="wxrow">
+                            <div class="wxtemp" id="wx-temp">—°</div>
+                            <div style="padding-bottom:7px">
+                                <div class="wxcond" id="wx-cond">—</div>
+                                <div class="wxhl" id="wx-hl">—</div>
+                            </div>
+                        </div>
+                        <div class="wxsts">
+                            <div class="wxst">濕度<strong id="wx-hum">—</strong></div>
+                            <div class="wxst">降雨<strong id="wx-rain">—</strong></div>
+                            <div class="wxst">風速<strong id="wx-wind">—</strong></div>
+                            <div class="wxst">紫外線<strong id="wx-uv">—</strong></div>
+                        </div>
+                    </div>
+                    <div class="wxsrc">資料來源：<a href="https://tenki.jp" target="_blank" id="tenki-lnk">tenki.jp ↗</a> · Open-Meteo</div>
+                    <div class="hw">
+                        <div class="hwhdr">🕐 每小時氣溫預報</div>
+                        <div class="hscr" id="wx-hourly"></div>
+                    </div>
+                    <div class="wx-sec-ttl">天氣預報</div>
+                    <div class="fcscr" id="wx-forecast"></div>
+                    <div class="wx-sec-ttl">穿衣建議</div>
+                    <div class="adv-card"><div class="adv-txt" id="wx-advice">—</div></div>
+                </div>
+            </section>
+
+            <!-- tab7.地圖 -->
+            <section id="page-map" class="tab-content hidden">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-map-location-dot text-fuji-accent"></i> 景點地圖
+                </h2>
+                <div id="map-loading" class="text-center py-12 text-xs text-fuji-secondary font-medium hidden">
+                    <i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>載入地圖資訊中...
+                </div>
+                <div id="map-content"></div>
+                <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+                    <div class="lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</div>
+                    <img id="lightbox-img" src="" alt="">
                 </div>
             </section>
         </main>
 
         <!-- tab總覽 -->
-        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-1.5 z-50 shadow-lg rounded-t-xl px-1">
-            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[13px] font-bold mt-0.5">行程</span></button>
-            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[13px] font-bold mt-0.5">交通</span></button>
-            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[13px] font-bold mt-0.5">購物</span></button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[13px] font-bold mt-0.5">錢包</span></button>
-            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[13px] font-bold mt-0.5">準備</span></button>
-            <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-circle-info text-sm"></i><span class="text-[13px] font-bold mt-0.5">資訊</span></button>
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-fuji-paper/95 backdrop-blur-md border-t border-fuji-light flex justify-around items-center py-2.5 z-50 shadow-lg rounded-t-xl px-1">
+            <button onclick="switchTab('plan')" id="nav-plan" class="nav-btn flex flex-col items-center text-fuji-accent transition-all"><i class="fa-solid fa-compass text-sm"></i><span class="text-[11px] font-bold mt-0.5">行程</span></button>
+            <button onclick="switchTab('guide')" id="nav-guide" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-train text-sm"></i><span class="text-[11px] font-bold mt-0.5">交通</span></button>
+            <button onclick="switchTab('shopping')" id="nav-shopping" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cart-shopping text-sm"></i><span class="text-[11px] font-bold mt-0.5">購物</span></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[11px] font-bold mt-0.5">錢包</span></button>
+            <button onclick="switchTab('lists')" id="nav-lists" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-check-square text-sm"></i><span class="text-[11px] font-bold mt-0.5">準備</span></button>
+            <button onclick="switchTab('weather')" id="nav-weather" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-cloud-sun text-sm"></i><span class="text-[11px] font-bold mt-0.5">天氣</span></button>
+            <button onclick="switchTab('map')" id="nav-map" class="nav-btn flex flex-col items-center text-fuji-secondary transition-all"><i class="fa-solid fa-map-location-dot text-sm"></i><span class="text-[11px] font-bold mt-0.5">地圖</span></button>
         </nav>
     </div>
 
@@ -280,6 +401,8 @@
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%A1%8C%E7%A8%8B`;  //「行程」資料來源
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;  //「購物」資料來源
         const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%99`;  //「準備」資料來源
+        const WEATHER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%A4%A9%E6%B0%A3`;  //「天氣」資料來源
+        const MAP_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%9C%B0%E5%9C%96`;  //「地圖」資料來源
 
         let cloudShoppingItems = [];
         let currentPostType = 'local'; 
@@ -289,6 +412,11 @@
         let checklistCollapsedCategories = {};
         // 全域儲存從雲端下載並轉化後的準備清單陣列
         let globalChecklistItems = [];
+        let currentDayPureNum = '';
+        let dynamicDayDateMap = {};
+        let mapPageLoaded = false;
+        let wxState = { weatherDays: {}, weatherData: {}, places: [], curCity: 0, loaded: false };
+        let wxPlaceInfo = {};
 
         // 🔄 關閉瀏覽器自動滾動恢復記憶，確保重新載入時完全聽從 JS 的置頂指令
         if ('scrollRestoration' in history) {
@@ -318,8 +446,12 @@
 
             // tab5.準備
             fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
-            
-            // tab6.資訊
+
+            // tab6.天氣
+            fetchCloudWeather();
+
+            // tab7.地圖
+            fetchCloudMap();
         });
 
         // #region 全域--------------------------------------------------------------------------------------
@@ -433,6 +565,8 @@
                         const dId = `day-d${pureNum}`;
                         dynamicDayIdList.push(dId);
                         const isFirst = (dynamicDayIdList.length === 1);
+                        dynamicDayDateMap[pureNum] = { date: rawDate, dateShort: cleanDate };
+                        if (isFirst) currentDayPureNum = pureNum;
                         
                         // 生成動態按鈕樣式
                         let buttonHtml = '';
@@ -508,10 +642,10 @@
             
             const dayBox = document.getElementById('sticky-day-container');
             if (dayBox) {
-                if (tabName === 'plan' || tabName === 'guide') {
-                    dayBox.style.display = ''; 
+                if (tabName === 'plan' || tabName === 'guide' || tabName === 'weather') {
+                    dayBox.style.display = '';
                     // 切換回來時，防呆回到動態抓到的第一天
-                    if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide') {
+                    if (prevTab !== '' && prevTab !== 'plan' && prevTab !== 'guide' && prevTab !== 'weather') {
                         if (dynamicDayIdList.length > 0) {
                             switchDay(dynamicDayIdList[0]);
                         }
@@ -525,11 +659,10 @@
             if(tabName === 'wallet') renderExpenses();
             if(tabName === 'lists') fetchCloudChecklist();
             
-            if (tabName === 'plan') {
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            const mainEl = document.querySelector('main');
+            if (mainEl) mainEl.scrollTop = 0;
+            if (tabName === 'weather') renderWeatherForCurrentDay();
+            if (tabName === 'map') fetchCloudMap();
         }
         // #endregion 全域-----------------------------------------------------------------------------------
 
@@ -546,6 +679,7 @@
 
             // 2b. 同步切換交通頁面的日期容器
             const pureNum = dayId.replace(/[^0-9]/g, '');
+            currentDayPureNum = pureNum;
             document.querySelectorAll('.day-transport').forEach(el => el.classList.add('hidden'));
             const transEl = document.getElementById('trans-d' + pureNum);
             if (transEl) transEl.classList.remove('hidden');
@@ -561,11 +695,10 @@
                 activeBtn.className = "tab-btn w-14 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl transition-all border border-fuji-primary/20 bg-fuji-primary text-white shadow-xs leading-tight";
             }
 
-            // 🎯 需求新增：切換天數時，頁面立刻強制回到最上方
-            window.scrollTo({
-                top: 0,
-                behavior: 'instant'
-            });
+            const mainEl = document.querySelector('main');
+            if (mainEl) mainEl.scrollTop = 0;
+            const wxPage = document.getElementById('page-weather');
+            if (wxPage && !wxPage.classList.contains('hidden')) renderWeatherForCurrentDay();
         }
 
         // 行程時間軸卡片
@@ -1637,8 +1770,357 @@
         // #endregion tab5.準備------------------------------------------------------------------------------
         
 
-        // #region tab6.資訊---------------------------------------------------------------------------------
-        // #endregion tab6.資訊------------------------------------------------------------------------------
+        // #region 工具-CSV解析-----------------------------------------------------------------------
+        function parseCSVToRows(text) {
+            return text.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+                .split('\n').filter(l => l.trim()).map(line => {
+                    const cells = []; let cur = '', inQ = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const ch = line[i];
+                        if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+                        else if (ch === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+                        else cur += ch;
+                    }
+                    cells.push(cur.trim());
+                    return cells;
+                });
+        }
+        // #endregion 工具-CSV解析-------------------------------------------------------------------
+
+
+        // #region tab6.天氣---------------------------------------------------------------------------------
+        function wmo(c) {
+            if (c === 0) return { ic: '☀️', d: '晴天' };
+            if (c <= 2)  return { ic: '🌤', d: '部分多雲' };
+            if (c === 3) return { ic: '☁️', d: '多雲' };
+            if (c <= 49) return { ic: '🌫', d: '霧' };
+            if (c <= 59) return { ic: '🌦', d: '毛毛雨' };
+            if (c <= 69) return { ic: '🌧', d: '雨' };
+            if (c <= 79) return { ic: '🌨', d: '雪' };
+            if (c <= 84) return { ic: '🌧', d: '陣雨' };
+            if (c <= 99) return { ic: '⛈', d: '雷暴' };
+            return { ic: '🌡', d: '—' };
+        }
+
+        const WEATHER_COORDS = {
+            '名古屋':{lat:35.1815,lon:136.9066,name:'名古屋市'},'名古屋市':{lat:35.1815,lon:136.9066,name:'名古屋市'},
+            '愛知':{lat:35.1802,lon:136.9066,name:'愛知縣'},'犬山':{lat:35.3833,lon:136.9333,name:'犬山市'},
+            '犬山市':{lat:35.3833,lon:136.9333,name:'犬山市'},'豊田':{lat:35.0836,lon:137.1561,name:'豊田市'},
+            '岡崎':{lat:34.9589,lon:137.1744,name:'岡崎市'},'一宮':{lat:35.3078,lon:136.8006,name:'一宮市'},
+            '春日井':{lat:35.2476,lon:136.9724,name:'春日井市'},'豊橋':{lat:34.7693,lon:137.3916,name:'豊橋市'},
+            '半田':{lat:34.8939,lon:136.9390,name:'半田市'},'常滑':{lat:34.8839,lon:136.8345,name:'常滑市'},
+            '常滑市':{lat:34.8839,lon:136.8345,name:'常滑市'},'中部機場':{lat:34.8583,lon:136.8050,name:'中部国際空港'},
+            '中部国際空港':{lat:34.8583,lon:136.8050,name:'中部国際空港'},
+            '三重':{lat:34.7303,lon:136.5086,name:'三重縣'},'伊勢':{lat:34.4884,lon:136.7076,name:'伊勢市'},
+            '伊勢市':{lat:34.4884,lon:136.7076,name:'伊勢市'},'志摩':{lat:34.3273,lon:136.8312,name:'志摩市'},
+            '志摩市':{lat:34.3273,lon:136.8312,name:'志摩市'},'鳥羽':{lat:34.4849,lon:136.8437,name:'鳥羽市'},
+            '鳥羽市':{lat:34.4849,lon:136.8437,name:'鳥羽市'},'松阪':{lat:34.5789,lon:136.5274,name:'松阪市'},
+            '松阪市':{lat:34.5789,lon:136.5274,name:'松阪市'},'津':{lat:34.7303,lon:136.5086,name:'津市'},
+            '四日市':{lat:34.9731,lon:136.6244,name:'四日市市'},'桑名':{lat:35.0607,lon:136.6861,name:'桑名市'},
+            '滋賀':{lat:35.0045,lon:135.8686,name:'滋賀縣'},'大津':{lat:35.0045,lon:135.8686,name:'大津市'},
+            '大津市':{lat:35.0045,lon:135.8686,name:'大津市'},'彦根':{lat:35.2752,lon:136.2636,name:'彦根市'},
+            '彦根市':{lat:35.2752,lon:136.2636,name:'彦根市'},'長浜':{lat:35.3811,lon:136.2687,name:'長浜市'},
+            '長浜市':{lat:35.3811,lon:136.2687,name:'長浜市'},'米原':{lat:35.3192,lon:136.2844,name:'米原市'},
+            '近江八幡':{lat:35.1284,lon:136.0985,name:'近江八幡市'},'草津':{lat:35.0156,lon:135.9603,name:'草津市'},
+            '甲賀':{lat:34.9667,lon:136.1667,name:'甲賀市'},'甲賀市':{lat:34.9667,lon:136.1667,name:'甲賀市'},
+            '琵琶湖':{lat:35.2958,lon:136.1253,name:'琵琶湖周邊'},
+            '京都':{lat:35.0116,lon:135.7681,name:'京都市'},'大阪':{lat:34.6937,lon:135.5022,name:'大阪市'},
+            '奈良':{lat:34.6851,lon:135.8048,name:'奈良市'},'東京':{lat:35.6762,lon:139.6503,name:'東京都'},
+            '沖繩':{lat:26.2124,lon:127.6809,name:'沖繩縣'},'那覇':{lat:26.2124,lon:127.6809,name:'那覇市'},
+            '那覇市':{lat:26.2124,lon:127.6809,name:'那覇市'},'恩納':{lat:26.4976,lon:127.8569,name:'恩納村'},
+            '名護':{lat:26.5918,lon:127.9774,name:'名護市'},'宮古島':{lat:24.8056,lon:125.2815,name:'宮古島市'},
+            '石垣':{lat:24.3408,lon:124.1558,name:'石垣市'},'石垣島':{lat:24.3408,lon:124.1558,name:'石垣島'}
+        };
+
+        function resolveWxCoords(place) {
+            if (!place) return WEATHER_COORDS['名古屋'];
+            if (WEATHER_COORDS[place]) return WEATHER_COORDS[place];
+            const clean = place.replace(/[市区町村都道府縣県]/g, '');
+            if (WEATHER_COORDS[clean]) return WEATHER_COORDS[clean];
+            for (const [k, v] of Object.entries(WEATHER_COORDS)) {
+                if (place.includes(k) || k.includes(place) || clean.includes(k) || k.includes(clean)) return v;
+            }
+            return WEATHER_COORDS['名古屋'];
+        }
+
+        function makeTenkiUrl(pref, city) {
+            const q = encodeURIComponent((city || pref || '').replace(/[都道府縣市区町村]/g, ''));
+            return q ? `https://tenki.jp/search/?keyword=${q}` : 'https://tenki.jp/';
+        }
+
+        function parseWeatherSheetRows(rows) {
+            if (!rows || rows.length < 2) return;
+            wxState.weatherDays = {};
+            const hdr = rows[0];
+            const fi = (...keys) => { for (const k of keys) { const i = hdr.findIndex(h => h === k || h.includes(k)); if (i >= 0) return i; } return -1; };
+            const cDay  = fi('Day', 'day', '天');
+            const cPref = fi('都道府縣', '縣', '都', '府', 'prefecture');
+            const cCity = fi('城市', '市', 'city');
+            const cPlc  = fi('地點', 'place');
+            const cTime = fi('時間', 'time');
+            const fc = (r, c, fb) => c >= 0 ? String(r[c] ?? '').trim() : (fb >= 0 ? String(r[fb] ?? '').trim() : '');
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                const dayNum = parseInt(fc(r, cDay, 0));
+                if (isNaN(dayNum) || dayNum < 1) continue;
+                const pref  = fc(r, cPref, -1);
+                const city  = fc(r, cCity, -1);
+                const place = city || pref || fc(r, cPlc, 2);
+                if (!place) continue;
+                if (!wxState.weatherDays[dayNum]) wxState.weatherDays[dayNum] = [];
+                wxState.weatherDays[dayNum].push({ place, pref, city, tenkiUrl: makeTenkiUrl(pref, city) });
+            }
+            const seen = new Set();
+            wxState.places = [];
+            for (const arr of Object.values(wxState.weatherDays))
+                for (const d of arr)
+                    if (d.place && !seen.has(d.place)) {
+                        seen.add(d.place);
+                        wxState.places.push(d.place);
+                        wxPlaceInfo[d.place] = { pref: d.pref, city: d.city, tenkiUrl: d.tenkiUrl };
+                    }
+            if (!wxState.places.length) wxState.places = ['名古屋'];
+        }
+
+        async function fetchWxForPlace(place) {
+            const c = resolveWxCoords(place);
+            const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,relativehumidity_2m,uv_index&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&forecast_days=8`);
+            if (!r.ok) throw new Error('wx');
+            return { coords: c, data: await r.json() };
+        }
+
+        async function fetchCloudWeather() {
+            try {
+                const resp = await fetch(WEATHER_CSV_URL);
+                if (!resp.ok) throw new Error();
+                const rows = parseCSVToRows(await resp.text());
+                parseWeatherSheetRows(rows);
+                await Promise.allSettled(wxState.places.map(async p => {
+                    try { wxState.weatherData[p] = await fetchWxForPlace(p); } catch(e) {}
+                }));
+                wxState.loaded = true;
+                const wxPage = document.getElementById('page-weather');
+                if (wxPage && !wxPage.classList.contains('hidden')) renderWeatherForCurrentDay();
+            } catch(e) {
+                console.error('天氣載入失敗', e);
+            }
+        }
+
+        function renderWeatherForCurrentDay() {
+            const loader  = document.getElementById('wx-loading');
+            const content = document.getElementById('wx-content');
+            if (!wxState.loaded) {
+                if (loader) loader.classList.remove('hidden');
+                if (content) content.classList.add('hidden');
+                return;
+            }
+            if (loader) loader.classList.add('hidden');
+            if (content) content.classList.remove('hidden');
+
+            const num = parseInt(currentDayPureNum) || 1;
+            const dayPlaces = [...new Set((wxState.weatherDays[num] || []).map(w => w.place).filter(Boolean))];
+            const disp = dayPlaces.length > 0 ? dayPlaces : wxState.places;
+            buildWxCityTabs(disp);
+            const firstIdx = wxState.places.indexOf(disp[0]);
+            wxState.curCity = firstIdx >= 0 ? firstIdx : 0;
+            renderWeatherDisplay();
+        }
+
+        function buildWxCityTabs(places) {
+            const ct = document.getElementById('wx-city-tabs');
+            if (!ct) return;
+            if (!places || places.length <= 1) { ct.style.display = 'none'; return; }
+            ct.style.display = '';
+            const curPlace = wxState.places[wxState.curCity] || places[0];
+            ct.innerHTML = places.map(p => `<button class="ctab${p === curPlace ? ' on' : ''}" onclick="switchWxCity('${p}')">${p}</button>`).join('');
+        }
+
+        function switchWxCity(place) {
+            const idx = wxState.places.indexOf(place);
+            if (idx >= 0) wxState.curCity = idx;
+            const ct = document.getElementById('wx-city-tabs');
+            if (ct) ct.querySelectorAll('.ctab').forEach(b => b.classList.toggle('on', b.textContent === place));
+            renderWeatherDisplay();
+        }
+
+        function renderWeatherDisplay() {
+            const place = wxState.places[wxState.curCity] || wxState.places[0] || '名古屋';
+            const wd = wxState.weatherData[place];
+            if (!wd) {
+                ['wx-city','wx-temp','wx-cond','wx-hl','wx-hum','wx-rain','wx-wind','wx-uv'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='—'; });
+                const h=document.getElementById('wx-hourly'); if(h) h.innerHTML='';
+                const f=document.getElementById('wx-forecast'); if(f) f.innerHTML='';
+                return;
+            }
+            const { coords, data } = wd;
+            const cw = data.current_weather || {};
+            const w  = wmo(cw.weathercode ?? 0);
+            const t  = Math.round(cw.temperature ?? 0);
+            const now = new Date();
+            const ts  = now.toISOString().split('T')[0];
+            const allT = data.hourly?.time || [];
+            const ti   = allT.findIndex(x => x.startsWith(ts));
+            const hi   = Math.round(data.daily?.temperature_2m_max?.[0] ?? t + 3);
+            const lo   = Math.round(data.daily?.temperature_2m_min?.[0] ?? t - 4);
+            const rp   = data.daily?.precipitation_probability_max?.[0] ?? 0;
+            const spd  = Math.round(cw.windspeed ?? 0);
+            const hIdx = ti >= 0 ? ti + now.getHours() : 0;
+            const hm   = data.hourly?.relativehumidity_2m?.[hIdx] ?? 0;
+            const uv   = data.hourly?.uv_index?.[hIdx] ?? 0;
+            const uvT  = uv <= 2 ? '低' : uv <= 5 ? '中等' : uv <= 7 ? '高' : '極強';
+            const plI  = wxPlaceInfo[place];
+            const cityLabel = plI && plI.city ? `${plI.pref || ''} ${plI.city}`.trim() : coords.name;
+
+            document.getElementById('wx-city').textContent = cityLabel;
+            document.getElementById('wx-temp').textContent = t + '°';
+            document.getElementById('wx-cond').textContent = w.ic + ' ' + w.d;
+            document.getElementById('wx-hl').textContent   = `最高 ${hi}° · 最低 ${lo}°`;
+            document.getElementById('wx-hum').textContent  = hm + '%';
+            document.getElementById('wx-rain').textContent = rp + '%';
+            document.getElementById('wx-wind').textContent = spd + 'km/h';
+            document.getElementById('wx-uv').textContent   = uvT;
+            const tl = document.getElementById('tenki-lnk');
+            if (tl) tl.href = plI?.tenkiUrl || 'https://tenki.jp/';
+
+            let adv = `目前氣溫 ${t}°，`;
+            if (rp > 60) adv += '今日降雨機率高，務必攜帶雨傘！';
+            else if (rp > 30) adv += '有機率降雨，建議備用摺疊傘。';
+            else adv += '天氣晴朗舒適。';
+            if (hi - lo > 10) adv += ` 早晚溫差大（${lo}°~${hi}°），建議備薄外套。`;
+            if (uvT === '高' || uvT === '極強') adv += ' 紫外線強烈，請做好防曬。';
+            const advEl = document.getElementById('wx-advice');
+            if (advEl) advEl.textContent = adv;
+
+            const sl  = (a, s, n) => (a || []).slice(Math.max(0,s), Math.max(0,s)+n);
+            const hs  = ti >= 0 ? ti + Math.max(0, now.getHours() - 1) : 0;
+            const hT  = sl(data.hourly?.temperature_2m, hs, 16);
+            const hR  = sl(data.hourly?.precipitation_probability, hs, 16);
+            const hTm = sl(allT, hs, 16);
+            const hW  = sl(data.hourly?.weathercode, hs, 16);
+            const mn  = Math.min(...hT), mx = Math.max(...hT);
+            const hourlyEl = document.getElementById('wx-hourly');
+            if (hourlyEl) hourlyEl.innerHTML = hT.map((v, i) => {
+                const pct = mx === mn ? 50 : Math.round(((v-mn)/(mx-mn))*72+10);
+                const hr  = hTm[i] ? new Date(hTm[i]).getHours() : (now.getHours()+i)%24;
+                return `<div class="hi"><div class="hitime">${String(hr).padStart(2,'0')}時</div><div class="hiic">${wmo(hW[i]??0).ic}</div><div class="hibw"><div class="hib" style="height:${pct}%"></div></div><div class="hit">${Math.round(v)}°</div><div class="hir">${hR[i]??0}%</div></div>`;
+            }).join('');
+
+            const tripDates = Object.values(dynamicDayDateMap).map(d => d.date).filter(Boolean);
+            const tripStart = tripDates[0] || '';
+            const tripEnd   = tripDates[tripDates.length-1] || '';
+            const dT  = data.daily?.time || [];
+            const dH  = data.daily?.temperature_2m_max || [];
+            const dL  = data.daily?.temperature_2m_min || [];
+            const dR  = data.daily?.precipitation_probability_max || [];
+            const dW  = data.daily?.weathercode || [];
+            const DOW = ['日','一','二','三','四','五','六'];
+            const toShow = dT.map((dt,i)=>({dt,i})).filter(({dt})=>!tripStart||!tripEnd||(dt>=tripStart.substring(0,10)&&dt<=tripEnd.substring(0,10)));
+            const showList = toShow.length > 0 ? toShow : dT.map((dt,i)=>({dt,i}));
+            const forecastEl = document.getElementById('wx-forecast');
+            if (forecastEl) forecastEl.innerHTML = showList.map(({dt,i}) => {
+                const d2 = new Date(dt+'T00:00:00');
+                const matchDay = Object.entries(dynamicDayDateMap).find(([,d]) => d.date && d.date.startsWith(dt));
+                const dayLabel = matchDay ? `D${matchDay[0]}` : '';
+                return `<div class="fcc">${dayLabel?`<div style="font-size:9px;font-weight:700;color:#c8352a;margin-bottom:1px">${dayLabel}</div>`:''}<div class="fcd">${d2.getMonth()+1}/${d2.getDate()}<br>${DOW[d2.getDay()]}</div><div class="fcic">${wmo(dW[i]??0).ic}</div><div class="fchi">${Math.round(dH[i]??0)}°</div><div class="fclo">${Math.round(dL[i]??0)}°</div><div class="fcr">☔${dR[i]??0}%</div></div>`;
+            }).join('');
+        }
+        // #endregion tab6.天氣------------------------------------------------------------------------------
+
+
+        // #region tab7.地圖---------------------------------------------------------------------------------
+        function gdriveFileId(url) {
+            if (!url) return null;
+            let m = url.match(/\/file\/d\/([^\/\?]+)/); if (m) return m[1];
+            m = url.match(/[?&]id=([^&]+)/); if (m) return m[1];
+            return null;
+        }
+        function gdriveUrl(url) {
+            const id = gdriveFileId(url);
+            return id ? `https://lh3.googleusercontent.com/d/${id}` : (url || '');
+        }
+        function gdriveHiRes(url) {
+            const id = gdriveFileId(url);
+            return id ? `https://drive.google.com/uc?export=view&id=${id}` : (url || '');
+        }
+
+        async function fetchCloudMap() {
+            if (mapPageLoaded) return;
+            const loader = document.getElementById('map-loading');
+            if (loader) loader.classList.remove('hidden');
+            try {
+                const [thRes, mapRes] = await Promise.allSettled([fetch(THEME_CSV_URL), fetch(MAP_CSV_URL)]);
+                let mapImgGlobal = '';
+                if (thRes.status === 'fulfilled' && thRes.value.ok) {
+                    const thRows = parseCSVToRows(await thRes.value.text());
+                    if (thRows && thRows[2] && thRows[2][1]) mapImgGlobal = thRows[2][1].trim();
+                }
+                if (mapRes.status === 'fulfilled' && mapRes.value.ok) {
+                    const mapRows = parseCSVToRows(await mapRes.value.text());
+                    renderMapPage(mapRows, mapImgGlobal);
+                    mapPageLoaded = true;
+                } else {
+                    const c = document.getElementById('map-content');
+                    if (c) c.innerHTML = '<div class="text-center py-8 text-xs text-fuji-accent font-medium">⚠️ 地圖資料載入失敗</div>';
+                }
+            } catch(e) {
+                console.error('地圖載入失敗', e);
+            } finally {
+                if (loader) loader.classList.add('hidden');
+            }
+        }
+
+        function renderMapPage(rows, mapImgGlobal) {
+            const container = document.getElementById('map-content');
+            if (!container) return;
+            if (!rows || rows.length < 2) {
+                container.innerHTML = '<div class="text-center py-4 text-xs text-fuji-secondary">無地圖資料</div>';
+                return;
+            }
+            const hdr = rows[0];
+            const fi  = (...keys) => { for (const k of keys) { const i = hdr.findIndex(h => h === k || h.includes(k)); if (i >= 0) return i; } return -1; };
+            const cName = fi('地圖名稱','名稱','name');
+            const cLogo = fi('地圖LOGO','LOGO','logo','標誌');
+            const cImg  = hdr.findIndex(h => ['地圖','map','image','img','圖片'].includes(h.trim()));
+            const cUrl  = fi('連結','網頁','url','link');
+            const fc    = (r,c,fb) => c>=0 ? String(r[c]??'').trim() : (fb>=0 ? String(r[fb]??'').trim() : '');
+            let h = '';
+            if (mapImgGlobal) {
+                const imgSrc = gdriveUrl(mapImgGlobal);
+                h += `<div style="margin-bottom:12px;border-radius:9px;overflow:hidden;border:1px solid #dfd0ba;cursor:zoom-in" onclick="openLightbox('${mapImgGlobal}')"><img src="${imgSrc}" alt="景點地圖" style="width:100%;height:auto;display:block" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`;
+            }
+            for (let i = 1; i < rows.length; i++) {
+                const r    = rows[i];
+                const name = fc(r,cName,0), logo = fc(r,cLogo,1), img = fc(r,cImg,2), url = fc(r,cUrl,-1);
+                if (!name) continue;
+                const logoHtml = logo
+                    ? `<div class="map-logo"><img src="${gdriveUrl(logo)}" alt="${name}" onerror="this.parentElement.textContent='🗺️'"></div>`
+                    : `<div class="map-logo">🗺️</div>`;
+                const imgHtml = img
+                    ? `<div class="map-img-box" id="map-img-${i}"><img src="${gdriveUrl(img)}" alt="${name}" loading="lazy" onclick="event.stopPropagation();openLightbox('${img}')" onerror="this.parentElement.style.display='none'"></div>`
+                    : '';
+                h += `<div class="map-card"><div class="map-card-hdr" onclick="toggleMap(${i})">${logoHtml}<div class="map-name">${name}</div><div class="map-chevron" id="map-chev-${i}">▼</div></div>${imgHtml}</div>`;
+            }
+            if (!h) h = '<div class="text-center py-4 text-xs text-fuji-secondary">尚無地圖資料</div>';
+            container.innerHTML = h;
+        }
+
+        function toggleMap(i) {
+            const box  = document.getElementById('map-img-' + i);
+            const chev = document.getElementById('map-chev-' + i);
+            if (!box) return;
+            box.classList.toggle('show');
+            if (chev) chev.classList.toggle('open');
+        }
+
+        function openLightbox(src) {
+            window.open(gdriveHiRes(src), '_blank');
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            if (lb) lb.classList.remove('show');
+        }
+        // #endregion tab7.地圖------------------------------------------------------------------------------
     </script>
 </body>
 </html>
