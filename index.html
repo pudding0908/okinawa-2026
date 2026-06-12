@@ -133,7 +133,7 @@
             </div> -->
         </div>
         
-        <main class="flex-1 p-3 pb-28 overflow-y-auto">
+        <main class="flex-1 p-3 pb-36 overflow-y-auto">
             <!-- tab1.行程 -->
             <section id="page-plan" class="tab-content block">
                 <h2 id="plan-day-title" class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
@@ -404,7 +404,7 @@
         const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
         const SUMMARY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%91%98%E8%A6%81`;  //「摘要」資料來源
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%A1%8C%E7%A8%8B`;  //「行程」資料來源
-        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%B3%BC%E7%89%A9`;  //「購物」資料來源
+        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=%E8%B3%BC%E7%89%A9`;  //「購物」資料來源（headers=1 防止 gviz 把資料行誤判為表頭）
         const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%99`;  //「準備」資料來源
         const WEATHER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%A4%A9%E6%B0%A3`;  //「天氣」資料來源
         const MAP_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%9C%B0%E5%9C%96`;  //「地圖」資料來源
@@ -636,6 +636,33 @@
             }
         }
         
+        function collapseAllSections(tabName) {
+            if (tabName === 'shopping') {
+                const f = document.getElementById('shopping-input-fields');
+                if (f) f.classList.add('hidden');
+                const a = document.getElementById('main-shop-arrow');
+                if (a) a.className = 'fa-solid fa-chevron-right text-[10px] transition-transform';
+                Object.keys(shoppingCollapsedStores).forEach(k => { shoppingCollapsedStores[k] = true; });
+                const sc = document.getElementById('shopping-list-container');
+                if (sc) sc.innerHTML = '<div class="text-center py-8 text-xs text-fuji-secondary font-medium"><i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>載入中...</div>';
+            } else if (tabName === 'wallet') {
+                [['sec-rate-content','sec-rate-arrow'],['sec-form-content','sec-form-arrow']].forEach(([cid,aid]) => {
+                    const el = document.getElementById(cid); if (el) el.classList.add('hidden');
+                    const ar = document.getElementById(aid); if (ar) ar.className = 'fa-solid fa-chevron-right text-[10px] transition-transform';
+                });
+                Object.keys(walletCollapsedDays).forEach(k => { walletCollapsedDays[k] = true; });
+                const wc = document.getElementById('expense-list');
+                if (wc) wc.innerHTML = '';
+            } else if (tabName === 'lists') {
+                Object.keys(checklistCollapsedCategories).forEach(k => { checklistCollapsedCategories[k] = true; });
+                const cc = document.getElementById('checklist-container');
+                if (cc) cc.innerHTML = '<div class="text-center py-8 text-xs text-fuji-secondary font-medium"><i class="fa-solid fa-spinner fa-spin mr-2 text-fuji-primary"></i>正在同步雲端準備清單...</div>';
+            } else if (tabName === 'map') {
+                document.querySelectorAll('.map-img-box.show').forEach(el => el.classList.remove('show'));
+                document.querySelectorAll('[id^="map-chev-"]').forEach(el => { el.className = 'fa-solid fa-caret-right text-sm text-white'; });
+            }
+        }
+
         // 切換頁籤
         // 修改後的動態相容版頁籤切換
         function switchTab(tabName) {
@@ -671,6 +698,7 @@
                 }
             }
             
+            collapseAllSections(tabName);
             if(tabName === 'shopping') fetchCloudShopping();
             if(tabName === 'wallet') renderExpenses();
             if(tabName === 'lists') fetchCloudChecklist();
@@ -877,7 +905,7 @@
                     </div>
 
                     <div class="flex flex-col items-center flex-shrink-0 w-3 relative">
-                        <div class="absolute top-0 bottom-0 w-0.5 bg-fuji-primary/20 group-last:bottom-auto group-last:h-5"></div>
+                        <div class="absolute top-0 bottom-0 w-0.5 bg-fuji-primary/20"></div>
                         <div class="z-10 w-2.5 h-2.5 rounded-full mt-4 border-2 shadow-2xs transition-all ${
                             isImportant
                             ? 'bg-fuji-accent border-fuji-accent ring-4 ring-fuji-accent/20 animate-pulse'
@@ -1173,26 +1201,14 @@
                 const submitBtn = document.getElementById('add-shop-btn');
                 submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
 
-                const payload = {
-                    sheetName: '購物',
-                    '店家 LOGO': '',
-                    '店家': store,
-                    '商品': name,
-                    '數量': qty,
-                    '備註': note,
-                    '連結': linkUrl,
-                    '商品圖片': imgUrl
-                };
+                const payload = { store, name, qty: String(qty), note, link: linkUrl, image: imgUrl };
 
-                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
+                fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
                 .then(() => {
+                    alert(`🎉 【${name}】已成功同步至雲端！`);
                     clearShoppingForm();
-                    alert(`【${name}】已送出，稍後重新整理即可看到。`);
-                    setTimeout(fetchCloudShopping, 3000);
-                }).catch(() => alert('網路發送失敗，請重試。')).finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i>同步至雲端`;
-                });
+                    setTimeout(fetchCloudShopping, 6000);
+                }).catch(err => alert('發送失敗')).finally(() => { submitBtn.disabled = false; setPostType('cloud'); });
             }
         }
 
@@ -1211,28 +1227,101 @@
         // 購物清單 (改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
         async function fetchCloudShopping() {
             try {
-                const response = await fetch(SHOPPING_CSV_URL + '&nocache=' + Date.now());
+                const response = await fetch(SHOPPING_CSV_URL, { cache: 'no-store' });
                 if (!response.ok) throw new Error('http ' + response.status);
                 const csvText = await response.text();
 
-                // 偵測 HTML 錯誤頁（非 CSV）
                 const trimmed = csvText.replace(/^﻿/, '').trim();
+
+                // ★ DEBUG
+                console.log('[購物] gviz 原始回應前500字：\n' + trimmed.substring(0, 500));
+                console.log('[購物] 回應開頭類型：', trimmed.startsWith('<') ? 'HTML' : trimmed.startsWith('/*') ? 'gviz-wrapped(/*' : trimmed.startsWith('google') ? 'gviz-wrapped(google' : 'CSV或其他');
+
                 if (trimmed.startsWith('<')) {
-                    console.error('購物資料來源回傳非CSV');
+                    console.error('[購物] gviz 回傳 HTML 錯誤頁');
                     renderCombinedShoppingList();
                     return;
                 }
-                const lines = trimmed.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+
                 cloudShoppingItems = [];
 
-                if (lines.length > 1) {
-                    // 標題列偵測：往前3列找含「商品」欄位的列
-                    let hdrIdx = 0;
-                    for (let k = 0; k < Math.min(3, lines.length); k++) {
-                        if (lines[k].includes('商品')) { hdrIdx = k; break; }
+                // gviz 偵測到 number 型別欄位時，會改回傳 JS 包裝格式:
+                // /*O_o*/\ngoogle.visualization.Query.setResponse({...})
+                // 需要單獨解析，否則被當 CSV 處理時 idxName 全為 -1
+                if (trimmed.startsWith('/*') || trimmed.startsWith('google.visualization')) {
+                    const jsonMatch = trimmed.match(/setResponse\((\{[\s\S]*\})\)\s*;?\s*$/);
+                    if (jsonMatch) {
+                        const vizData = JSON.parse(jsonMatch[1]);
+                        const cols = vizData?.table?.cols || [];
+                        const vizRows = vizData?.table?.rows || [];
+                        const idxLogo  = cols.findIndex(c => c.label === '店家 LOGO');
+                        const idxStore = cols.findIndex(c => c.label === '店家');
+                        const idxName  = cols.findIndex(c => c.label === '商品');
+                        const idxQty   = cols.findIndex(c => c.label === '數量');
+                        const idxNote  = cols.findIndex(c => c.label === '備註');
+                        const idxLink  = cols.findIndex(c => c.label === '連結');
+                        const idxImg   = cols.findIndex(c => c.label === '商品圖片');
+                        if (idxName !== -1) {
+                            let lastStore = '';
+                            vizRows.forEach((vizRow, ri) => {
+                                const c = vizRow?.c || [];
+                                const safeV = (idx) => (idx >= 0 && idx < c.length && c[idx]?.v != null) ? String(c[idx].v) : '';
+                                const itemName = safeV(idxName);
+                                if (!itemName) return;
+                                const storeRaw = safeV(idxStore);
+                                if (storeRaw) lastStore = storeRaw;
+                                const storeName = storeRaw || lastStore || '其他待辦';
+                                if (shoppingCollapsedStores[storeName] === undefined) shoppingCollapsedStores[storeName] = true;
+                                const logoRaw = safeV(idxLogo);
+                                const imgRaw = safeV(idxImg);
+                                cloudShoppingItems.push({
+                                    id: 'cloud-' + ri,
+                                    logo: logoRaw ? parseImageUrl(logoRaw) : '',
+                                    store: storeName,
+                                    name: itemName,
+                                    qty: parseInt(safeV(idxQty)) || 1,
+                                    note: safeV(idxNote).substring(0, 40),
+                                    link: safeV(idxLink),
+                                    image: imgRaw ? parseImageUrl(imgRaw) : '',
+                                    isCloud: true
+                                });
+                            });
+                        }
                     }
-                    const headers = lines[hdrIdx].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+                    renderCombinedShoppingList();
+                    return;
+                }
 
+                // 純 CSV 格式：字元逐一處理，正確支援引號內含換行的欄位
+                const rows = (() => {
+                    const result = []; let row = [], cur = '', inQ = false;
+                    for (let i = 0; i < trimmed.length; i++) {
+                        const ch = trimmed[i];
+                        if (inQ) {
+                            if (ch === '"' && trimmed[i+1] === '"') { cur += '"'; i++; }
+                            else if (ch === '"') { inQ = false; }
+                            else { cur += ch; }
+                        } else if (ch === '"') {
+                            inQ = true;
+                        } else if (ch === ',') {
+                            row.push(cur.trim()); cur = '';
+                        } else if (ch === '\r' || ch === '\n') {
+                            if (ch === '\r' && trimmed[i+1] === '\n') i++;
+                            row.push(cur.trim()); cur = '';
+                            if (row.some(v => v !== '')) result.push(row);
+                            row = [];
+                        } else { cur += ch; }
+                    }
+                    if (cur || row.length) { row.push(cur.trim()); if (row.some(v => v !== '')) result.push(row); }
+                    return result;
+                })();
+
+                if (rows.length > 1) {
+                    let hdrIdx = 0;
+                    for (let k = 0; k < Math.min(3, rows.length); k++) {
+                        if (rows[k].some(h => h === '商品')) { hdrIdx = k; break; }
+                    }
+                    const headers = rows[hdrIdx];
                     const idxLogo  = headers.indexOf('店家 LOGO');
                     const idxStore = headers.indexOf('店家');
                     const idxName  = headers.indexOf('商品');
@@ -1241,24 +1330,18 @@
                     const idxLink  = headers.indexOf('連結');
                     const idxImg   = headers.indexOf('商品圖片');
 
-                    if (idxName === -1) {
-                        console.error("購物試算表中找不到商品欄位！");
-                        renderCombinedShoppingList();
-                        return;
-                    }
+                    if (idxName === -1) { console.error('[購物] 找不到商品欄位，headers:', headers); renderCombinedShoppingList(); return; }
 
                     const safeCol = (cols, idx) => idx >= 0 && idx < cols.length ? (cols[idx] || '') : '';
-
-                    for (let i = hdrIdx + 1; i < lines.length; i++) {
-                        let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        cols = cols.map(v => v.trim().replace(/^["']|["']$/g, '').trim());
-
+                    let lastStore = '';
+                    for (let i = hdrIdx + 1; i < rows.length; i++) {
+                        const cols = rows[i];
                         const itemName = safeCol(cols, idxName);
                         if (!itemName) continue;
-
-                        const storeName = safeCol(cols, idxStore) || '其他待辦';
+                        const storeRaw = safeCol(cols, idxStore);
+                        if (storeRaw) lastStore = storeRaw;
+                        const storeName = storeRaw || lastStore || '其他待辦';
                         if (shoppingCollapsedStores[storeName] === undefined) shoppingCollapsedStores[storeName] = true;
-
                         const logoRaw = safeCol(cols, idxLogo);
                         const imgRaw  = safeCol(cols, idxImg);
                         cloudShoppingItems.push({
@@ -1275,7 +1358,7 @@
                     }
                 }
             } catch (error) {
-                console.error("雲端讀取異常", error);
+                console.error('[購物] 雲端讀取異常', error);
             }
             renderCombinedShoppingList();
         }
@@ -1570,14 +1653,9 @@
 
                 let groupHtml = `
                     <div class="space-y-1.5">
-                        <div onclick="toggleDayCollapse('${date}')" class="text-xs font-bold text-white bg-fuji-primary rounded-xl px-2.5 py-1.5 flex items-center justify-between cursor-pointer select-none mt-2 shadow-2xs">
-                            <div class="flex items-center gap-1">
-                                <i class="fa-solid ${arrowIcon} text-fuji-light text-[15px] transition-transform"></i>
-                                <span class="text-[15px]"><i class="fa-regular fa-calendar-days text-[15px]"></i> ${date}</span>
-                            </div>
-                            <div class="text-[13px] bg-white text-fuji-dark px-2 py-0.5 rounded font-cute">
-                                當天小計: NT$ ${Math.round(dayTotalTwd).toLocaleString()}
-                            </div>
+                        <div onclick="toggleDayCollapse('${date}')" class="text-xs font-bold text-white bg-fuji-primary rounded-xl px-2.5 py-1.5 flex items-center cursor-pointer select-none mt-2 shadow-2xs">
+                            <i class="fa-solid ${arrowIcon} text-fuji-light text-[15px] transition-transform mr-1"></i>
+                            <span class="text-[15px]"><i class="fa-regular fa-calendar-days text-[15px]"></i> ${date}</span>
                         </div>
                         <div class="${isCollapsed ? 'hidden' : ''} bg-fuji-paper rounded-xl border border-fuji-light shadow-sm overflow-hidden divide-y divide-fuji-light bg-white">`;
                 
@@ -2002,7 +2080,7 @@
         function buildWxCityTabs(places) {
             const ct = document.getElementById('wx-city-tabs');
             if (!ct) return;
-            if (!places || places.length <= 1) { ct.style.display = 'none'; return; }
+            if (!places || places.length < 1) { ct.style.display = 'none'; return; }
             ct.style.display = '';
             const curPlace = wxState.places[wxState.curCity] || places[0];
             ct.innerHTML = places.map(p => `<button class="ctab${p === curPlace ? ' on' : ''}" onclick="switchWxCity('${p}')">${p}</button>`).join('');
