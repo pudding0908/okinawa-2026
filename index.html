@@ -167,17 +167,18 @@
 
             <!-- tab3.購物 -->
             <section id="page-shopping" class="tab-content hidden">
-                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
-                    <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
-                </h2>
-                
-                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden">
-                    <div onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-xl px-2 py-1.5 flex items-center justify-between cursor-pointer select-none transition-all shadow-2xs">
-                        <div class="text-[15px] font-bold text-fuji-dark"><i class="fa-solid fa-pen-nib mr-1 text-fuji-primary"></i>新增商品品項</div>
-                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] ml-1 transition-transform"></i>
-                    </div>
-                    
-                    <div id="shopping-input-fields" class="p-3 space-y-2 border-t border-fuji-light/50 hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-cute text-lg font-bold text-fuji-primary flex items-center gap-1.5">
+                        <i class="fa-solid fa-cart-shopping text-fuji-accent"></i> 購物清單
+                    </h2>
+                    <button onclick="toggleSection('shopping-input-fields', 'main-shop-arrow')" class="flex items-center gap-1 bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-lg px-2 py-1 text-[12px] font-bold text-fuji-dark transition-all shadow-2xs cursor-pointer select-none">
+                        <i class="fa-solid fa-pen-nib text-fuji-primary text-[10px]"></i>新增品項
+                        <i id="main-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform"></i>
+                    </button>
+                </div>
+
+                <div id="shopping-input-fields" class="bg-fuji-paper rounded-xl border border-fuji-light shadow-sm mb-4 overflow-hidden hidden">
+                    <div class="p-3 space-y-2">
                         <div class="flex justify-between items-center">
                             <div class="text-[13px] font-bold text-fuji-secondary"><i class="fa-solid fa-pencil mr-1 text-fuji-primary"></i>輸入品項</div>
                             <div class="flex bg-fuji-bg p-0.5 rounded-lg border border-fuji-light text-[13px] font-bold relative shadow-2xs">
@@ -190,19 +191,22 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1">
-                            <div class="relative w-full">
-                                <input type="text" id="shop-item-store" list="existing-stores-list" oninput="toggleShopStoreClearBtn()" placeholder="點擊選取現有店家，或直接輸入新店家" class="w-full pr-7 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                                <button type="button" id="clear-shop-store-btn" onclick="clearShopStoreInput()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-fuji-secondary/50 hover:text-rose-500 transition-all">
-                                    <i class="fa-solid fa-circle-xmark text-sm"></i>
-                                </button>
-                            </div>
+                        <div class="relative w-full">
+                            <input type="text" id="shop-item-store" list="existing-stores-list" oninput="toggleShopStoreClearBtn()" placeholder="點擊選取現有店家，或直接輸入新店家" class="w-full pr-7 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            <button type="button" id="clear-shop-store-btn" onclick="clearShopStoreInput()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-fuji-secondary/50 hover:text-rose-500 transition-all">
+                                <i class="fa-solid fa-circle-xmark text-sm"></i>
+                            </button>
                             <datalist id="existing-stores-list"></datalist>
                         </div>
-                        
-                        <div class="grid grid-cols-3 gap-1.5">
-                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                            <input type="number" id="shop-item-qty" placeholder="數量" min="1" value="1" class="px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none text-center font-bold">
+
+                        <div class="flex gap-1.5 items-center">
+                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            <div class="flex items-center border border-fuji-light rounded-lg bg-fuji-bg overflow-hidden shadow-2xs flex-shrink-0">
+                                <button type="button" onclick="changeFormQty(-1)" class="px-1.5 py-1.5 text-fuji-primary font-bold"><i class="fa-solid fa-minus text-[13px]"></i></button>
+                                <span id="shop-item-qty-display" class="px-2 text-sm font-extrabold text-fuji-dark min-w-[24px] text-center select-none">1</span>
+                                <button type="button" onclick="changeFormQty(1)" class="px-1.5 py-1.5 text-fuji-primary font-bold"><i class="fa-solid fa-plus text-[13px]"></i></button>
+                            </div>
+                            <input type="hidden" id="shop-item-qty" value="1">
                         </div>
 
                         <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
@@ -212,8 +216,23 @@
 
                         <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
                             <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
-                            <input type="text" id="shop-item-image" placeholder="商品圖片網址" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
                             <input type="text" id="shop-item-link" placeholder="參考網頁連結" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            <div class="space-y-1.5">
+                                <div class="flex gap-1.5">
+                                    <label class="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg cursor-pointer hover:bg-fuji-light/30 transition-all min-w-0">
+                                        <i class="fa-solid fa-image text-fuji-primary text-[12px] flex-shrink-0"></i>
+                                        <span id="shop-file-label" class="text-fuji-secondary/70 text-[12px] truncate">選擇商品圖片...</span>
+                                        <input type="file" id="shop-item-file" accept="image/*" class="hidden" onchange="handleShopImageFile(this)">
+                                    </label>
+                                    <button type="button" id="shop-upload-btn" onclick="uploadShopImageToDrive()" class="hidden flex-shrink-0 bg-fuji-primary text-white text-xs font-bold px-2.5 py-1.5 rounded-lg hover:bg-fuji-dark transition-all">
+                                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i>上傳
+                                    </button>
+                                </div>
+                                <div id="shop-img-preview" class="hidden">
+                                    <img id="shop-img-preview-img" class="w-16 h-16 object-cover rounded-lg border border-fuji-light" alt="預覽">
+                                </div>
+                                <input type="text" id="shop-item-image" placeholder="圖片連結（上傳後自動填入，或直接貼網址）" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                            </div>
                         </div>
 
                         <button id="add-shop-btn" onclick="handleShoppingSubmit()" class="w-full bg-amber-500 text-white text-sm font-bold py-2 rounded-lg shadow-md hover:bg-amber-600 transition-all">
@@ -398,7 +417,7 @@
 
     <script>
         const SHEET_ID = '1XAGAHo-T9l8SsG3wFu5rcXd4dIkZORlhcRZLblMvMJk';  // 更換google sheet來源需修改
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxETmqyNvOn0FJ-trP0DY75-FjQonkX3L4s4DSxoslxBV98Px2S2CtPYHqaS3KRj0nI/exec';  // 更換google sheet來源需修改 (Apps Script)
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzZ1wsG9a-TTZ89w4Km4IMDD5nAvgcqm2JZ-lhxZsgChHodyx6t2URMDQatxDq8LRIm/exec';  // 更換google sheet來源需修改 (Apps Script)
         
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
         const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
@@ -984,6 +1003,9 @@
 
             const icon = getTransportIcon(desc || title);
             const hasTime = timeStart || timeEnd;
+            const titleParts = title.split(/→|->/).map(s => s.trim());
+            const depLabel = titleParts.length >= 2 ? titleParts[0] : '出發';
+            const arrLabel = titleParts.length >= 2 ? titleParts[1] : '抵達';
 
             // 時間 + 路線區塊
             let timeHtml = '';
@@ -993,7 +1015,7 @@
                         <div class="flex items-center gap-2">
                             <div class="flex flex-col items-center flex-shrink-0 w-14 text-center">
                                 <span class="font-cute font-extrabold text-[22px] text-sky-600 leading-none">${timeStart || '--'}</span>
-                                <span class="text-[10px] text-fuji-secondary/70 mt-0.5 font-medium">出發</span>
+                                <span class="text-[13px] text-fuji-secondary/70 mt-0.5 font-medium leading-tight">${depLabel}</span>
                             </div>
                             <div class="flex-1 flex flex-col items-center gap-0.5 min-w-0 px-1">
                                 ${desc ? `<span class="text-[12px] text-fuji-dark font-medium text-center leading-snug w-full break-words">${desc}</span>` : ''}
@@ -1005,7 +1027,7 @@
                             </div>
                             <div class="flex flex-col items-center flex-shrink-0 w-14 text-center">
                                 <span class="font-cute font-extrabold text-[22px] text-fuji-dark leading-none">${timeEnd || '--'}</span>
-                                <span class="text-[10px] text-fuji-secondary/70 mt-0.5 font-medium">抵達</span>
+                                <span class="text-[13px] text-fuji-secondary/70 mt-0.5 font-medium leading-tight">${arrLabel}</span>
                             </div>
                         </div>
                     </div>`;
@@ -1216,12 +1238,110 @@
         function clearShoppingForm() {
             document.getElementById('shop-item-name').value = '';
             document.getElementById('shop-item-qty').value = '1';
+            const qtyDisplay = document.getElementById('shop-item-qty-display');
+            if (qtyDisplay) qtyDisplay.textContent = '1';
             document.getElementById('shop-item-store').value = '';
             document.getElementById('shop-item-note').value = '';
             document.getElementById('shop-item-image').value = '';
             document.getElementById('shop-item-link').value = '';
+            const fileInput = document.getElementById('shop-item-file');
+            if (fileInput) fileInput.value = '';
+            const fileLabel = document.getElementById('shop-file-label');
+            if (fileLabel) fileLabel.textContent = '選擇商品圖片...';
+            const uploadBtn = document.getElementById('shop-upload-btn');
+            if (uploadBtn) { uploadBtn.classList.add('hidden'); uploadBtn.disabled = false; uploadBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i>上傳'; uploadBtn.className = uploadBtn.className.replace('bg-green-500','bg-fuji-primary').replace('hover:bg-green-600','hover:bg-fuji-dark'); }
+            const preview = document.getElementById('shop-img-preview');
+            if (preview) preview.classList.add('hidden');
             document.getElementById('sec-shop-detail').classList.add('hidden');
             document.getElementById('sec-shop-arrow').className = "fa-solid fa-chevron-right text-[10px] transition-transform";
+        }
+
+        // 數量加減（新增表單用）
+        function changeFormQty(delta) {
+            const input = document.getElementById('shop-item-qty');
+            const display = document.getElementById('shop-item-qty-display');
+            let val = Math.max(1, (parseInt(input.value) || 1) + delta);
+            input.value = val;
+            if (display) display.textContent = val;
+        }
+
+        // 圖片檔案選取後預覽
+        function handleShopImageFile(input) {
+            const file = input.files[0];
+            const label = document.getElementById('shop-file-label');
+            const preview = document.getElementById('shop-img-preview');
+            const previewImg = document.getElementById('shop-img-preview-img');
+            const uploadBtn = document.getElementById('shop-upload-btn');
+            if (file) {
+                label.textContent = file.name;
+                uploadBtn.classList.remove('hidden');
+                const reader = new FileReader();
+                reader.onload = (e) => { previewImg.src = e.target.result; preview.classList.remove('hidden'); };
+                reader.readAsDataURL(file);
+            } else {
+                label.textContent = '選擇商品圖片...';
+                uploadBtn.classList.add('hidden');
+                preview.classList.add('hidden');
+            }
+        }
+
+        async function uploadShopImageToDrive() {
+            const file = document.getElementById('shop-item-file').files[0];
+            if (!file) return;
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址。'); return; }
+            const uploadBtn = document.getElementById('shop-upload-btn');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>上傳中...';
+            try {
+                // 壓縮圖片至 800px / JPEG 0.75，避免 GAS postData 大小限制
+                const { base64, mimeType: imgMime, fileName: imgName } = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(file);
+                    img.onload = () => {
+                        URL.revokeObjectURL(url);
+                        const maxDim = 800;
+                        let w = img.width, h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w >= h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                            else { w = Math.round(w * maxDim / h); h = maxDim; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                        resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg', fileName: file.name.replace(/\.[^.]+$/, '.jpg') });
+                    };
+                    img.onerror = reject;
+                    img.src = url;
+                });
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'uploadImage', fileName: imgName, mimeType: imgMime, data: base64 })
+                });
+                let link = null, gasError = null;
+                const dbg = [];
+                for (let i = 0; i < 8; i++) {
+                    await new Promise(r => setTimeout(r, 1500));
+                    try {
+                        const resp = await fetch(GAS_WEB_APP_URL, { cache: 'no-store' });
+                        const data = await resp.json();
+                        dbg.push(JSON.stringify(data));
+                        if (data.link) { link = data.link; break; }
+                        if (data.error) { gasError = data.error; break; }
+                    } catch(e) { dbg.push('ERR:' + e.message); }
+                }
+                if (gasError) throw new Error('GAS 錯誤：' + gasError);
+                if (!link) throw new Error('上傳超時 [' + dbg.join(' / ') + ']');
+                document.getElementById('shop-item-image').value = link;
+                uploadBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>完成';
+                uploadBtn.className = uploadBtn.className.replace('bg-fuji-primary','bg-green-500').replace('hover:bg-fuji-dark','hover:bg-green-600');
+            } catch(err) {
+                alert('上傳失敗：' + err.message);
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i>上傳';
+            }
         }
 
         // 購物清單 (改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
