@@ -94,8 +94,8 @@
     </style>
 </head>
 
-<body class="font-sans h-screen overflow-hidden flex justify-center">
-    <div class="w-full max-w-md bg-fuji-bg h-screen overflow-hidden shadow-xl relative flex flex-col">
+<body class="font-sans h-dvh overflow-hidden flex justify-center">
+    <div class="w-full max-w-md bg-fuji-bg h-dvh overflow-hidden shadow-xl relative flex flex-col">
         <div class="sticky top-0 z-50 bg-fuji-bg w-full">
             <!--大標題(旅遊主題、旅遊時間)-->
             <header class="bg-fuji-primary p-4 text-center relative rounded-b-[1.5rem] shadow-md overflow-hidden">
@@ -699,9 +699,9 @@
             }
             
             collapseAllSections(tabName);
-            if(tabName === 'shopping') fetchCloudShopping();
+            if(tabName === 'shopping') { if(cloudShoppingItems.length > 0) renderCombinedShoppingList(); else fetchCloudShopping(); }
             if(tabName === 'wallet') renderExpenses();
-            if(tabName === 'lists') fetchCloudChecklist();
+            if(tabName === 'lists') { if(globalChecklistItems.length > 0) renderChecklist(globalChecklistItems); else fetchCloudChecklist(); }
             
             const mainEl = document.querySelector('main');
             if (mainEl) mainEl.scrollTop = 0;
