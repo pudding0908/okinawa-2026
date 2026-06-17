@@ -417,7 +417,7 @@
 
     <script>
         const SHEET_ID = '1XAGAHo-T9l8SsG3wFu5rcXd4dIkZORlhcRZLblMvMJk';  // 更換google sheet來源需修改
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzZ1wsG9a-TTZ89w4Km4IMDD5nAvgcqm2JZ-lhxZsgChHodyx6t2URMDQatxDq8LRIm/exec';  // 更換google sheet來源需修改 (Apps Script)
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzEzfhAbmW1sonk4fFIGIMl0_mptnwZlDvzeokJ5dwIn3LZ3KrN-xXwOEfmeZXWvtJf/exec';  // 更換google sheet來源需修改 (Apps Script)
         
         const SHEET_EDIT_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=0#gid=0`;
         const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
@@ -1285,6 +1285,21 @@
             }
         }
 
+        // JSONP 取得 GAS 回應（用 <script> 載入，避開 fetch 跨網域 / file:// 被導向登入頁的問題）
+        function gasJsonp(extraParam) {
+            return new Promise((resolve, reject) => {
+                const cbName = 'gascb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+                const sep = GAS_WEB_APP_URL.includes('?') ? '&' : '?';
+                const script = document.createElement('script');
+                const timer = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 8000);
+                function cleanup() { clearTimeout(timer); delete window[cbName]; if (script.parentNode) script.remove(); }
+                window[cbName] = (data) => { cleanup(); resolve(data); };
+                script.onerror = () => { cleanup(); reject(new Error('JSONP script error')); };
+                script.src = GAS_WEB_APP_URL + sep + 'callback=' + cbName + (extraParam ? '&' + extraParam : '');
+                document.body.appendChild(script);
+            });
+        }
+
         async function uploadShopImageToDrive() {
             const file = document.getElementById('shop-item-file').files[0];
             if (!file) return;
@@ -1314,26 +1329,27 @@
                     img.onerror = reject;
                     img.src = url;
                 });
+                // 先清掉可能殘留的舊結果，確保取回的是這次上傳的連結
+                try { await gasJsonp('drain=1'); } catch(e) {}
+                // no-cors POST：觸發 doPost 寫入 Drive，連結暫存於 PropertiesService（無法直接讀回應）
                 await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ action: 'uploadImage', fileName: imgName, mimeType: imgMime, data: base64 })
                 });
+                // JSONP 輪詢取回連結
                 let link = null, gasError = null;
-                const dbg = [];
-                for (let i = 0; i < 8; i++) {
-                    await new Promise(r => setTimeout(r, 1500));
+                for (let i = 0; i < 10; i++) {
+                    await new Promise(r => setTimeout(r, 1200));
                     try {
-                        const resp = await fetch(GAS_WEB_APP_URL, { cache: 'no-store' });
-                        const data = await resp.json();
-                        dbg.push(JSON.stringify(data));
+                        const data = await gasJsonp();
                         if (data.link) { link = data.link; break; }
                         if (data.error) { gasError = data.error; break; }
-                    } catch(e) { dbg.push('ERR:' + e.message); }
+                    } catch(e) {}
                 }
-                if (gasError) throw new Error('GAS 錯誤：' + gasError);
-                if (!link) throw new Error('上傳超時 [' + dbg.join(' / ') + ']');
+                if (gasError) throw new Error(gasError);
+                if (!link) throw new Error('上傳逾時，請重試');
                 document.getElementById('shop-item-image').value = link;
                 uploadBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>完成';
                 uploadBtn.className = uploadBtn.className.replace('bg-fuji-primary','bg-green-500').replace('hover:bg-fuji-dark','hover:bg-green-600');
