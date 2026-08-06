@@ -199,8 +199,9 @@
                             <datalist id="existing-stores-list"></datalist>
                         </div>
 
-                        <div class="flex gap-1.5 items-center">
-                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                       <div class="flex gap-1.5 items-center">
+                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none" oninput="updateShopFileRename()">
+                            <input type="text" id="shop-item-name-jp" placeholder="商品日文" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
                             <div class="flex items-center border border-fuji-light rounded-lg bg-fuji-bg overflow-hidden shadow-2xs flex-shrink-0">
                                 <button type="button" onclick="changeFormQty(-1)" class="px-1.5 py-1.5 text-fuji-primary font-bold"><i class="fa-solid fa-minus text-[13px]"></i></button>
                                 <span id="shop-item-qty-display" class="px-2 text-sm font-extrabold text-fuji-dark min-w-[24px] text-center select-none">1</span>
@@ -1188,9 +1189,11 @@
             }
         }
 
-        // 2.新增購物清單 存入
+        
+        // 1. handleShoppingSubmit 內讀取日文欄位與寫入 Local / Cloud
         function handleShoppingSubmit() {
             const name = document.getElementById('shop-item-name').value.trim();
+            const nameJP = document.getElementById('shop-item-name-jp').value.trim(); // 新增讀取日文
             const qty = parseInt(document.getElementById('shop-item-qty').value) || 1;
             const store = document.getElementById('shop-item-store').value.trim() || (currentPostType === 'local' ? '個人私房購買' : '未分類商店');
             const note = document.getElementById('shop-item-note').value.trim();
@@ -1208,6 +1211,7 @@
                     logo: '', 
                     store, 
                     name, 
+                    nameJP, // 儲存日文名稱
                     qty, 
                     note, 
                     image: parseImageUrl(imgUrl), 
@@ -1216,14 +1220,15 @@
                 });
                 localStorage.setItem('ok_shopping_local', JSON.stringify(localItems));
                 
-                clearShoppingForm(); // 購物清單新增欄位預設
-                renderCombinedShoppingList(); //購物清單 抓取雲端資料
+                clearShoppingForm();
+                renderCombinedShoppingList();
             } else {
                 if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址。'); return; }
                 const submitBtn = document.getElementById('add-shop-btn');
                 submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
 
-                const payload = { store, name, qty: String(qty), note, link: linkUrl, image: imgUrl };
+                // 將 nameJP 放入傳送給 GAS 的 payload 中
+                const payload = { store, name, nameJP, qty: String(qty), note, link: linkUrl, image: imgUrl };
 
                 fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
                 .then(() => {
@@ -1234,9 +1239,11 @@
             }
         }
 
-        // 新增購物清單 欄位預設
+        // 2. clearShoppingForm 清空輸入欄位
         function clearShoppingForm() {
             document.getElementById('shop-item-name').value = '';
+            const nameJpInput = document.getElementById('shop-item-name-jp');
+            if (nameJpInput) nameJpInput.value = ''; // 清空日文欄位
             document.getElementById('shop-item-qty').value = '1';
             const qtyDisplay = document.getElementById('shop-item-qty-display');
             if (qtyDisplay) qtyDisplay.textContent = '1';
@@ -1265,6 +1272,8 @@
             if (display) display.textContent = val;
         }
 
+        let currentShopImageFile = null;
+
         // 圖片檔案選取後預覽
         function handleShopImageFile(input) {
             const file = input.files[0];
@@ -1273,15 +1282,38 @@
             const previewImg = document.getElementById('shop-img-preview-img');
             const uploadBtn = document.getElementById('shop-upload-btn');
             if (file) {
-                label.textContent = file.name;
+                currentShopImageFile = file;
+                const itemName = document.getElementById('shop-item-name')?.value.trim();
+                if (itemName) {
+                    const ext = file.name.substring(file.name.lastIndexOf('.'));
+                    label.textContent = `${itemName}${ext}`;
+                } else {
+                    label.textContent = file.name;
+                }
                 uploadBtn.classList.remove('hidden');
                 const reader = new FileReader();
                 reader.onload = (e) => { previewImg.src = e.target.result; preview.classList.remove('hidden'); };
                 reader.readAsDataURL(file);
             } else {
+                currentShopImageFile = null;
                 label.textContent = '選擇商品圖片...';
                 uploadBtn.classList.add('hidden');
                 preview.classList.add('hidden');
+            }
+        }
+
+        // 商品名稱變動時動態更新圖片檔名標籤
+        function updateShopFileRename() {
+            if (!currentShopImageFile) return;
+            const label = document.getElementById('shop-file-label');
+            const itemName = document.getElementById('shop-item-name')?.value.trim();
+            if (label) {
+                if (itemName) {
+                    const ext = currentShopImageFile.name.substring(currentShopImageFile.name.lastIndexOf('.'));
+                    label.textContent = `${itemName}${ext}`;
+                } else {
+                    label.textContent = currentShopImageFile.name;
+                }
             }
         }
 
@@ -1300,14 +1332,24 @@
             });
         }
 
+        // 上傳商品圖片至 Drive
         async function uploadShopImageToDrive() {
-            const file = document.getElementById('shop-item-file').files[0];
+            const file = currentShopImageFile;
             if (!file) return;
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址。'); return; }
             const uploadBtn = document.getElementById('shop-upload-btn');
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>上傳中...';
             try {
+                // 決定檔名：如果有輸入商品名稱，上傳的商品照片檔名直接套用商品名稱
+                const itemName = document.getElementById('shop-item-name')?.value.trim();
+                let uploadFileName = file.name;
+                if (itemName) {
+                    uploadFileName = `${itemName}.jpg`;
+                } else {
+                    uploadFileName = file.name.replace(/\.[^.]+$/, '.jpg');
+                }
+
                 // 壓縮圖片至 800px / JPEG 0.75，避免 GAS postData 大小限制
                 const { base64, mimeType: imgMime, fileName: imgName } = await new Promise((resolve, reject) => {
                     const img = new Image();
@@ -1324,7 +1366,7 @@
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-                        resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg', fileName: file.name.replace(/\.[^.]+$/, '.jpg') });
+                        resolve({ base64: dataUrl.split(',')[1], mimeType: 'image/jpeg', fileName: uploadFileName });
                     };
                     img.onerror = reject;
                     img.src = url;
@@ -1390,13 +1432,14 @@
                         const vizData = JSON.parse(jsonMatch[1]);
                         const cols = vizData?.table?.cols || [];
                         const vizRows = vizData?.table?.rows || [];
-                        const idxLogo  = cols.findIndex(c => c.label === '店家 LOGO');
-                        const idxStore = cols.findIndex(c => c.label === '店家');
-                        const idxName  = cols.findIndex(c => c.label === '商品');
-                        const idxQty   = cols.findIndex(c => c.label === '數量');
-                        const idxNote  = cols.findIndex(c => c.label === '備註');
-                        const idxLink  = cols.findIndex(c => c.label === '連結');
-                        const idxImg   = cols.findIndex(c => c.label === '商品圖片');
+                        const idxLogo   = cols.findIndex(c => c.label === '店家 LOGO');
+                        const idxStore  = cols.findIndex(c => c.label === '店家');
+                        const idxName   = cols.findIndex(c => c.label === '商品');
+                        const idxNameJP = cols.findIndex(c => c.label === '商品日文');
+                        const idxQty    = cols.findIndex(c => c.label === '數量');
+                        const idxNote   = cols.findIndex(c => c.label === '備註');
+                        const idxLink   = cols.findIndex(c => c.label === '連結');
+                        const idxImg    = cols.findIndex(c => c.label === '商品圖片');
                         if (idxName !== -1) {
                             let lastStore = '';
                             vizRows.forEach((vizRow, ri) => {
@@ -1415,6 +1458,7 @@
                                     logo: logoRaw ? parseImageUrl(logoRaw) : '',
                                     store: storeName,
                                     name: itemName,
+                                    nameJP: safeV(idxNameJP),
                                     qty: parseInt(safeV(idxQty)) || 1,
                                     note: safeV(idxNote).substring(0, 40),
                                     link: safeV(idxLink),
@@ -1458,13 +1502,14 @@
                         if (rows[k].some(h => h === '商品')) { hdrIdx = k; break; }
                     }
                     const headers = rows[hdrIdx];
-                    const idxLogo  = headers.indexOf('店家 LOGO');
-                    const idxStore = headers.indexOf('店家');
-                    const idxName  = headers.indexOf('商品');
-                    const idxQty   = headers.indexOf('數量');
-                    const idxNote  = headers.indexOf('備註');
-                    const idxLink  = headers.indexOf('連結');
-                    const idxImg   = headers.indexOf('商品圖片');
+                    const idxLogo   = headers.indexOf('店家 LOGO');
+                    const idxStore  = headers.indexOf('店家');
+                    const idxName   = headers.indexOf('商品');
+                    const idxNameJP = headers.indexOf('商品日文');
+                    const idxQty    = headers.indexOf('數量');
+                    const idxNote   = headers.indexOf('備註');
+                    const idxLink   = headers.indexOf('連結');
+                    const idxImg    = headers.indexOf('商品圖片');
 
                     if (idxName === -1) { console.error('[購物] 找不到商品欄位，headers:', headers); renderCombinedShoppingList(); return; }
 
@@ -1485,6 +1530,7 @@
                             logo: logoRaw ? parseImageUrl(logoRaw) : '',
                             store: storeName,
                             name: itemName,
+                            nameJP: safeCol(cols, idxNameJP),
                             qty: parseInt(safeCol(cols, idxQty)) || 1,
                             note: safeCol(cols, idxNote).substring(0, 40),
                             link: safeCol(cols, idxLink),
@@ -1499,8 +1545,8 @@
             renderCombinedShoppingList();
         }
 
-        //購物清單 抓取雲端資料
-       function renderCombinedShoppingList() {
+        //購物清單 渲染列表 (將商品中文顯示在商品名稱下方，格式比照商品)
+        function renderCombinedShoppingList() {
             const container = document.getElementById('shopping-list-container'); if (!container) return; container.innerHTML = '';
             const localItems = JSON.parse(localStorage.getItem('ok_shopping_local')) || [];
             const checkedIds = JSON.parse(localStorage.getItem('ok_shopping_checked_ids')) || [];
@@ -1590,7 +1636,8 @@
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
-                                        <span class="text-[15px] select-none break-all ${textClass}">${item.name}</span>
+                                        <span class="text-[15px] select-none break-all ${textClass}"style="color: rgb(52 143 202);">${item.name}</span>
+                                        <span>${item.nameJP ? `<div class="text-[15px] select-none break-all ${textClass}">${item.nameJP}</div>` : ''}</span>
                                         ${!item.isCloud ? `<span class="text-[13px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
                                     </div>
                                 </div>
@@ -1625,11 +1672,11 @@
             // 動態將目前的 storeGroups 鍵值同步到 datalist 下拉選單中
             const storeDatalist = document.getElementById('existing-stores-list');
             if (storeDatalist) {
-                // 過濾掉預設的‘其他待辦購買’分類
-                const activeStores = Object.keys(storeGroups).filter(name => name !== '其他待辦購買');
-                storeDatalist.innerHTML = activeStores.map(store => `<option value="${store}"></option>`).join('');
+                const activeStores = Object.keys(storeGroups).filter(s => s !== '其他待辦購買' && s !== '個人私房購買');
+                storeDatalist.innerHTML = activeStores.map(s => `<option value="${s}">`).join('');
             }
         }
+        
 
         // 購物清單 數量增減
         function adjustQty(id, change) {
