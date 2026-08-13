@@ -442,7 +442,7 @@
         const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
         const SUMMARY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%91%98%E8%A6%81`;  //「摘要」資料來源
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%A1%8C%E7%A8%8B`;  //「行程」資料來源
-        
+       
         // export 直接輸出儲存格顯示文字，數字與文字都完整拿得到
         const SHOPPING_SHEET_GID = '346107796';  //「購物」分頁的 gid（換分頁才需要改）
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHOPPING_SHEET_GID}`;  //「購物」資料來源
@@ -1655,7 +1655,7 @@
             const row = (label, labelCls, val) => `
                 <div class="flex items-start gap-1.5 min-w-0">
                     <span class="${labelCls} font-bold text-[13px] px-1.5 py-0.5 rounded border border-fuji-light flex-shrink-0">${label}</span>
-                    <span class="text-[13px] font-extrabold text-fuji-dark break-all whitespace-pre-line leading-snug py-0.5 min-w-0">${esc(val)}</span>
+                    <span class="text-[13px] text-fuji-dark break-all whitespace-pre-line leading-snug py-0.5 min-w-0">${esc(val)}</span>
                 </div>`;
 
             const rows = [];
@@ -1731,25 +1731,25 @@
                 group.items.forEach(item => {
                     const isChecked = checkedIds.includes(item.id);
 
-                    const textClass = isChecked 
-                        ? 'line-through text-fuji-secondary font-normal' 
+                    // 完成不再加刪除線，改用前面的勾勾 + 整行底色區隔
+                    const textClass = isChecked
+                        ? 'text-fuji-secondary font-normal'
                         : 'font-bold text-fuji-dark';
 
-                    // 勾選完成時，將連結與圖片完全隱藏不渲染
-                    let mediaHtml = '';
-                    if (!isChecked) {
-                        if (item.link) {
-                            mediaHtml += `<div class="mt-1">
-                                            <a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
-                                                <i class="fa-solid fa-arrow-up-right-from-square text-[12px]"></i>  連結
-                                            </a>
-                                        </div>`;
-                        }
-                        if (item.image) {
-                            mediaHtml += `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center">
-                                            <img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';">
-                                          </div>`;
-                        }
+                    // 連結改成跟備註同一行的行內標籤：備註字少時兩者共用一行，省一行高度
+                    let linkHtml = '';
+                    if (item.link) {
+                        linkHtml = `<a href="${item.link}" target="_blank" onclick="event.stopPropagation();" class="inline-flex items-center gap-0.5 align-middle mr-1.5 text-[13px] font-bold text-fuji-primary bg-fuji-bg px-2 py-0.5 rounded-full border border-fuji-light shadow-2xs">
+                                        <i class="fa-solid fa-link text-[12px]"></i>  連結
+                                    </a>`;
+                    }
+
+                    // 勾選完成時只把圖片收起來，連結仍然保留
+                    let imageHtml = '';
+                    if (!isChecked && item.image) {
+                        imageHtml = `<div class="mt-1.5 w-full overflow-hidden rounded-lg border border-fuji-light bg-white max-h-48 flex items-center justify-center">
+                                        <img src="${item.image}" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-48 p-1" alt="商品圖片" onerror="this.parentElement.style.display='none';">
+                                     </div>`;
                     }
 
                     // 當刪除勾選時，整行背景會變為舒服的淡灰色
@@ -1758,6 +1758,7 @@
                             <div class="flex justify-between items-start gap-2">
                                 <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                     <div class="flex items-center gap-1 flex-wrap">
+                                        ${isChecked ? `<i class="fa-solid fa-circle-check text-emerald-500 text-[15px] flex-shrink-0"></i>` : ''}
                                         <span class="text-[15px] select-none break-all ${textClass}"style="color: rgb(52 143 202);">${item.name}</span>
                                         <span>${item.nameJP ? `<div class="text-[15px] select-none break-all ${textClass}">${item.nameJP}</div>` : ''}</span>
                                         ${!item.isCloud ? `<span class="text-[13px] bg-amber-50 text-amber-600 font-bold px-1 rounded border border-amber-200">私人</span>` : ''}
@@ -1780,11 +1781,11 @@
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
                                 ${buildShopPriceTags(item)}
-                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked
-                                                ? 'text-fuji-secondary font-normal' 
-                                                : 'text-fuji-secondary'}">${item.note}</div>` 
+                                ${(linkHtml || item.note) ? `<div class="text-[13px] font-medium break-all mt-1 ${isChecked
+                                                ? 'text-fuji-secondary font-normal'
+                                                : 'text-fuji-secondary'}">${linkHtml}${item.note || ''}</div>`
                                             : ''}
-                                ${mediaHtml}
+                                ${imageHtml}
                             </div>
                         </div>`;
                 });
