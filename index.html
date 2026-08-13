@@ -199,9 +199,16 @@
                             <datalist id="existing-stores-list"></datalist>
                         </div>
 
-                       <div class="flex gap-1.5 items-center">
-                            <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none" oninput="updateShopFileRename()">
-                            <input type="text" id="shop-item-name-jp" placeholder="商品日文" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+                        <input type="text" id="shop-item-name" placeholder="商品名稱 (必填)" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none" oninput="updateShopFileRename()">
+
+                        <input type="text" id="shop-item-name-jp" placeholder="商品日文" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
+
+                        <div class="flex gap-1.5 items-start">
+                            <select id="shop-item-tax-type" onchange="switchShopPriceTax()" class="flex-shrink-0 px-1.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg text-fuji-dark font-bold focus:outline-none">
+                                <option value="含稅">含稅</option>
+                                <option value="未稅">未稅</option>
+                            </select>
+                            <textarea id="shop-item-price" rows="1" oninput="autoGrowShopPrice(this)" placeholder="金額" class="flex-1 min-w-0 px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none resize-none overflow-hidden leading-snug"></textarea>
                             <div class="flex items-center border border-fuji-light rounded-lg bg-fuji-bg overflow-hidden shadow-2xs flex-shrink-0">
                                 <button type="button" onclick="changeFormQty(-1)" class="px-1.5 py-1.5 text-fuji-primary font-bold"><i class="fa-solid fa-minus text-[13px]"></i></button>
                                 <span id="shop-item-qty-display" class="px-2 text-sm font-extrabold text-fuji-dark min-w-[24px] text-center select-none">1</span>
@@ -209,11 +216,22 @@
                             </div>
                             <input type="hidden" id="shop-item-qty" value="1">
                         </div>
+                        <div id="shop-price-other-hint" class="hidden text-[12px] text-fuji-secondary/80 pl-1 break-all whitespace-pre-line"></div>
 
-                        <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
+                        <!-- <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-primary hover:bg-fuji-dark rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-white shadow-sm transition-all">
+                            <span><i class="fa-solid fa-plus text-white mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
+                            <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] text-white/80 transition-transform"></i>
+                        </button> -->
+
+                        <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light border-2 border-fuji-primary hover:bg-fuji-primary/15 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-black text-xs text-fuji-dark transition-all">
+                            <span><i class="fa-solid fa-plus text-fuji-primary font-black mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
+                            <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] text-fuji-primary font-bold transition-transform"></i>
+                        </button>
+
+                        <!-- <button onclick="toggleSection('sec-shop-detail', 'sec-shop-arrow')" class="w-full bg-fuji-light/70 hover:bg-fuji-light border border-fuji-light rounded-lg px-2.5 py-1.5 flex items-center justify-between text-left font-bold text-xs text-fuji-dark transition-all">
                             <span><i class="fa-solid fa-plus text-fuji-primary mr-1"></i>新增詳細資訊 (備註、圖片、連結)</span>
                             <i id="sec-shop-arrow" class="fa-solid fa-chevron-right text-[10px] transition-transform"></i>
-                        </button>
+                        </button> -->
 
                         <div id="sec-shop-detail" class="hidden space-y-2 pt-1 border-t border-dashed border-fuji-light">
                             <input type="text" id="shop-item-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg text-sm bg-fuji-bg focus:outline-none">
@@ -424,7 +442,10 @@
         const THEME_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E4%B8%BB%E9%A1%8C`; //「主題」資料來源
         const SUMMARY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%91%98%E8%A6%81`;  //「摘要」資料來源
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E8%A1%8C%E7%A8%8B`;  //「行程」資料來源
-        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=%E8%B3%BC%E7%89%A9`;  //「購物」資料來源（headers=1 防止 gviz 把資料行誤判為表頭）
+        
+        // export 直接輸出儲存格顯示文字，數字與文字都完整拿得到
+        const SHOPPING_SHEET_GID = '346107796';  //「購物」分頁的 gid（換分頁才需要改）
+        const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHOPPING_SHEET_GID}`;  //「購物」資料來源
         const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%99`;  //「準備」資料來源
         const WEATHER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%A4%A9%E6%B0%A3`;  //「天氣」資料來源
         const MAP_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%9C%B0%E5%9C%96`;  //「地圖」資料來源
@@ -1200,6 +1221,13 @@
             const imgUrl = document.getElementById('shop-item-image').value.trim();
             const linkUrl = document.getElementById('shop-item-link').value.trim();
 
+            // 含稅／未稅：兩欄各自暫存，切換下拉輸入的內容都會保留，送出時一起帶上
+            const curTax = document.getElementById('shop-item-tax-type')?.value || '含稅';
+            const priceBox = document.getElementById('shop-item-price');
+            if (priceBox) shopPriceDraft[curTax] = priceBox.value;
+            const priceIn = (shopPriceDraft['含稅'] || '').trim();   // 含稅
+            const priceEx = (shopPriceDraft['未稅'] || '').trim();   // 未稅
+
             if (!name) { alert('請填寫商品名稱唷！'); return; }
 
             if (shoppingCollapsedStores[store] === undefined) { shoppingCollapsedStores[store] = true; }
@@ -1212,8 +1240,10 @@
                     store, 
                     name, 
                     nameJP, // 儲存日文名稱
-                    qty, 
-                    note, 
+                    qty,
+                    priceIn, // 含稅金額（文字）
+                    priceEx, // 未稅金額（文字）
+                    note,
                     image: parseImageUrl(imgUrl), 
                     link: linkUrl, 
                     isCloud: false 
@@ -1228,7 +1258,11 @@
                 submitBtn.disabled = true; submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...`;
 
                 // 將 nameJP 放入傳送給 GAS 的 payload 中
-                const payload = { store, name, nameJP, qty: String(qty), note, link: linkUrl, image: imgUrl };
+                // 含稅／未稅同時附上英文鍵與中文欄名鍵，GAS 端用哪一種對應都讀得到
+                const payload = {
+                    store, name, nameJP, qty: String(qty), note, link: linkUrl, image: imgUrl,
+                    priceIn, priceEx, '含稅': priceIn, '未稅': priceEx
+                };
 
                 fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
                 .then(() => {
@@ -1247,6 +1281,12 @@
             document.getElementById('shop-item-qty').value = '1';
             const qtyDisplay = document.getElementById('shop-item-qty-display');
             if (qtyDisplay) qtyDisplay.textContent = '1';
+            shopPriceDraft = { '含稅': '', '未稅': '' };
+            const priceInput = document.getElementById('shop-item-price');
+            if (priceInput) { priceInput.value = ''; priceInput.style.height = 'auto'; }
+            const taxSelect = document.getElementById('shop-item-tax-type');
+            if (taxSelect) taxSelect.value = '含稅';
+            renderShopPriceHint();
             document.getElementById('shop-item-store').value = '';
             document.getElementById('shop-item-note').value = '';
             document.getElementById('shop-item-image').value = '';
@@ -1270,6 +1310,44 @@
             let val = Math.max(1, (parseInt(input.value) || 1) + delta);
             input.value = val;
             if (display) display.textContent = val;
+        }
+
+        // 含稅／未稅各自的輸入草稿（切換下拉時不會互相蓋掉，可以兩欄都填）
+        let shopPriceDraft = { '含稅': '', '未稅': '' };
+
+        // 金額欄自動長高：貼「¥386 / 27包 (淺草LIFE)、¥498 / 24包 (岡山永旺)」這種長字串也看得到全部
+        function autoGrowShopPrice(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+            const type = document.getElementById('shop-item-tax-type')?.value || '含稅';
+            shopPriceDraft[type] = el.value;
+            renderShopPriceHint();
+        }
+
+        // 切換含稅／未稅：把另一欄先前輸入的內容叫回來
+        function switchShopPriceTax() {
+            const box = document.getElementById('shop-item-price');
+            const type = document.getElementById('shop-item-tax-type')?.value || '含稅';
+            if (!box) return;
+            box.value = shopPriceDraft[type] || '';
+            autoGrowShopPrice(box);
+            box.focus();
+        }
+
+        // 提示另一個稅別已經填了什麼，避免切走後忘記
+        function renderShopPriceHint() {
+            const hint = document.getElementById('shop-price-other-hint');
+            if (!hint) return;
+            const cur = document.getElementById('shop-item-tax-type')?.value || '含稅';
+            const other = cur === '含稅' ? '未稅' : '含稅';
+            const val = (shopPriceDraft[other] || '').trim();
+            if (val) {
+                hint.textContent = `已填 ${other}：${val}`;
+                hint.classList.remove('hidden');
+            } else {
+                hint.classList.add('hidden');
+            }
         }
 
         let currentShopImageFile = null;
@@ -1437,6 +1515,8 @@
                         const idxName   = cols.findIndex(c => c.label === '商品');
                         const idxNameJP = cols.findIndex(c => c.label === '商品日文');
                         const idxQty    = cols.findIndex(c => c.label === '數量');
+                        const idxIn     = cols.findIndex(c => c.label === '含稅');
+                        const idxEx     = cols.findIndex(c => c.label === '未稅');
                         const idxNote   = cols.findIndex(c => c.label === '備註');
                         const idxLink   = cols.findIndex(c => c.label === '連結');
                         const idxImg    = cols.findIndex(c => c.label === '商品圖片');
@@ -1460,6 +1540,8 @@
                                     name: itemName,
                                     nameJP: safeV(idxNameJP),
                                     qty: parseInt(safeV(idxQty)) || 1,
+                                    priceIn: safeV(idxIn).trim(),   // 含稅（文字）
+                                    priceEx: safeV(idxEx).trim(),   // 未稅（文字）
                                     note: safeV(idxNote).substring(0, 40),
                                     link: safeV(idxLink),
                                     image: imgRaw ? parseImageUrl(imgRaw) : '',
@@ -1507,6 +1589,8 @@
                     const idxName   = headers.indexOf('商品');
                     const idxNameJP = headers.indexOf('商品日文');
                     const idxQty    = headers.indexOf('數量');
+                    const idxIn     = headers.indexOf('含稅');
+                    const idxEx     = headers.indexOf('未稅');
                     const idxNote   = headers.indexOf('備註');
                     const idxLink   = headers.indexOf('連結');
                     const idxImg    = headers.indexOf('商品圖片');
@@ -1532,6 +1616,8 @@
                             name: itemName,
                             nameJP: safeCol(cols, idxNameJP),
                             qty: parseInt(safeCol(cols, idxQty)) || 1,
+                            priceIn: safeCol(cols, idxIn).trim(),   // 含稅（文字）
+                            priceEx: safeCol(cols, idxEx).trim(),   // 未稅（文字）
                             note: safeCol(cols, idxNote).substring(0, 40),
                             link: safeCol(cols, idxLink),
                             image: imgRaw ? parseImageUrl(imgRaw) : '',
@@ -1543,6 +1629,42 @@
                 console.error('[購物] 雲端讀取異常', error);
             }
             renderCombinedShoppingList();
+        }
+
+        // 金額顯示格式：逐行判斷，純數字自動加上 ¥ 與千分位；
+        // 其他文字（例如「¥386 / 27包 (淺草LIFE)」）原樣顯示，換行也保留
+        function formatShopPrice(raw) {
+            const val = (raw == null ? '' : String(raw)).trim();
+            if (!val) return '';
+            return val.split(/\r?\n/).map(line => {
+                const s = line.trim();
+                if (!s) return '';
+                const plain = s.replace(/,/g, '');
+                return /^\d+(\.\d+)?$/.test(plain) ? '¥ ' + Number(plain).toLocaleString('en-US') : s;
+            }).filter(Boolean).join('\n');
+        }
+
+        // 未稅／含稅標籤（沒有輸入金額就不顯示）
+        // 兩邊都是短數字時併成一行；只要有一邊是長字串就各自獨立一行、自動換行
+        function buildShopPriceTags(item) {
+            const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const ex  = formatShopPrice(item.priceEx);
+            const inc = formatShopPrice(item.priceIn);
+            if (!ex && !inc) return '';
+
+            const row = (label, labelCls, val) => `
+                <div class="flex items-start gap-1.5 min-w-0">
+                    <span class="${labelCls} font-bold text-[13px] px-1.5 py-0.5 rounded border border-fuji-light flex-shrink-0">${label}</span>
+                    <span class="text-[13px] font-extrabold text-fuji-dark break-all whitespace-pre-line leading-snug py-0.5 min-w-0">${esc(val)}</span>
+                </div>`;
+
+            const rows = [];
+            if (ex)  rows.push(row('未稅', 'bg-fuji-bg text-fuji-secondary', ex));
+            if (inc) rows.push(row('含稅', 'bg-fuji-light/60 text-fuji-primary', inc));
+
+            const isShort = v => !v.includes('\n') && v.length <= 14;
+            const compact = isShort(ex) && isShort(inc);
+            return `<div class="flex ${compact ? 'items-center gap-2 flex-wrap' : 'flex-col gap-1'} mt-0.5">${rows.join('')}</div>`;
         }
 
         //購物清單 渲染列表 (將商品中文顯示在商品名稱下方，格式比照商品)
@@ -1657,7 +1779,8 @@
                                 </div>
                             </div>
                             <div class="cursor-pointer" onclick="toggleShoppingCheck('${item.id}')">
-                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked 
+                                ${buildShopPriceTags(item)}
+                                ${item.note ? `<div class="text-[13px] font-medium break-all ${isChecked
                                                 ? 'text-fuji-secondary font-normal' 
                                                 : 'text-fuji-secondary'}">${item.note}</div>` 
                                             : ''}
