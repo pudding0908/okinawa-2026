@@ -200,7 +200,6 @@
                             <button type="button" id="clear-shop-store-btn" onclick="clearShopStoreInput()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-fuji-secondary/50 hover:text-rose-500 transition-all">
                                 <i class="fa-solid fa-circle-xmark text-sm"></i>
                             </button>
-                            
                             <datalist id="existing-stores-list"></datalist>
                         </div>
 
@@ -1485,6 +1484,9 @@
             }
         }
 
+        // 「顯示」欄：勾選框沒勾（FALSE）的品項不進清單；空白（例如剛由 GAS 新增、還沒補勾）視同顯示
+        const isShopRowHidden = v => ['FALSE', 'false', '0', '否', 'N', 'n'].includes(String(v ?? '').trim());
+
         // 購物清單 (改為動態追蹤中文字欄位名稱，位置隨便排都讀得到)
         async function fetchCloudShopping() {
             try {
@@ -1517,6 +1519,7 @@
                         const vizRows = vizData?.table?.rows || [];
                         const idxLogo   = cols.findIndex(c => c.label === '店家 LOGO');
                         const idxStore  = cols.findIndex(c => c.label === '店家');
+                        const idxShow   = cols.findIndex(c => c.label === '顯示');
                         const idxName   = cols.findIndex(c => c.label === '商品');
                         const idxNameJP = cols.findIndex(c => c.label === '商品日文');
                         const idxQty    = cols.findIndex(c => c.label === '數量');
@@ -1532,6 +1535,7 @@
                                 const safeV = (idx) => (idx >= 0 && idx < c.length && c[idx]?.v != null) ? String(c[idx].v) : '';
                                 const itemName = safeV(idxName);
                                 if (!itemName) return;
+                                if (idxShow !== -1 && isShopRowHidden(safeV(idxShow))) return;   // 「顯示」沒勾就跳過
                                 const storeRaw = safeV(idxStore);
                                 if (storeRaw) lastStore = storeRaw;
                                 const storeName = storeRaw || lastStore || '其他待辦';
@@ -1591,6 +1595,7 @@
                     const headers = rows[hdrIdx];
                     const idxLogo   = headers.indexOf('店家 LOGO');
                     const idxStore  = headers.indexOf('店家');
+                    const idxShow   = headers.indexOf('顯示');
                     const idxName   = headers.indexOf('商品');
                     const idxNameJP = headers.indexOf('商品日文');
                     const idxQty    = headers.indexOf('數量');
@@ -1608,6 +1613,7 @@
                         const cols = rows[i];
                         const itemName = safeCol(cols, idxName);
                         if (!itemName) continue;
+                        if (idxShow !== -1 && isShopRowHidden(safeCol(cols, idxShow))) continue;   // 「顯示」沒勾就跳過
                         const storeRaw = safeCol(cols, idxStore);
                         if (storeRaw) lastStore = storeRaw;
                         const storeName = storeRaw || lastStore || '其他待辦';
