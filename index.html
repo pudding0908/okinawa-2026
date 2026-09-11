@@ -200,6 +200,7 @@
                             <button type="button" id="clear-shop-store-btn" onclick="clearShopStoreInput()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-fuji-secondary/50 hover:text-rose-500 transition-all">
                                 <i class="fa-solid fa-circle-xmark text-sm"></i>
                             </button>
+                            
                             <datalist id="existing-stores-list"></datalist>
                         </div>
 
@@ -2048,29 +2049,55 @@
                 const response = await fetch(`${CHECKLIST_CSV_URL}&nocache=${Date.now()}`);
                 if (!response.ok) throw new Error("網路讀取失敗");
                 const csvText = await response.text();
-                
-                // 按行切開
-                const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+
+                // 改用共用的 CSV 解析器（正確處理引號內的逗號）
+                const rows = parseCSVToRows(csvText).filter(r => r.some(v => v !== ''));
                 globalChecklistItems = [];
 
-                // i=0 是 Header(欄位名稱)，我們直接從 i=1 開始抓取真實資料
-                if (lines.length > 1) {
+                if (rows.length > 1) {
+                    // 表頭列：前 3 列裡找含「項目」的那列
+                    let hdrIdx = 0;
+                    for (let k = 0; k < Math.min(3, rows.length); k++) {
+                        if (rows[k].some(h => h === '項目')) { hdrIdx = k; break; }
+                    }
+                    const headers = rows[hdrIdx].map(h => h.trim());
+
+                    // 照表頭名稱抓欄位，之後在試算表插欄、搬欄位都不會錯位
+                    const idxShow   = headers.indexOf('顯示');
+                    const idxDone   = headers.indexOf('完成');
+                    const idxId     = headers.findIndex(h => h.toLowerCase() === 'id');
+                    const idxType   = headers.indexOf('分類');                                   // 次分類（衣物用品…）
+                    // 大分類（嬰幼兒－托運行李…）：找「大分類／區域」表頭；找不到時退而取「分類」左邊那一欄
+                    let idxCat = headers.findIndex(h => h === '大分類' || h === '區域');
+                    if (idxCat === -1 && idxType > 0 && idxType - 1 !== idxId) idxCat = idxType - 1;
+                    const idxText   = headers.indexOf('項目');
+                    const idxQty    = headers.indexOf('數量');
+                    const idxNote   = headers.indexOf('備註');
+                    const idxRemind = headers.indexOf('提醒');
+
+                    if (idxText === -1) { console.error('[準備] 找不到「項目」欄，headers:', headers); renderChecklist(globalChecklistItems); return; }
+
+                    const col = (r, idx) => (idx >= 0 && idx < r.length) ? (r[idx] || '').trim() : '';
+                    // 試算表勾選框匯出來是 TRUE / FALSE，順便容許 1／是／✓ 等寫法
+                    const isTrue = v => ['TRUE', 'true', '1', '是', 'Y', 'y', '✓', '☑'].includes(String(v).trim());
                     const userCheckedStates = JSON.parse(localStorage.getItem('ok_checklist_user_checked')) || {};
 
-                    for (let i = 1; i < lines.length; i++) {
-                        // 使用安全 CSV 逗號切割法
-                        const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/["']/g, '').trim());
-                        
-                        // 如果切出來的欄位少於 4 個，或是關鍵的 D 欄（項目名稱）是空的就跳過
-                        if (currentLine.length < 4 || !currentLine[3]) continue; 
-                        
-                        // 不管欄位名稱，直接用 [欄位索引] 抓取資料
-                        const itemId = currentLine[0] || 'chk-' + i;       // A 欄 (ID)
-                        const catName = currentLine[1] || '其他未分類';     // B 欄 (區域/大分類)
-                        const typeName = currentLine[2] || '';             // C 欄 (分類/次類型)
-                        const itemText = currentLine[3];                   // D 欄 (項目名稱)
-                        const itemQty = parseInt(currentLine[4]) || 1;     // E 欄 (數量)
-                        const itemNote = currentLine[5] || '';             // F 欄 (備註)
+                    for (let i = hdrIdx + 1; i < rows.length; i++) {
+                        const r = rows[i];
+                        const itemText = col(r, idxText);
+                        if (!itemText) continue;
+
+                        // 「顯示」欄沒勾的項目直接不進清單（沒有這欄時一律顯示）
+                        if (idxShow !== -1 && !isTrue(col(r, idxShow))) continue;
+
+                        const itemId   = col(r, idxId) || 'chk-' + i;
+                        const catName  = col(r, idxCat) || '其他未分類';
+                        const typeName = col(r, idxType);
+                        const itemQty  = parseInt(col(r, idxQty)) || 1;
+                        const itemNote = col(r, idxNote);
+                        const remind   = col(r, idxRemind);
+                        // 「完成」欄有勾 = 雲端已完成；本機自己點過的勾也算
+                        const sheetDone = idxDone !== -1 && isTrue(col(r, idxDone));
 
                         // 行前行李各項大清單預設為 true (收合)
                         if (checklistCollapsedCategories[catName] === undefined) {
@@ -2084,7 +2111,8 @@
                             text: itemText,
                             qty: itemQty,
                             note: itemNote,
-                            checked: userCheckedStates[itemId] === true
+                            remind: remind,
+                            checked: sheetDone || userCheckedStates[itemId] === true
                         });
                     }
                 }
@@ -2184,6 +2212,14 @@
                             noteHtml = `<p class="text-[13px] text-fuji-secondary/90 font-medium mt-1 leading-normal break-all">${item.note}</p>`;
                         }
 
+                        // 「提醒」標示在項目後面：亮色底、不加刪除線，打勾完成後也照樣顯示
+                        let remindHtml = '';
+                        if (item.remind) {
+                            remindHtml = `<span class="inline-flex items-center gap-1 text-[12px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 border border-amber-300 rounded-md break-all no-underline">
+                                              <i class="fa-solid fa-bell text-[11px]"></i>${item.remind}
+                                          </span>`;
+                        }
+
                         catHtml += `
                             <label class="flex items-start gap-3 text-sm text-fuji-dark font-medium cursor-pointer select-none group min-h-[20px]">
                                 <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" class="mt-0.5 accent-fuji-primary h-4 w-4 rounded flex-shrink-0">
@@ -2191,6 +2227,7 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="${isChecked ? 'line-through text-fuji-secondary font-normal' : 'font-bold text-fuji-dark text-[14px]'} break-all">${item.text}</span>
                                         <span class="text-[13px] font-extrabold px-2 py-0.2 bg-fuji-bg border border-fuji-light text-fuji-primary rounded-md shadow-3xs">x ${item.qty}</span>
+                                        ${remindHtml}
                                     </div>
                                     ${noteHtml}
                                 </div>
