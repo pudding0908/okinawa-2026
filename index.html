@@ -333,6 +333,14 @@
                 </div>
 
                 <div id="sec-form-content" class="text-[13px] bg-fuji-paper rounded-xl border border-fuji-light shadow-sm p-3 mb-3 hidden space-y-2.5">
+                    <!-- 掃描發票：辨識後只幫忙填入欄位，還是要自己核對再按上傳 -->
+                    <label class="flex items-center justify-center gap-1.5 px-2.5 py-2 border border-dashed border-fuji-primary rounded-lg bg-fuji-bg cursor-pointer hover:bg-fuji-light/40 transition-all font-bold text-fuji-primary">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span id="receipt-btn-label">掃描發票自動填入</span>
+                        <input type="file" id="receipt-file" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(this)">
+                    </label>
+                    <div id="receipt-result" class="hidden text-[12px] bg-fuji-bg border border-fuji-light rounded-lg px-2.5 py-2 space-y-1"></div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <select id="expense-type" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
                             <option value="交通">🚄 交通</option>
@@ -376,7 +384,7 @@
                             <option value="富邦J卡">富邦J卡</option>
                         </select>
                     </div>
-                    <input type="text" id="expense-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
+                    <textarea id="expense-note" rows="1" oninput="autoGrowExpenseNote(this)" placeholder="備註說明（可換行，一行一項）" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none resize-none overflow-hidden leading-snug"></textarea>
                     <button id="add-expense-btn" onclick="addExpense()" class="w-full bg-fuji-primary text-white font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all">
                         <i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存並同步至雲端
                     </button>
@@ -1978,6 +1986,211 @@
             renderExpenses();
         }
 
+        // ---- 記帳：備註欄自動長高（可換行，一行一項）--------------------------------------
+        function autoGrowExpenseNote(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            const full = el.scrollHeight;
+            el.style.height = Math.min(full, 200) + 'px';
+            el.style.overflowY = full > 200 ? 'auto' : 'hidden';   // 超過上限要能捲，否則後面幾行看不到
+        }
+
+        // ---- 記帳：掃描發票 ---------------------------------------------------------------
+        // 流程：壓縮照片 → 丟給 GAS 用 Google Drive 辨識文字 → JSONP 取回結果 → 解析後填進表單
+        let receiptRawText = '';
+
+        function compressReceiptImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    const maxDim = 1600;   // 發票字比商品圖小，解析度要拉高一點才讀得到
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w >= h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                        else { w = Math.round(w * maxDim / h); h = maxDim; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' });
+                };
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+
+        async function handleReceiptScan(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法辨識發票。'); return; }
+
+            const label = document.getElementById('receipt-btn-label');
+            const box = document.getElementById('receipt-result');
+            if (label) label.textContent = '辨識中...';
+            if (box) { box.classList.remove('hidden'); box.innerHTML = '<div class="text-fuji-secondary font-medium"><i class="fa-solid fa-spinner fa-spin mr-1"></i>正在辨識發票，約需 10～20 秒...</div>'; }
+
+            try {
+                const { base64, mimeType } = await compressReceiptImage(file);
+                try { await gasJsonp('drainOcr=1'); } catch (e) {}   // 先清掉上一次殘留的結果
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'scanReceipt', fileName: 'receipt.jpg', mimeType, data: base64, lang: 'ja' })
+                });
+
+                let text = null, gasError = null;
+                for (let i = 0; i < 20; i++) {
+                    await new Promise(r => setTimeout(r, 1500));
+                    try {
+                        const d = await gasJsonp('ocr=1');
+                        if (d && d.text != null) { text = d.text; break; }
+                        if (d && d.error) { gasError = d.error; break; }
+                    } catch (e) {}
+                }
+                if (gasError) throw new Error(gasError);
+                if (text == null) throw new Error('辨識逾時，請重拍一張清楚一點的照片再試');
+
+                receiptRawText = text;
+                const parsed = parseReceiptText(text);
+                applyReceiptToForm(parsed);
+                renderReceiptResult(parsed);
+            } catch (err) {
+                if (box) box.innerHTML = `<div class="text-rose-600 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>發票辨識失敗：${err.message}</div>`;
+            } finally {
+                if (label) label.textContent = '掃描發票自動填入';
+            }
+        }
+
+        // 從辨識出來的文字找出 店家 / 日期 / 時間 / 金額 / 付款方式 / 商品細項
+        function parseReceiptText(raw) {
+            const lines = String(raw || '').split(/\r?\n/).map(l => l.replace(/　/g, ' ').trim()).filter(l => l);
+            const joined = lines.join('\n');
+            const out = { store: '', date: '', time: '', amount: 0, currency: '', method: '', items: [] };
+            const num = s => { const n = parseFloat(String(s).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
+
+            // 幣別：看得到統一發票／NT$ 就當台幣，其餘一律當日幣
+            const isTwd = /(統一發票|新台幣|NT\$|TWD)/i.test(joined);
+            out.currency = isTwd ? '台幣 $' : '日幣 ￥';
+
+            // 日期：西元 → 令和 → 兩位數年份
+            let m = joined.match(/(20\d{2})\s*[年\/\-.]\s*(\d{1,2})\s*[月\/\-.]\s*(\d{1,2})/);
+            if (!m) {
+                const r = joined.match(/(?:令和|R)\s*(\d{1,2})\s*[年\/\-.]\s*(\d{1,2})\s*[月\/\-.]\s*(\d{1,2})/);
+                if (r) m = [null, String(2018 + Number(r[1])), r[2], r[3]];
+            }
+            if (!m) {
+                const s = joined.match(/(?:^|[^\d])(\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?![\d])/);
+                if (s) m = [null, '20' + s[1], s[2], s[3]];
+            }
+            if (m) out.date = `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}`;
+
+            const t = joined.match(/(?:^|[^\d])(\d{1,2}):(\d{2})(?![\d])/);
+            if (t) out.time = `${String(t[1]).padStart(2, '0')}:${t[2]}`;
+
+            // 金額：合計類關鍵字優先，同一行沒有就看下一行
+            const grab = re => {
+                for (let i = 0; i < lines.length; i++) {
+                    if (!re.test(lines[i])) continue;
+                    const inline = lines[i].match(/[¥￥$]?\s*([\d][\d,]*)\s*円?\s*[*※]?$/);
+                    if (inline && num(inline[1]) > 0) return num(inline[1]);
+                    if (lines[i + 1]) {
+                        const nx = lines[i + 1].match(/[¥￥$]?\s*([\d][\d,]*)\s*円?/);
+                        if (nx && num(nx[1]) > 0) return num(nx[1]);
+                    }
+                }
+                return 0;
+            };
+            out.amount = grab(/(税込\s*合\s*計|合\s*計\s*[（(]?\s*税込)/)
+                      || grab(/(合\s*計|総\s*合?\s*計|お買上げ?計|ご請求額?|お会計|総額|應收|應付)/)
+                      || grab(/(小\s*計|税抜)/);
+            if (!out.amount) {   // 都找不到就取整張最大的金額
+                let max = 0;
+                (joined.match(/[¥￥]\s*[\d][\d,]*|[\d][\d,]*\s*円/g) || []).forEach(s => { max = Math.max(max, num(s)); });
+                out.amount = max;
+            }
+
+            // 付款方式
+            if (/(クレジット|ｸﾚｼﾞｯﾄ|カード|ｶｰﾄﾞ|VISA|JCB|MASTER|AMEX|信用卡)/i.test(joined)) out.method = '信用卡';
+            else if (/(現金|お預り|お預かり|釣|CASH)/i.test(joined)) out.method = isTwd ? '台幣' : '日幣現金';
+
+            // 只有數字與符號的行（注意：日文字在 JS 正則算 \W，不能拿 \W 判斷）
+            const symbolOnly = /^[\d\s\-\/:.,()（）¥￥$*※#＃]+$/;
+            // 地址、電話、日期時間這種行，既不是店名也不是商品
+            const infoLine = /(\d{1,2}:\d{2}|\d{1,4}\s*年|\d{1,2}\s*月\s*\d{1,2}\s*日|TEL|電話|〒|[都道府県]\s*[^\s]{0,6}[市区町村]|番地|登録番号)/;
+
+            // 店家：前幾行裡挑一個不像標題、不是純數字的
+            const skipStore = /(領収書|レシート|お買上|明細|控え|統一發票|收據|發票)/;
+            for (let i = 0; i < Math.min(6, lines.length); i++) {
+                const l = lines[i];
+                if (l.length < 2 || l.length > 30) continue;
+                if (skipStore.test(l) || symbolOnly.test(l) || infoLine.test(l)) continue;
+                out.store = l; break;
+            }
+
+            // 商品細項：行尾是價格、且不是合計那類字眼、也不是地址日期行
+            const totalWord = /(合\s*計|小\s*計|税|釣|預|点数|お買上|ご請求|お会計|総額|レジ|No|責|應收|應付)/;
+            lines.forEach(l => {
+                if (infoLine.test(l)) return;
+                const mm = l.match(/^(.*?[^\d\s,.\-¥￥*※])\s*[*※]?\s*[¥￥$]?\s*([\d][\d,]*)\s*円?\s*[*※]?$/);
+                if (!mm) return;
+                const name = mm[1].trim();
+                const price = num(mm[2]);
+                if (!name || name.length < 2 || totalWord.test(name) || symbolOnly.test(name) || price <= 0) return;
+                if (out.items.length < 30) out.items.push({ name, price });
+            });
+            return out;
+        }
+
+        // 把辨識結果填進表單（原本已經打好的字不覆蓋）
+        function applyReceiptToForm(p) {
+            const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+            set('expense-store', p.store);
+            set('expense-date', p.date);
+            set('expense-time', p.time);
+            set('expense-currency', p.currency);
+            if (p.amount > 0) set('expense-amount', p.amount);
+            if (p.method) { document.getElementById('expense-method').value = p.method; toggleCardSelect(); }
+
+            const titleEl = document.getElementById('expense-title');
+            if (titleEl && !titleEl.value.trim()) {
+                titleEl.value = p.items.length === 1 ? p.items[0].name
+                              : p.items.length > 1 ? `${p.items[0].name} 等 ${p.items.length} 項`
+                              : (p.store || '發票消費');
+            }
+
+            // 商品細項寫進備註，一項一行
+            const noteEl = document.getElementById('expense-note');
+            if (noteEl && p.items.length) {
+                const sym = p.currency.indexOf('日幣') !== -1 ? '¥' : '$';
+                const detail = p.items.map(it => `${it.name} ${sym}${it.price.toLocaleString()}`).join('\n');
+                noteEl.value = noteEl.value.trim() ? noteEl.value.trim() + '\n' + detail : detail;
+                autoGrowExpenseNote(noteEl);
+            }
+        }
+
+        function renderReceiptResult(p) {
+            const box = document.getElementById('receipt-result');
+            if (!box) return;
+            box.classList.remove('hidden');
+            const row = (k, v) => `<div><span class="text-fuji-secondary font-bold">${k}</span>：<span class="font-extrabold text-fuji-dark">${v || '未辨識到'}</span></div>`;
+            box.innerHTML = `
+                <div class="font-bold text-fuji-primary"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>已自動填入，請核對後再按下方上傳</div>
+                ${row('店家', p.store)}
+                ${row('日期時間', [p.date, p.time].filter(Boolean).join(' '))}
+                ${row('金額', p.amount ? `${p.currency.indexOf('日幣') !== -1 ? '¥' : '$'}${p.amount.toLocaleString()}` : '')}
+                ${row('付款方式', p.method)}
+                ${row('商品細項', p.items.length ? `${p.items.length} 項（已寫入備註）` : '')}
+                <button type="button" onclick="toggleReceiptRaw()" class="text-fuji-primary font-bold underline">看辨識原文</button>
+                <pre id="receipt-raw" class="hidden whitespace-pre-wrap break-all bg-white border border-fuji-light rounded p-2 max-h-40 overflow-auto text-[11px] text-fuji-secondary">${receiptRawText.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre>`;
+        }
+
+        function toggleReceiptRaw() {
+            const el = document.getElementById('receipt-raw');
+            if (el) el.classList.toggle('hidden');
+        }
+
         // ---- 記帳：雲端讀取 ---------------------------------------------------------------
         // 金額欄在試算表是「¥ 26,076」「11,900」這種顯示文字，取出純數字
         function parseWalletAmount(v) {
@@ -2154,8 +2367,12 @@
                 document.getElementById('expense-store').value = '';
                 document.getElementById('expense-title').value = '';
                 document.getElementById('expense-amount').value = '';
-                document.getElementById('expense-note').value = '';
+                const noteEl = document.getElementById('expense-note');
+                noteEl.value = ''; autoGrowExpenseNote(noteEl);
                 document.getElementById('expense-method').value = '日幣現金';
+                const rBox = document.getElementById('receipt-result');
+                if (rBox) { rBox.classList.add('hidden'); rBox.innerHTML = ''; }
+                receiptRawText = '';
                 initWalletDateTime();  // 記帳 選擇日期與時間
                 toggleCardSelect();    // 記帳 選擇支付方式
                 renderExpenses();      // 讀取記帳明細
@@ -2296,7 +2513,7 @@
                                     <span class="text-[12px] font-bold px-1.5 py-0.5 rounded-full ${walletSourceStyle(src)}">${src}</span>
                                     ${item.isPending ? `<span class="text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300"><i class="fa-solid fa-spinner fa-spin text-[10px] mr-0.5"></i>同步中</span>` : ''}
                                 </div>
-                                ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all pt-0.5">${item.note}</div>` : ''}
+                                ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all whitespace-pre-line leading-snug pt-0.5">${item.note}</div>` : ''}
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <div class="text-right">
