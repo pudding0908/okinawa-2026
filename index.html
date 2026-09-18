@@ -2076,6 +2076,17 @@
             localStorage.setItem('ok_wallet_hidden_sources', JSON.stringify([...hidden]));
             renderExpenses();
         }
+        // 刪除權限：只有「目前身分自己建立的」才給刪
+        //   雲端建立（來源＝雲端）→ 一律不給，要到試算表改
+        //   別人建立（來源≠目前身分）→ 不給，要先切換身分
+        //   本機舊資料 → 只存在這支手機，給刪
+        function walletCanDelete(item) {
+            const src = item.source || WALLET_CLOUD_SOURCE;
+            if (src === WALLET_CLOUD_SOURCE) return false;
+            if (src === WALLET_LOCAL_SOURCE) return true;
+            return !!walletUser && src === walletUser;
+        }
+
         function walletSourceStyle(src) {
             if (src === WALLET_CLOUD_SOURCE) return 'bg-slate-100 text-slate-600 border border-slate-300';
             if (src === WALLET_LOCAL_SOURCE) return 'bg-amber-100 text-amber-700 border border-amber-300';
@@ -2260,7 +2271,11 @@
                     const displayAmt = isJpy ? `¥${amt.toLocaleString()}` : `$${amt.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(amt * rate).toLocaleString()}` : `約 ¥${Math.round(amt / rate).toLocaleString()}`;
                     const src = item.source || WALLET_CLOUD_SOURCE;
-                    const canDelete = src !== WALLET_CLOUD_SOURCE;   // 雲端建立的不給刪，只能到試算表改
+                    // 只能刪自己建立的：雲端建的要到試算表改，別人建的要切換成他的身分才能刪
+                    const canDelete = walletCanDelete(item);
+                    const lockTip = src === WALLET_CLOUD_SOURCE
+                        ? '雲端建立的紀錄請直接到試算表修改'
+                        : `這筆是 ${src} 建立的，切換成 ${src} 的身分才能刪除`;
                     const typeCls = WALLET_TYPE_STYLE[item.type] || 'bg-gray-100 text-gray-600 border-gray-300';
 
                     groupHtml += `
@@ -2292,7 +2307,7 @@
                                     ? `<button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
                                            <i class="fa-regular fa-trash-can text-[13px]"></i>
                                        </button>`
-                                    : `<span class="text-fuji-light p-1.5 text-xs" title="雲端建立的紀錄請直接到試算表修改">
+                                    : `<span class="text-fuji-light p-1.5 text-xs" title="${lockTip}">
                                            <i class="fa-solid fa-lock text-[12px]"></i>
                                        </span>`}
                             </div>
@@ -2306,7 +2321,9 @@
         function deleteExpense(id) {
             // 1. 還在等同步的暫存：直接從本機移除
             const pending = getPendingExpenses();
-            if (pending.some(p => p.id === id)) {
+            const p0 = pending.find(p => p.id === id);
+            if (p0) {
+                if (!walletCanDelete(p0)) { alert(`這筆是 ${p0.source} 建立的，請先切換成 ${p0.source} 的身分再刪除。`); return; }
                 if (!confirm('這筆還在同步中，確定要移除嗎？\n（若雲端已經寫入成功，下次同步時仍會出現）')) return;
                 setPendingExpenses(pending.filter(p => p.id !== id));
                 renderExpenses();
@@ -2329,12 +2346,17 @@
                 alert('這筆是直接在雲端試算表建立的，App 不提供刪除。\n要移除請到試算表操作。');
                 return;
             }
+            if (!walletCanDelete(item)) {
+                alert(`只能刪除自己建立的紀錄。\n這筆是 ${item.source} 建立的${walletUser ? `，你目前的身分是 ${walletUser}` : ''}。\n要刪請先切換成 ${item.source} 的身分。`);
+                return;
+            }
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法從雲端刪除。'); return; }
-            if (!confirm(`確定要刪除「${item.title}」嗎？\n這筆是 ${item.source} 從手機新增的，會一併從雲端試算表移除。`)) return;
+            if (!confirm(`確定要刪除「${item.title}」嗎？\n會一併從雲端試算表移除。`)) return;
 
             fetch(GAS_WEB_APP_URL, {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'deleteExpense', row: item.row, title: item.title, source: item.source })
+                // actor = 目前身分，GAS 端會再擋一次：只有本人能刪自己的紀錄
+                body: JSON.stringify({ action: 'deleteExpense', row: item.row, title: item.title, source: item.source, actor: walletUser })
             })
             .then(() => {
                 cloudExpenses = cloudExpenses.filter(e => e.id !== id);   // 先從畫面拿掉
