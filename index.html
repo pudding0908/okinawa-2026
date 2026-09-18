@@ -271,10 +271,27 @@
 
             <!-- tab4.錢包 -->
             <section id="page-wallet" class="tab-content hidden text-xs">
-                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-3 flex items-center gap-1.5">
+                <h2 class="font-cute text-lg font-bold text-fuji-primary mb-2 flex items-center gap-1.5">
                     <i class="fa-solid fa-coins text-fuji-accent"></i> 隨身小帳本
                 </h2>
-                
+
+                <!-- 目前身分：新增的紀錄會以這個身分寫回雲端「記帳」分頁 -->
+                <div class="flex items-center justify-between gap-2 mb-2 bg-fuji-paper rounded-xl border border-fuji-light shadow-2xs px-2.5 py-1.5">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <i class="fa-solid fa-user-check text-fuji-primary text-[13px]"></i>
+                        <span class="text-[13px] font-bold text-fuji-secondary flex-shrink-0">目前身分</span>
+                        <span id="wallet-user-tag" class="text-[13px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">未設定</span>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button onclick="openWalletUserPicker()" class="text-[13px] font-bold text-fuji-primary bg-fuji-bg border border-fuji-light rounded-lg px-2 py-1 hover:bg-fuji-light transition-all">
+                            <i class="fa-solid fa-right-left text-[11px] mr-0.5"></i>切換
+                        </button>
+                        <button id="wallet-refresh-btn" onclick="fetchCloudExpenses()" class="text-[13px] font-bold text-fuji-primary bg-fuji-bg border border-fuji-light rounded-lg px-2 py-1 hover:bg-fuji-light transition-all">
+                            <i class="fa-solid fa-rotate text-[11px] mr-0.5"></i>同步
+                        </button>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-12 gap-2 mb-3 items-stretch">
                     <div class="col-span-5 flex flex-col gap-1.5">
                         <button onclick="toggleSection('sec-rate-content', 'sec-rate-arrow')" class="w-full bg-fuji-light/90 hover:bg-fuji-light border border-fuji-primary rounded-xl px-2 py-1.5 flex items-center justify-between text-left font-bold text-fuji-dark transition-all shadow-2xs">
@@ -290,7 +307,7 @@
                     <div class="col-span-7 bg-fuji-dark rounded-xl text-white px-3 py-1.5 flex flex-col justify-center shadow-sm relative overflow-hidden">
                         <div class="absolute -right-2 -bottom-2 text-white/5 text-3xl"><i class="fa-solid fa-wallet"></i></div>
                         <div class="flex items-center justify-between border-b border-white/10 pb-0.5 mb-0.5">
-                            <span class="text-[13px] text-fuji-light/70 font-bold">總日幣</span>
+                            <span class="text-[13px] text-fuji-light/70 font-bold">總日幣<span id="total-filter-tag" class="hidden ml-1 text-[11px] font-bold text-amber-300">(已篩選)</span></span>
                             <span id="total-jpy" class="font-cute font-extrabold text-sm text-fuji-light">¥ 0</span>
                         </div>
                         <div class="flex items-center justify-between">
@@ -317,8 +334,22 @@
 
                 <div id="sec-form-content" class="text-[13px] bg-fuji-paper rounded-xl border border-fuji-light shadow-sm p-3 mb-3 hidden space-y-2.5">
                     <div class="grid grid-cols-2 gap-2">
+                        <select id="expense-type" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
+                            <option value="交通">🚄 交通</option>
+                            <option value="住宿">🏨 住宿</option>
+                            <option value="票券">🎟️ 票券</option>
+                            <option value="飲食">🍜 飲食</option>
+                            <option value="購物">🛍️ 購物</option>
+                            <option value="其他" selected>📌 其他</option>
+                        </select>
+                        <select id="expense-payer" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
+                            <option value="鳴">付費人：鳴</option>
+                            <option value="萱">付費人：萱</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
                         <input type="text" id="expense-store" placeholder="店家" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
-                        <input type="text" id="expense-title" placeholder="購買商品 (必填)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
+                        <input type="text" id="expense-title" placeholder="品項 (必填)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <input type="date" id="expense-date" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark">
@@ -326,34 +357,54 @@
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                         <select id="expense-currency" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
-                            <option value="JPY">日幣 (¥)</option>
-                            <option value="TWD">台幣 ($)</option>
+                            <option value="日幣 ￥">日幣 (¥)</option>
+                            <option value="台幣 $">台幣 ($)</option>
                         </select>
                         <input type="number" id="expense-amount" placeholder="消費金額" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <select id="expense-method" onchange="toggleCardSelect()" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark">
                             <option value="日幣現金">💵 日幣現金</option>
+                            <option value="台幣">🇹🇼 台幣</option>
                             <option value="信用卡">💳 信用卡</option>
-                            <option value="台幣支付">🇹🇼 台幣</option>
                         </select>
                         <select id="expense-card" disabled class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-secondary opacity-50">
                             <option value="">-- 選擇信用卡 --</option>
                             <option value="聯邦吉鶴卡">聯邦吉鶴卡</option>
-                            <option value="富邦J卡">富邦J卡</option>
                             <option value="國泰CUBE卡">國泰CUBE卡</option>
                             <option value="玉山熊本熊卡">玉山熊本熊卡</option>
-                            <option value="其他卡片">其他卡片</option>
+                            <option value="富邦J卡">富邦J卡</option>
                         </select>
                     </div>
                     <input type="text" id="expense-note" placeholder="備註說明" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
-                    <button onclick="addExpense()" class="w-full bg-fuji-primary text-white font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all">
-                        <i class="fa-solid fa-plus mr-1"></i>儲存此筆開銷
+                    <button id="add-expense-btn" onclick="addExpense()" class="w-full bg-fuji-primary text-white font-bold py-2 rounded-lg shadow-md hover:bg-fuji-dark transition-all">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存並同步至雲端
                     </button>
+                </div>
+
+                <!-- 查詢記帳紀錄：依 來源/建立者 篩選（可複選） -->
+                <div class="bg-fuji-paper rounded-xl border border-fuji-light shadow-2xs px-2.5 py-2 mb-2">
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <i class="fa-solid fa-filter text-fuji-primary text-[12px]"></i>
+                        <span class="text-[13px] font-bold text-fuji-secondary">查詢記帳紀錄（來源／建立者，可複選）</span>
+                    </div>
+                    <div id="wallet-source-filters" class="flex items-center gap-1.5 flex-wrap"></div>
                 </div>
 
                 <div id="expense-list" class="space-y-3"></div>
             </section>
+
+            <!-- 錢包：選擇使用者身分 -->
+            <div id="wallet-user-picker" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-6">
+                <div class="bg-white rounded-2xl border border-fuji-light shadow-xl w-full max-w-xs p-4 space-y-3">
+                    <div class="text-center">
+                        <div class="font-cute text-base font-extrabold text-fuji-primary">你是誰呀？</div>
+                        <div class="text-[13px] text-fuji-secondary font-medium mt-0.5">記帳時會用這個身分寫回雲端</div>
+                    </div>
+                    <div id="wallet-user-options" class="grid grid-cols-2 gap-2"></div>
+                    <button onclick="closeWalletUserPicker()" class="w-full text-[13px] font-bold text-fuji-secondary bg-fuji-bg border border-fuji-light rounded-lg py-1.5 hover:bg-fuji-light transition-all">稍後再說</button>
+                </div>
+            </div>
 
             <!-- tab5.準備 -->
             <section id="page-lists" class="tab-content hidden">
@@ -450,13 +501,24 @@
         // export 直接輸出儲存格顯示文字，數字與文字都完整拿得到
         const SHOPPING_SHEET_GID = '346107796';  //「購物」分頁的 gid（換分頁才需要改）
         const SHOPPING_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHOPPING_SHEET_GID}`;  //「購物」資料來源
+        const WALLET_SHEET_GID = '661001509';  //「記帳」分頁的 gid（換分頁才需要改）
+        const WALLET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${WALLET_SHEET_GID}`;  //「記帳」資料來源
         const CHECKLIST_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=%E6%BA%96%E5%82%99`;  //「準備」資料來源
         const WEATHER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%A4%A9%E6%B0%A3`;  //「天氣」資料來源
         const MAP_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=%E5%9C%B0%E5%9C%96`;  //「地圖」資料來源
 
         let cloudShoppingItems = [];
-        let currentPostType = 'local'; 
+        let currentPostType = 'local';
         let walletCollapsedDays = {};
+        // 記帳：雲端試算表讀回來的紀錄
+        let cloudExpenses = [];
+        const WALLET_CLOUD_SOURCE = '雲端';          // 直接在試算表上建立的，App 不給刪
+        const WALLET_LOCAL_SOURCE = '本機';          // 舊版只存在手機、沒上傳過的紀錄
+        const WALLET_USERS = ['鳴', '萱'];           // 手機端可選的身分（同時也是來源/建立者）
+        // 用 try 包住：無痕視窗或瀏覽器擋了網站資料時，讀 localStorage 會直接拋錯，
+        // 寫在最外層會讓整份 script 停掉，整個 App 都不能用
+        let walletUser = '';
+        try { walletUser = localStorage.getItem('ok_wallet_user') || ''; } catch (e) {}
         let shoppingCollapsedStores = {};
         // 儲存行前準備各區域卡片的折疊狀態 (預設皆改為 true 收合)
         let checklistCollapsedCategories = {};
@@ -492,7 +554,8 @@
             // tab4.錢包
             fetchBotExchangeRate();  // 抓取日幣即時匯率
             initWalletDateTime();  // 記帳 選擇日期與時間
-            renderExpenses();  // 讀取記帳明細
+            updateWalletUserTag(); // 記帳 目前身分
+            fetchCloudExpenses();  // 記帳 雲端「記帳」分頁（內含 renderExpenses）
 
             // tab5.準備
             fetchCloudChecklist(); // 初始化時同步抓取雲端行李清單
@@ -745,7 +808,10 @@
             
             collapseAllSections(tabName);
             if(tabName === 'shopping') { if(cloudShoppingItems.length > 0) renderCombinedShoppingList(); else fetchCloudShopping(); }
-            if(tabName === 'wallet') renderExpenses();
+            if(tabName === 'wallet') {
+                if (cloudExpenses.length > 0) renderExpenses(); else fetchCloudExpenses();
+                if (!walletUser) setTimeout(openWalletUserPicker, 300);   // 還沒選身分就先問
+            }
             if(tabName === 'lists') { if(globalChecklistItems.length > 0) renderChecklist(globalChecklistItems); else fetchCloudChecklist(); }
             
             const mainEl = document.querySelector('main');
@@ -1876,44 +1942,224 @@
             renderExpenses();  // 讀取記帳明細
         }
 
-        // 新增 記帳明細
+        // ---- 記帳：身分（來源/建立者）----------------------------------------------------
+        function updateWalletUserTag() {
+            const tag = document.getElementById('wallet-user-tag');
+            if (tag) {
+                tag.textContent = walletUser || '未設定';
+                tag.className = walletUser
+                    ? 'text-[13px] font-extrabold px-2 py-0.5 rounded-full ' + walletSourceStyle(walletUser)
+                    : 'text-[13px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300';
+            }
+            const payer = document.getElementById('expense-payer');
+            if (payer && walletUser && WALLET_USERS.indexOf(walletUser) !== -1) payer.value = walletUser;
+        }
+
+        function openWalletUserPicker() {
+            const box = document.getElementById('wallet-user-options');
+            if (box) {
+                box.innerHTML = WALLET_USERS.map(u => `
+                    <button onclick="setWalletUser('${u}')" class="py-2 rounded-xl border font-extrabold text-[15px] transition-all ${u === walletUser ? 'ring-2 ring-fuji-primary ' : ''}${walletSourceStyle(u)}">${u}</button>`).join('');
+            }
+            const modal = document.getElementById('wallet-user-picker');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeWalletUserPicker() {
+            const modal = document.getElementById('wallet-user-picker');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setWalletUser(name) {
+            walletUser = name;
+            localStorage.setItem('ok_wallet_user', name);
+            closeWalletUserPicker();
+            updateWalletUserTag();
+            renderExpenses();
+        }
+
+        // ---- 記帳：雲端讀取 ---------------------------------------------------------------
+        // 金額欄在試算表是「¥ 26,076」「11,900」這種顯示文字，取出純數字
+        function parseWalletAmount(v) {
+            const s = String(v ?? '').replace(/[^\d.\-]/g, '');
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
+        }
+        // 日期統一成 YYYY-MM-DD 方便分組與排序（試算表顯示是 2026/1/1）
+        function normalizeWalletDate(v) {
+            const s = String(v ?? '').trim();
+            const m = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+            return m ? `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}` : s;
+        }
+        function normalizeWalletTime(v) {
+            const s = String(v ?? '').trim();
+            const m = s.match(/^(\d{1,2}):(\d{2})/);
+            return m ? `${String(m[1]).padStart(2, '0')}:${m[2]}` : s;
+        }
+
+        async function fetchCloudExpenses() {
+            const btn = document.getElementById('wallet-refresh-btn');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin text-[11px] mr-0.5"></i>同步';
+            try {
+                const res = await fetch(`${WALLET_CSV_URL}&nocache=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error('http ' + res.status);
+                // keepEmpty：保留空白列，這樣陣列位置才會等於試算表列號（刪除時要用）
+                const rows = parseCSVToRows(await res.text(), true);
+
+                let hdrIdx = -1;
+                for (let k = 0; k < Math.min(6, rows.length); k++) {
+                    if (rows[k].some(h => h.trim() === '品項')) { hdrIdx = k; break; }
+                }
+                if (hdrIdx === -1) { console.error('[記帳] 找不到「品項」表頭'); renderExpenses(); return; }
+
+                const headers = rows[hdrIdx].map(h => h.trim());
+                const at = n => headers.indexOf(n);
+                const iType = at('類型'), iDate = at('日期'), iTime = at('時間'), iStore = at('店家'),
+                      iTitle = at('品項'), iCur = at('幣別'), iJpy = at('日幣'), iTwd = at('台幣'),
+                      iMethod = at('付款方式'), iPayer = at('付費人'), iNote = at('備註');
+                const iSource = headers.findIndex(h => h.indexOf('來源') !== -1 || h.indexOf('建立者') !== -1);
+                const col = (r, i) => (i >= 0 && i < r.length) ? String(r[i] ?? '').trim() : '';
+
+                cloudExpenses = [];
+                for (let i = hdrIdx + 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    const title = col(r, iTitle);
+                    if (!title) continue;   // 只填了下拉選單示範值的列（沒有品項）不算一筆紀錄
+                    const jpyAmt = parseWalletAmount(col(r, iJpy));
+                    const twdAmt = parseWalletAmount(col(r, iTwd));
+                    const curRaw = col(r, iCur);
+                    const isJpy = curRaw ? curRaw.indexOf('日幣') !== -1 : jpyAmt > 0;
+                    cloudExpenses.push({
+                        id: 'cloud-' + (i + 1),
+                        row: i + 1,                       // 試算表實際列號（陣列第 i 列 = 第 i+1 列）
+                        type: col(r, iType),
+                        date: normalizeWalletDate(col(r, iDate)),
+                        time: normalizeWalletTime(col(r, iTime)),
+                        store: col(r, iStore),
+                        title: title,
+                        currency: isJpy ? 'JPY' : 'TWD',
+                        amount: isJpy ? jpyAmt : twdAmt,
+                        method: col(r, iMethod),
+                        payer: col(r, iPayer),
+                        note: col(r, iNote),
+                        source: col(r, iSource) || WALLET_CLOUD_SOURCE,
+                        isCloud: true
+                    });
+                }
+                prunePendingExpenses();
+            } catch (e) {
+                console.error('[記帳] 雲端讀取異常', e);
+            }
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate text-[11px] mr-0.5"></i>同步';
+            renderExpenses();
+        }
+
+        // ---- 記帳：等待上傳生效的暫存（避免剛新增的那筆在雲端更新前消失）------------------
+        function getPendingExpenses() { return JSON.parse(localStorage.getItem('ok_wallet_pending_v1')) || []; }
+        function setPendingExpenses(list) { localStorage.setItem('ok_wallet_pending_v1', JSON.stringify(list)); }
+        function walletMatchKey(e) {
+            return [e.date, e.title, Math.round(Number(e.amount) || 0), e.currency, e.source].join('|');
+        }
+        // 雲端已經看得到同一筆，就把本機暫存清掉，才不會同一筆顯示兩次
+        function prunePendingExpenses() {
+            const cloudKeys = new Set(cloudExpenses.map(walletMatchKey));
+            setPendingExpenses(getPendingExpenses().filter(p => !cloudKeys.has(walletMatchKey(p))));
+        }
+
+        // ---- 記帳：來源篩選（記住被關掉的，新出現的來源預設就會顯示）----------------------
+        function getWalletHiddenSources() {
+            return new Set(JSON.parse(localStorage.getItem('ok_wallet_hidden_sources') || '[]'));
+        }
+        function toggleWalletSource(src) {
+            const hidden = getWalletHiddenSources();
+            hidden.has(src) ? hidden.delete(src) : hidden.add(src);
+            localStorage.setItem('ok_wallet_hidden_sources', JSON.stringify([...hidden]));
+            renderExpenses();
+        }
+        function walletSourceStyle(src) {
+            if (src === WALLET_CLOUD_SOURCE) return 'bg-slate-100 text-slate-600 border border-slate-300';
+            if (src === WALLET_LOCAL_SOURCE) return 'bg-amber-100 text-amber-700 border border-amber-300';
+            if (src === '鳴') return 'bg-sky-100 text-sky-700 border border-sky-300';
+            if (src === '萱') return 'bg-rose-100 text-rose-700 border border-rose-300';
+            return 'bg-fuji-light/70 text-fuji-dark border border-fuji-light';
+        }
+        const WALLET_TYPE_STYLE = {
+            '交通': 'bg-rose-100 text-rose-700 border-rose-200',
+            '住宿': 'bg-sky-100 text-sky-700 border-sky-200',
+            '票券': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            '飲食': 'bg-amber-100 text-amber-700 border-amber-200',
+            '購物': 'bg-purple-100 text-purple-700 border-purple-200',
+            '其他': 'bg-gray-100 text-gray-600 border-gray-300'
+        };
+
+        // 新增 記帳明細（存本機暫存 + 同步寫回雲端「記帳」分頁）
         function addExpense() {
-            const store = document.getElementById('expense-store').value.trim() || '未分類店家';
+            if (!walletUser) { alert('請先選擇你的身分（鳴 / 萱），新增的紀錄才知道要掛誰的名字。'); openWalletUserPicker(); return; }
+
+            const type = document.getElementById('expense-type').value;
+            const store = document.getElementById('expense-store').value.trim();
             const title = document.getElementById('expense-title').value.trim();
             const date = document.getElementById('expense-date').value;
             const time = document.getElementById('expense-time').value;
             const amount = parseFloat(document.getElementById('expense-amount').value);
-            const currency = document.getElementById('expense-currency').value;
+            const currencySheet = document.getElementById('expense-currency').value;   // 直接存試算表用的「日幣 ￥」/「台幣 $」
             const method = document.getElementById('expense-method').value;
             const card = document.getElementById('expense-card').value;
+            const payer = document.getElementById('expense-payer').value;
             const note = document.getElementById('expense-note').value.trim();
 
             if (!title) { alert('請填寫買了什麼唷！'); return; }
             if (isNaN(amount) || amount <= 0) { alert('請輸入消費金額！'); return; }
             if (!date || !time) { alert('請確認日期時間。'); return; }
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法同步至雲端。'); return; }
 
-            const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
-            expenses.push({ id: 'exp-' + Date.now(), store, title, date, time, amount, currency, method, card, note });
-            localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(expenses));
+            // 付款方式：信用卡要合併成試算表下拉選單的寫法「信用卡－聯邦吉鶴卡」
+            const methodFull = (method === '信用卡' && card) ? ('信用卡－' + card) : method;
+            const isJpy = currencySheet.indexOf('日幣') !== -1;
 
-            document.getElementById('expense-store').value = '';
-            document.getElementById('expense-title').value = '';
-            document.getElementById('expense-amount').value = '';
-            document.getElementById('expense-note').value = '';
-            document.getElementById('expense-method').value = '日幣現金';
-            
-            initWalletDateTime();  // 記帳 選擇日期與時間
-            toggleCardSelect();  // 記帳 選擇支付方式
-            renderExpenses();  // 讀取記帳明細
+            const btn = document.getElementById('add-expense-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...'; }
+
+            const payload = {
+                action: 'addExpense',
+                type, date, time, store, title,
+                currency: currencySheet,
+                jpy: isJpy ? amount : '',
+                twd: isJpy ? '' : amount,
+                method: methodFull, payer, note,
+                source: walletUser
+            };
+
+            fetch(GAS_WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
+            .then(() => {
+                const pending = getPendingExpenses();
+                pending.push({
+                    id: 'pend-' + Date.now(), type, date, time, store, title,
+                    currency: isJpy ? 'JPY' : 'TWD', amount,
+                    method: methodFull, payer, note, source: walletUser, isPending: true
+                });
+                setPendingExpenses(pending);
+
+                document.getElementById('expense-store').value = '';
+                document.getElementById('expense-title').value = '';
+                document.getElementById('expense-amount').value = '';
+                document.getElementById('expense-note').value = '';
+                document.getElementById('expense-method').value = '日幣現金';
+                initWalletDateTime();  // 記帳 選擇日期與時間
+                toggleCardSelect();    // 記帳 選擇支付方式
+                renderExpenses();      // 讀取記帳明細
+                setTimeout(fetchCloudExpenses, 6000);   // 等雲端寫入生效後再抓一次
+            })
+            .catch(() => alert('同步失敗，請確認網路後再試一次。'))
+            .finally(() => { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存並同步至雲端'; } });
         }
 
-        // 記帳 選擇日期與時間
+        // 記帳 選擇日期與時間（用本地時間，不要用 UTC，否則晚上記帳會跳成隔天）
         function initWalletDateTime() {
             const now = new Date();
-            const localDate = now.toISOString().split('T')[0];
-            const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
-            document.getElementById('expense-date').value = localDate;
-            document.getElementById('expense-time').value = localTime;
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('expense-date').value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            document.getElementById('expense-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
         }
 
         // 記帳 選擇支付方式
@@ -1929,34 +2175,65 @@
             }
         }
 
-        // 讀取記帳明細
+        // 讀取記帳明細（雲端 + 等待同步的暫存 + 舊版只存在本機的紀錄）
         function renderExpenses() {
             const container = document.getElementById('expense-list'); if (!container) return; container.innerHTML = '';
-            const expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
+            updateWalletUserTag();
             const rate = parseFloat(document.getElementById('exchange-rate').value) || 0.215;
+
+            // 舊版本只存在手機、沒上傳過的紀錄，照樣顯示並標成「本機」
+            const legacy = (JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || []).map(e => Object.assign({}, e, {
+                type: e.type || '', payer: e.payer || '', source: WALLET_LOCAL_SOURCE, isLegacy: true
+            }));
+            const allExpenses = [...cloudExpenses, ...getPendingExpenses(), ...legacy];
+
+            // 來源篩選晶片：依實際出現過的來源動態產生
+            const sources = [...new Set(allExpenses.map(e => e.source || WALLET_CLOUD_SOURCE))];
+            const hidden = getWalletHiddenSources();
+            const filterBox = document.getElementById('wallet-source-filters');
+            if (filterBox) {
+                filterBox.innerHTML = sources.length === 0
+                    ? `<span class="text-[13px] text-fuji-secondary font-medium">目前沒有任何紀錄</span>`
+                    : sources.map(s => {
+                        const on = !hidden.has(s);
+                        const cnt = allExpenses.filter(e => (e.source || WALLET_CLOUD_SOURCE) === s).length;
+                        return `<button onclick="toggleWalletSource('${s}')" class="text-[13px] font-bold px-2 py-0.5 rounded-full transition-all ${on ? walletSourceStyle(s) : 'bg-white text-fuji-secondary/60 border border-fuji-light line-through'}">
+                                    <i class="fa-solid ${on ? 'fa-circle-check' : 'fa-circle'} text-[10px] mr-0.5"></i>${s} ${cnt}
+                                </button>`;
+                    }).join('');
+            }
+
+            const expenses = allExpenses.filter(e => !hidden.has(e.source || WALLET_CLOUD_SOURCE));
 
             let totalJpy = 0; let totalTwd = 0;
             expenses.forEach(exp => {
-                if (exp.currency === 'JPY') { totalJpy += exp.amount; totalTwd += exp.amount * rate; }
-                else { totalTwd += exp.amount; totalJpy += exp.amount / rate; }
+                const amt = Number(exp.amount) || 0;
+                if (exp.currency === 'JPY') { totalJpy += amt; totalTwd += amt * rate; }
+                else { totalTwd += amt; totalJpy += amt / rate; }
             });
             document.getElementById('total-jpy').innerHTML = `¥${Math.round(totalJpy).toLocaleString()}`;
             document.getElementById('total-twd').innerHTML = `NT$ ${Math.round(totalTwd).toLocaleString()}`;
+            const filterTag = document.getElementById('total-filter-tag');
+            if (filterTag) filterTag.classList.toggle('hidden', expenses.length === allExpenses.length);
 
             if (expenses.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🪙 隨身小帳本尚無資料。<br>點擊上方快速記帳吧！</div>`; 
+                container.innerHTML = allExpenses.length === 0
+                    ? `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🪙 隨身小帳本尚無資料。<br>點擊上方快速記帳吧！</div>`
+                    : `<div class="text-center py-8 text-xs text-fuji-secondary font-medium">🔍 目前的來源篩選沒有符合的紀錄。<br>點上方的來源標籤可以切換顯示。</div>`;
                 return;
             }
 
             expenses.sort((a, b) => {
-                if (a.date !== b.date) return b.date.localeCompare(a.date);
-                return b.time.localeCompare(a.time);
+                const da = a.date || '0000-00-00', db = b.date || '0000-00-00';
+                if (da !== db) return db.localeCompare(da);
+                return String(b.time || '').localeCompare(String(a.time || ''));
             });
 
             const dateGroups = {};
             expenses.forEach(exp => {
-                if (!dateGroups[exp.date]) dateGroups[exp.date] = [];
-                dateGroups[exp.date].push(exp);
+                const key = exp.date || '未填日期';
+                if (!dateGroups[key]) dateGroups[key] = [];
+                dateGroups[key].push(exp);
             });
 
             for (const [date, items] of Object.entries(dateGroups)) {
@@ -1979,23 +2256,30 @@
                 
                 items.forEach(item => {
                     const isJpy = item.currency === 'JPY';
-                    const displayAmt = isJpy ? `¥${item.amount.toLocaleString()}` : `$${item.amount.toLocaleString()}`;
-                    const subAmt = isJpy ? `約 $${Math.round(item.amount * rate)}` : `約 ¥${Math.round(item.amount / rate)}`;
+                    const amt = Number(item.amount) || 0;
+                    const displayAmt = isJpy ? `¥${amt.toLocaleString()}` : `$${amt.toLocaleString()}`;
+                    const subAmt = isJpy ? `約 $${Math.round(amt * rate).toLocaleString()}` : `約 ¥${Math.round(amt / rate).toLocaleString()}`;
+                    const src = item.source || WALLET_CLOUD_SOURCE;
+                    const canDelete = src !== WALLET_CLOUD_SOURCE;   // 雲端建立的不給刪，只能到試算表改
+                    const typeCls = WALLET_TYPE_STYLE[item.type] || 'bg-gray-100 text-gray-600 border-gray-300';
 
                     groupHtml += `
-                        <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all">
+                        <div class="p-3 flex justify-between items-center gap-2 hover:bg-fuji-bg/20 transition-all ${item.isPending ? 'bg-amber-50/60' : ''}">
                             <div class="min-w-0 flex-1 space-y-1">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="text-[13px] bg-fuji-primary text-white px-1.5 py-0.5 rounded font-bold inline-flex items-center gap-0.5 flex-shrink-0">
+                                    ${item.type ? `<span class="text-[12px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${typeCls}">${item.type}</span>` : ''}
+                                    ${item.store ? `<span class="text-[13px] bg-fuji-primary text-white px-1.5 py-0.5 rounded font-bold inline-flex items-center gap-0.5 flex-shrink-0">
                                         <i class="fa-solid fa-store text-[10px]"></i> ${item.store}
-                                    </span>
+                                    </span>` : ''}
                                     <span class="font-bold text-[15px] text-fuji-dark break-all">${item.title}</span>
                                 </div>
-                                
+
                                 <div class="text-[13px] text-fuji-secondary font-medium flex items-center gap-1.5 flex-wrap">
-                                    <span><i class="fa-regular fa-clock text-[13px]"></i> ${item.time}</span>
-                                    <span>•</span>
-                                    <span class="font-bold bg-fuji-light/70 px-2 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>
+                                    ${item.time ? `<span><i class="fa-regular fa-clock text-[13px]"></i> ${item.time}</span><span>•</span>` : ''}
+                                    ${item.method ? `<span class="font-bold bg-fuji-light/70 px-2 py-0.2 rounded text-fuji-dark">${item.method}${item.card ? ` (${item.card})` : ''}</span>` : ''}
+                                    ${item.payer ? `<span class="font-bold text-fuji-dark"><i class="fa-solid fa-wallet text-[11px]"></i> ${item.payer}</span>` : ''}
+                                    <span class="text-[12px] font-bold px-1.5 py-0.5 rounded-full ${walletSourceStyle(src)}">${src}</span>
+                                    ${item.isPending ? `<span class="text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300"><i class="fa-solid fa-spinner fa-spin text-[10px] mr-0.5"></i>同步中</span>` : ''}
                                 </div>
                                 ${item.note ? `<div class="text-[13px] text-fuji-secondary font-medium break-all pt-0.5">${item.note}</div>` : ''}
                             </div>
@@ -2004,9 +2288,13 @@
                                     <div class="font-cute font-extrabold text-sm text-fuji-dark">${displayAmt}</div>
                                     <div class="text-[13px] text-fuji-secondary font-semibold">${subAmt}</div>
                                 </div>
-                                <button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
-                                    <i class="fa-regular fa-trash-can text-[13px]"></i>
-                                </button>
+                                ${canDelete
+                                    ? `<button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
+                                           <i class="fa-regular fa-trash-can text-[13px]"></i>
+                                       </button>`
+                                    : `<span class="text-fuji-light p-1.5 text-xs" title="雲端建立的紀錄請直接到試算表修改">
+                                           <i class="fa-solid fa-lock text-[12px]"></i>
+                                       </span>`}
                             </div>
                         </div>`;
                 });
@@ -2014,14 +2302,46 @@
             }
         }
 
-        // 刪除單筆記帳明細
+        // 刪除單筆記帳明細（雲端建立的擋下來，手機端建立的連雲端一起刪）
         function deleteExpense(id) {
-            if (confirm('確定要移除此筆開銷紀錄嗎？')) {
-                let expenses = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
-                expenses = expenses.filter(exp => exp.id !== id);
-                localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(expenses));
-                renderExpenses();  // 讀取記帳明細
+            // 1. 還在等同步的暫存：直接從本機移除
+            const pending = getPendingExpenses();
+            if (pending.some(p => p.id === id)) {
+                if (!confirm('這筆還在同步中，確定要移除嗎？\n（若雲端已經寫入成功，下次同步時仍會出現）')) return;
+                setPendingExpenses(pending.filter(p => p.id !== id));
+                renderExpenses();
+                return;
             }
+
+            // 2. 舊版只存在本機的紀錄
+            const legacy = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
+            if (legacy.some(e => e.id === id)) {
+                if (!confirm('確定要移除此筆開銷紀錄嗎？')) return;
+                localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(legacy.filter(e => e.id !== id)));
+                renderExpenses();
+                return;
+            }
+
+            // 3. 雲端紀錄
+            const item = cloudExpenses.find(e => e.id === id);
+            if (!item) return;
+            if (item.source === WALLET_CLOUD_SOURCE) {
+                alert('這筆是直接在雲端試算表建立的，App 不提供刪除。\n要移除請到試算表操作。');
+                return;
+            }
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法從雲端刪除。'); return; }
+            if (!confirm(`確定要刪除「${item.title}」嗎？\n這筆是 ${item.source} 從手機新增的，會一併從雲端試算表移除。`)) return;
+
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'deleteExpense', row: item.row, title: item.title, source: item.source })
+            })
+            .then(() => {
+                cloudExpenses = cloudExpenses.filter(e => e.id !== id);   // 先從畫面拿掉
+                renderExpenses();
+                setTimeout(fetchCloudExpenses, 6000);                     // 再跟雲端對一次
+            })
+            .catch(() => alert('刪除失敗，請確認網路後再試一次。'));
         }
 
         // 記帳 幣值轉換
@@ -2249,19 +2569,29 @@
         
 
         // #region 工具-CSV解析-----------------------------------------------------------------------
-        function parseCSVToRows(text) {
-            return text.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-                .split('\n').filter(l => l.trim()).map(line => {
-                    const cells = []; let cur = '', inQ = false;
-                    for (let i = 0; i < line.length; i++) {
-                        const ch = line[i];
-                        if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-                        else if (ch === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
-                        else cur += ch;
-                    }
-                    cells.push(cur.trim());
-                    return cells;
-                });
+        // keepEmpty = true 時連全空白的列也保留（記帳要靠陣列位置對應試算表列號）
+        // 逐字元處理，引號內的逗號與換行都不會被誤切
+        function parseCSVToRows(text, keepEmpty) {
+            const src = String(text).replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const out = []; let row = [], cur = '', inQ = false;
+            const pushRow = () => {
+                row.push(cur.trim()); cur = '';
+                if (keepEmpty || row.some(v => v !== '')) out.push(row);
+                row = [];
+            };
+            for (let i = 0; i < src.length; i++) {
+                const ch = src[i];
+                if (inQ) {
+                    if (ch === '"' && src[i + 1] === '"') { cur += '"'; i++; }
+                    else if (ch === '"') inQ = false;
+                    else cur += ch;
+                } else if (ch === '"') inQ = true;
+                else if (ch === ',') { row.push(cur.trim()); cur = ''; }
+                else if (ch === '\n') pushRow();
+                else cur += ch;
+            }
+            if (cur !== '' || row.length) pushRow();
+            return out;
         }
         // #endregion 工具-CSV解析-------------------------------------------------------------------
 
