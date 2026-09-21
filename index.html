@@ -307,7 +307,7 @@
                     <div class="col-span-7 bg-fuji-dark rounded-xl text-white px-3 py-1.5 flex flex-col justify-center shadow-sm relative overflow-hidden">
                         <div class="absolute -right-2 -bottom-2 text-white/5 text-3xl"><i class="fa-solid fa-wallet"></i></div>
                         <div class="flex items-center justify-between border-b border-white/10 pb-0.5 mb-0.5">
-                            <span class="text-[13px] text-fuji-light/70 font-bold">總日幣<span id="total-filter-tag" class="hidden ml-1 text-[11px] font-bold text-amber-300">(已篩選)</span></span>
+                            <span class="text-[13px] text-fuji-light/70 font-bold">總日幣<span id="total-scope-tag" class="ml-1 text-[11px] font-bold text-amber-300"></span></span>
                             <span id="total-jpy" class="font-cute font-extrabold text-sm text-fuji-light">¥ 0</span>
                         </div>
                         <div class="flex items-center justify-between">
@@ -334,11 +334,19 @@
 
                 <div id="sec-form-content" class="text-[13px] bg-fuji-paper rounded-xl border border-fuji-light shadow-sm p-3 mb-3 hidden space-y-2.5">
                     <!-- 掃描發票：辨識後只幫忙填入欄位，還是要自己核對再按上傳 -->
-                    <label class="flex items-center justify-center gap-1.5 px-2.5 py-2 border border-dashed border-fuji-primary rounded-lg bg-fuji-bg cursor-pointer hover:bg-fuji-light/40 transition-all font-bold text-fuji-primary">
-                        <i class="fa-solid fa-receipt"></i>
-                        <span id="receipt-btn-label">掃描發票自動填入</span>
-                        <input type="file" id="receipt-file" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(this)">
-                    </label>
+                    <!-- 分成兩顆：帶 capture 的直接開相機，不帶的才會出現相簿選項 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <label id="receipt-btn-camera" class="flex items-center justify-center gap-1.5 px-2 py-2 border border-dashed border-fuji-primary rounded-lg bg-fuji-bg cursor-pointer hover:bg-fuji-light/40 transition-all font-bold text-fuji-primary">
+                            <i class="fa-solid fa-camera"></i>
+                            <span class="receipt-btn-label">拍照掃描</span>
+                            <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptScan(this)">
+                        </label>
+                        <label id="receipt-btn-album" class="flex items-center justify-center gap-1.5 px-2 py-2 border border-dashed border-fuji-primary rounded-lg bg-fuji-bg cursor-pointer hover:bg-fuji-light/40 transition-all font-bold text-fuji-primary">
+                            <i class="fa-solid fa-images"></i>
+                            <span class="receipt-btn-label">從相簿選</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleReceiptScan(this)">
+                        </label>
+                    </div>
                     <div id="receipt-result" class="hidden text-[12px] bg-fuji-bg border border-fuji-light rounded-lg px-2.5 py-2 space-y-1"></div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -401,6 +409,69 @@
 
                 <div id="expense-list" class="space-y-3"></div>
             </section>
+
+            <!-- 錢包：編輯記帳紀錄 -->
+            <div id="expense-edit-modal" class="hidden fixed inset-0 z-50 bg-black/40 overflow-y-auto p-3">
+                <div class="bg-white rounded-2xl border border-fuji-light shadow-xl w-full max-w-sm mx-auto my-4 p-3 space-y-2.5 text-[13px]">
+                    <div class="flex items-center justify-between">
+                        <div class="font-cute text-base font-extrabold text-fuji-primary"><i class="fa-solid fa-pen-to-square mr-1"></i>編輯記帳</div>
+                        <button onclick="closeExpenseEdit()" class="text-fuji-secondary hover:text-fuji-accent px-1.5"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="edit-expense-meta" class="text-[12px] text-fuji-secondary font-medium"></div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="edit-expense-type" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
+                            <option value="交通">🚄 交通</option>
+                            <option value="住宿">🏨 住宿</option>
+                            <option value="票券">🎟️ 票券</option>
+                            <option value="飲食">🍜 飲食</option>
+                            <option value="購物">🛍️ 購物</option>
+                            <option value="其他">📌 其他</option>
+                        </select>
+                        <select id="edit-expense-payer" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
+                            <option value="鳴">付費人：鳴</option>
+                            <option value="萱">付費人：萱</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="edit-expense-store" placeholder="店家" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
+                        <input type="text" id="edit-expense-title" placeholder="品項 (必填)" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="edit-expense-date" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark">
+                        <input type="time" id="edit-expense-time" class="px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="edit-expense-currency" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold text-fuji-dark">
+                            <option value="日幣 ￥">日幣 (¥)</option>
+                            <option value="台幣 $">台幣 ($)</option>
+                        </select>
+                        <input type="number" id="edit-expense-amount" placeholder="消費金額" class="col-span-2 px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none font-bold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="edit-expense-method" onchange="toggleEditCardSelect()" class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark">
+                            <option value="日幣現金">💵 日幣現金</option>
+                            <option value="台幣">🇹🇼 台幣</option>
+                            <option value="信用卡">💳 信用卡</option>
+                        </select>
+                        <select id="edit-expense-card" disabled class="px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-secondary opacity-50">
+                            <option value="">-- 選擇信用卡 --</option>
+                            <option value="聯邦吉鶴卡">聯邦吉鶴卡</option>
+                            <option value="國泰CUBE卡">國泰CUBE卡</option>
+                            <option value="玉山熊本熊卡">玉山熊本熊卡</option>
+                            <option value="富邦J卡">富邦J卡</option>
+                        </select>
+                    </div>
+                    <textarea id="edit-expense-note" rows="1" oninput="autoGrowExpenseNote(this)" placeholder="備註說明（可換行，一行一項）" class="w-full px-2.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none resize-none overflow-hidden leading-snug"></textarea>
+
+                    <div class="grid grid-cols-2 gap-2 pt-0.5">
+                        <button onclick="closeExpenseEdit()" class="font-bold text-fuji-secondary bg-fuji-bg border border-fuji-light rounded-lg py-2 hover:bg-fuji-light transition-all">取消</button>
+                        <button id="save-expense-btn" onclick="saveExpenseEdit()" class="font-bold text-white bg-fuji-primary rounded-lg py-2 shadow-md hover:bg-fuji-dark transition-all">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- 錢包：選擇使用者身分 -->
             <div id="wallet-user-picker" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-6">
@@ -815,6 +886,7 @@
             }
             
             collapseAllSections(tabName);
+            closeExpenseEdit();   // 切頁時別讓編輯視窗留在畫面上
             if(tabName === 'shopping') { if(cloudShoppingItems.length > 0) renderCombinedShoppingList(); else fetchCloudShopping(); }
             if(tabName === 'wallet') {
                 if (cloudExpenses.length > 0) renderExpenses(); else fetchCloudExpenses();
@@ -2016,8 +2088,20 @@
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' });
                 };
-                img.onerror = reject;
+                img.onerror = () => reject(new Error('無法讀取這張照片，可能是不支援的格式，請換一張或改用拍照'));
                 img.src = url;
+            });
+        }
+
+        // 辨識中把兩顆按鈕一起鎖住，避免重複送出
+        function setReceiptBusy(busy) {
+            [['receipt-btn-camera', '拍照掃描'], ['receipt-btn-album', '從相簿選']].forEach(([id, text]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.pointerEvents = busy ? 'none' : '';
+                el.style.opacity = busy ? '0.55' : '';
+                const span = el.querySelector('.receipt-btn-label');
+                if (span) span.textContent = busy ? '辨識中...' : text;
             });
         }
 
@@ -2027,9 +2111,8 @@
             if (!file) return;
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法辨識發票。'); return; }
 
-            const label = document.getElementById('receipt-btn-label');
             const box = document.getElementById('receipt-result');
-            if (label) label.textContent = '辨識中...';
+            setReceiptBusy(true);
             if (box) { box.classList.remove('hidden'); box.innerHTML = '<div class="text-fuji-secondary font-medium"><i class="fa-solid fa-spinner fa-spin mr-1"></i>正在辨識發票，約需 10～20 秒...</div>'; }
 
             try {
@@ -2059,7 +2142,7 @@
             } catch (err) {
                 if (box) box.innerHTML = `<div class="text-rose-600 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>發票辨識失敗：${err.message}</div>`;
             } finally {
-                if (label) label.textContent = '掃描發票自動填入';
+                setReceiptBusy(false);
             }
         }
 
@@ -2289,10 +2372,17 @@
             localStorage.setItem('ok_wallet_hidden_sources', JSON.stringify([...hidden]));
             renderExpenses();
         }
-        // 刪除權限：只有「目前身分自己建立的」才給刪
-        //   雲端建立（來源＝雲端）→ 一律不給，要到試算表改
+        // 編輯權限：建立者是自己，或付費人是自己（別人幫我記的帳，我也要能改）
+        function walletCanEdit(item) {
+            const src = item.source || WALLET_CLOUD_SOURCE;
+            if (src === WALLET_LOCAL_SOURCE) return true;          // 本機舊資料只在這支手機
+            if (!walletUser) return false;
+            return src === walletUser || (item.payer || '') === walletUser;
+        }
+
+        // 刪除權限比編輯嚴格：一定要是自己建立的
+        //   雲端建立（來源＝雲端）→ 一律不給，要到試算表刪
         //   別人建立（來源≠目前身分）→ 不給，要先切換身分
-        //   本機舊資料 → 只存在這支手機，給刪
         function walletCanDelete(item) {
             const src = item.source || WALLET_CLOUD_SOURCE;
             if (src === WALLET_CLOUD_SOURCE) return false;
@@ -2433,16 +2523,19 @@
 
             const expenses = allExpenses.filter(e => !hidden.has(e.source || WALLET_CLOUD_SOURCE));
 
+            // 上方總計＝「付費人是目前身分」的全部紀錄。
+            // 不看誰建立的（幫別人記的帳不算自己的花費），也不受下方來源篩選影響。
+            const myExpenses = walletUser ? allExpenses.filter(e => (e.payer || '') === walletUser) : allExpenses;
             let totalJpy = 0; let totalTwd = 0;
-            expenses.forEach(exp => {
+            myExpenses.forEach(exp => {
                 const amt = Number(exp.amount) || 0;
                 if (exp.currency === 'JPY') { totalJpy += amt; totalTwd += amt * rate; }
                 else { totalTwd += amt; totalJpy += amt / rate; }
             });
             document.getElementById('total-jpy').innerHTML = `¥${Math.round(totalJpy).toLocaleString()}`;
             document.getElementById('total-twd').innerHTML = `NT$ ${Math.round(totalTwd).toLocaleString()}`;
-            const filterTag = document.getElementById('total-filter-tag');
-            if (filterTag) filterTag.classList.toggle('hidden', expenses.length === allExpenses.length);
+            const scopeTag = document.getElementById('total-scope-tag');
+            if (scopeTag) scopeTag.textContent = walletUser ? `(${walletUser} 付款 ${myExpenses.length} 筆)` : '(全部)';
 
             if (expenses.length === 0) {
                 container.innerHTML = allExpenses.length === 0
@@ -2488,11 +2581,12 @@
                     const displayAmt = isJpy ? `¥${amt.toLocaleString()}` : `$${amt.toLocaleString()}`;
                     const subAmt = isJpy ? `約 $${Math.round(amt * rate).toLocaleString()}` : `約 ¥${Math.round(amt / rate).toLocaleString()}`;
                     const src = item.source || WALLET_CLOUD_SOURCE;
-                    // 只能刪自己建立的：雲端建的要到試算表改，別人建的要切換成他的身分才能刪
+                    // 編輯：建立者或付費人是自己都行；刪除：一定要自己建立的
+                    const canEdit = walletCanEdit(item);
                     const canDelete = walletCanDelete(item);
                     const lockTip = src === WALLET_CLOUD_SOURCE
                         ? '雲端建立的紀錄請直接到試算表修改'
-                        : `這筆是 ${src} 建立的，切換成 ${src} 的身分才能刪除`;
+                        : `這筆的建立者與付費人都不是你，切換身分後才能編輯`;
                     const typeCls = WALLET_TYPE_STYLE[item.type] || 'bg-gray-100 text-gray-600 border-gray-300';
 
                     groupHtml += `
@@ -2520,10 +2614,15 @@
                                     <div class="font-cute font-extrabold text-sm text-fuji-dark">${displayAmt}</div>
                                     <div class="text-[13px] text-fuji-secondary font-semibold">${subAmt}</div>
                                 </div>
-                                ${canDelete
-                                    ? `<button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1.5 transition-all text-xs">
-                                           <i class="fa-regular fa-trash-can text-[13px]"></i>
-                                       </button>`
+                                ${(canEdit || canDelete)
+                                    ? `<div class="flex flex-col gap-0.5">
+                                           ${canEdit ? `<button onclick="openExpenseEdit('${item.id}')" class="text-fuji-secondary hover:text-fuji-primary p-1 transition-all text-xs" title="編輯">
+                                               <i class="fa-solid fa-pen-to-square text-[13px]"></i>
+                                           </button>` : ''}
+                                           ${canDelete ? `<button onclick="deleteExpense('${item.id}')" class="text-fuji-secondary hover:text-fuji-accent p-1 transition-all text-xs" title="刪除">
+                                               <i class="fa-regular fa-trash-can text-[13px]"></i>
+                                           </button>` : ''}
+                                       </div>`
                                     : `<span class="text-fuji-light p-1.5 text-xs" title="${lockTip}">
                                            <i class="fa-solid fa-lock text-[12px]"></i>
                                        </span>`}
@@ -2532,6 +2631,141 @@
                 });
                 groupHtml += `</div></div>`; container.innerHTML += groupHtml;
             }
+        }
+
+        // ---- 記帳：編輯 -------------------------------------------------------------------
+        let editingExpense = null;   // 正在編輯的那筆（保留原始值，儲存時要靠它對到試算表的列）
+
+        function toggleEditCardSelect() {
+            const method = document.getElementById('edit-expense-method').value;
+            const cardSelect = document.getElementById('edit-expense-card');
+            if (method === '信用卡') {
+                cardSelect.disabled = false;
+                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-dark opacity-100";
+            } else {
+                cardSelect.disabled = true; cardSelect.value = "";
+                cardSelect.className = "px-1.5 py-1.5 border border-fuji-light rounded-lg bg-fuji-bg focus:outline-none text-fuji-secondary opacity-50";
+            }
+        }
+
+        function openExpenseEdit(id) {
+            const pending = getPendingExpenses();
+            if (pending.some(p => p.id === id)) {
+                alert('這筆還在同步中，等雲端更新完成後再編輯。');
+                return;
+            }
+            const legacy = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
+            const item = cloudExpenses.find(e => e.id === id)
+                      || legacy.map(e => Object.assign({}, e, { source: WALLET_LOCAL_SOURCE, isLegacy: true })).find(e => e.id === id);
+            if (!item) return;
+            if (!walletCanEdit(item)) {
+                alert(`只能編輯「自己建立」或「自己付款」的紀錄。\n這筆的建立者是 ${item.source}、付費人是 ${item.payer || '未填'}${walletUser ? `，你目前的身分是 ${walletUser}` : ''}。`);
+                return;
+            }
+
+            editingExpense = item;
+            // 試算表存的付款方式是「信用卡－國泰CUBE卡」，拆回下拉選單的兩段
+            const parts = String(item.method || '').split('－');
+            const method = parts[0] || '日幣現金';
+            const card = parts[1] || item.card || '';
+
+            const set = (id2, v) => { const el = document.getElementById(id2); if (el) el.value = v; };
+            set('edit-expense-type', item.type || '其他');
+            set('edit-expense-payer', item.payer || walletUser || '鳴');
+            set('edit-expense-store', item.store || '');
+            set('edit-expense-title', item.title || '');
+            set('edit-expense-date', item.date || '');
+            set('edit-expense-time', item.time || '');
+            set('edit-expense-currency', item.currency === 'TWD' ? '台幣 $' : '日幣 ￥');
+            set('edit-expense-amount', Number(item.amount) || '');
+            set('edit-expense-method', ['日幣現金', '台幣', '信用卡'].indexOf(method) !== -1 ? method : '日幣現金');
+            toggleEditCardSelect();
+            set('edit-expense-card', card);
+            const noteEl = document.getElementById('edit-expense-note');
+            if (noteEl) noteEl.value = item.note || '';
+
+            const meta = document.getElementById('edit-expense-meta');
+            if (meta) meta.innerHTML = `來源／建立者：<span class="font-extrabold px-1.5 py-0.5 rounded-full ${walletSourceStyle(item.source)}">${item.source}</span>${item.isLegacy ? '（只存在這支手機，不會上傳）' : ''}`;
+
+            document.getElementById('expense-edit-modal').classList.remove('hidden');
+            if (noteEl) autoGrowExpenseNote(noteEl);
+        }
+
+        function closeExpenseEdit() {
+            editingExpense = null;
+            const modal = document.getElementById('expense-edit-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveExpenseEdit() {
+            if (!editingExpense) return;
+            const v = id => (document.getElementById(id) || {}).value || '';
+            const type = v('edit-expense-type');
+            const payer = v('edit-expense-payer');
+            const store = v('edit-expense-store').trim();
+            const title = v('edit-expense-title').trim();
+            const date = v('edit-expense-date');
+            const time = v('edit-expense-time');
+            const currencySheet = v('edit-expense-currency');
+            const amount = parseFloat(v('edit-expense-amount'));
+            const method = v('edit-expense-method');
+            const card = v('edit-expense-card');
+            const note = v('edit-expense-note').trim();
+
+            if (!title) { alert('請填寫品項唷！'); return; }
+            if (isNaN(amount) || amount <= 0) { alert('請輸入消費金額！'); return; }
+            if (!date) { alert('請確認日期。'); return; }
+
+            const methodFull = (method === '信用卡' && card) ? ('信用卡－' + card) : method;
+            const isJpy = currencySheet.indexOf('日幣') !== -1;
+            const orig = editingExpense;
+
+            // 本機舊資料：直接改 localStorage，不用經過雲端
+            if (orig.isLegacy) {
+                const legacy = JSON.parse(localStorage.getItem('ok_wallet_expenses_v3')) || [];
+                const idx = legacy.findIndex(e => e.id === orig.id);
+                if (idx >= 0) {
+                    legacy[idx] = Object.assign({}, legacy[idx], {
+                        type, payer, store, title, date, time,
+                        currency: isJpy ? 'JPY' : 'TWD', amount, method: methodFull, card: '', note
+                    });
+                    localStorage.setItem('ok_wallet_expenses_v3', JSON.stringify(legacy));
+                }
+                closeExpenseEdit();
+                renderExpenses();
+                return;
+            }
+
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請把')) { alert('尚未配置 GAS 網址，無法同步至雲端。'); return; }
+
+            const btn = document.getElementById('save-expense-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>同步中...'; }
+
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'updateExpense',
+                    row: orig.row, origTitle: orig.title, source: orig.source, actor: walletUser,
+                    type, date, time, store, title,
+                    currency: currencySheet,
+                    jpy: isJpy ? amount : '',
+                    twd: isJpy ? '' : amount,
+                    method: methodFull, payer, note
+                })
+            })
+            .then(() => {
+                // 先把畫面更新成新內容，6 秒後再跟雲端對一次
+                const i = cloudExpenses.findIndex(e => e.id === orig.id);
+                if (i >= 0) cloudExpenses[i] = Object.assign({}, cloudExpenses[i], {
+                    type, date, time, store, title,
+                    currency: isJpy ? 'JPY' : 'TWD', amount, method: methodFull, payer, note
+                });
+                closeExpenseEdit();
+                renderExpenses();
+                setTimeout(fetchCloudExpenses, 6000);
+            })
+            .catch(() => alert('儲存失敗，請確認網路後再試一次。'))
+            .finally(() => { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存'; } });
         }
 
         // 刪除單筆記帳明細（雲端建立的擋下來，手機端建立的連雲端一起刪）
